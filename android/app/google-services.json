@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "245911289236",
+    "project_id": "mechtrack-8751b",
+    "storage_bucket": "mechtrack-8751b.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:245911289236:android:8b27c59a6115a424082381",
+        "android_client_info": {
+          "package_name": "com.example.mech_track"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "245911289236-lm12979n679uq5t04dcbfjivi92c4ua8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCKVpSFnu_9aPLvLsZ2DKOXYSxRJ_q002U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "245911289236-lm12979n679uq5t04dcbfjivi92c4ua8.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
