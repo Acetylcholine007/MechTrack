@@ -8,6 +8,10 @@ class InventoryGlobalPage extends StatefulWidget {
 class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
   @override
   Widget build(BuildContext context) {
-    return Container();
+    return Container(
+      child: Center(
+        child: Text('Global Inventory'),
+      ),
+    );
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mech_track/models/Part.dart';
 import 'package:mech_track/screens/mainpages/RegisterPage.dart';
 import 'package:mech_track/screens/mainpages/SignInPage.dart';
+import 'package:mech_track/wrappers/MainWrapper.dart';
 import 'package:provider/provider.dart';
 
 import 'package:mech_track/models/Account.dart';
@@ -32,7 +33,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
       );
     } else {
       // return FrontPage();
-      return RegisterPage();
+      return MainWrapper();
       return SignInPage();
     }
   }

@@ -8,6 +8,10 @@ class InventoryLocalPage extends StatefulWidget {
 class _InventoryLocalPageState extends State<InventoryLocalPage> {
   @override
   Widget build(BuildContext context) {
-    return Container();
+    return Container(
+      child: Center(
+        child: Text('Local Inventory'),
+      ),
+    );
   }
 }
