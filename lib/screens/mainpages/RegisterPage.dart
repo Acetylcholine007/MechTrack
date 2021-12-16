@@ -42,7 +42,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     TextFormField(
                         initialValue: '',
                         decoration:
-                            textFieldDecoration.copyWith(hintText: 'Full Name'),
+                            formFieldDecoration.copyWith(hintText: 'Full Name'),
                         validator: (val) =>
                             val.isEmpty ? 'Enter Full Name' : null,
                         onChanged: (val) => {}),
@@ -50,7 +50,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     TextFormField(
                         initialValue: '',
                         decoration:
-                            textFieldDecoration.copyWith(hintText: 'Username'),
+                            formFieldDecoration.copyWith(hintText: 'Username'),
                         validator: (val) =>
                             val.isEmpty ? 'Enter Username' : null,
                         onChanged: (val) => {}),
@@ -58,13 +58,13 @@ class _RegisterPageState extends State<RegisterPage> {
                     TextFormField(
                         initialValue: '',
                         decoration:
-                            textFieldDecoration.copyWith(hintText: 'Email'),
+                            formFieldDecoration.copyWith(hintText: 'Email'),
                         validator: (val) => val.isEmpty ? 'Enter Email' : null,
                         onChanged: (val) => {}),
                     Text('Password', style: theme.textTheme.headline6),
                     TextFormField(
                       initialValue: '',
-                      decoration: textFieldDecoration.copyWith(
+                      decoration: formFieldDecoration.copyWith(
                           suffixIcon: IconButton(
                               onPressed: () => {},
                               icon: Icon(Icons.visibility)),

@@ -106,21 +106,24 @@ class _MainWrapperState extends State<MainWrapper> {
     final pages = getPages('Admin');
     final tabs = getTabs('Admin');
 
-    return Scaffold(
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: theme.primaryColor,
-        selectedItemColor: Colors.white,
-        unselectedItemColor: Colors.white.withOpacity(.60),
-        selectedFontSize: 14,
-        unselectedFontSize: 14,
-        currentIndex: _currentIndex,
-        onTap: (value) => setState(() => _currentIndex = value),
-        items: tabs,
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).requestFocus(new FocusNode()),
+      child: Scaffold(
+        bottomNavigationBar: BottomNavigationBar(
+          type: BottomNavigationBarType.fixed,
+          backgroundColor: theme.primaryColor,
+          selectedItemColor: Colors.white,
+          unselectedItemColor: Colors.white.withOpacity(.60),
+          selectedFontSize: 14,
+          unselectedFontSize: 14,
+          currentIndex: _currentIndex,
+          onTap: (value) => setState(() => _currentIndex = value),
+          items: tabs,
+        ),
+        body: Container(
+          child: pages[_currentIndex]
+        )
       ),
-      body: Container(
-        child: pages[_currentIndex]
-      )
     );
   }
 }

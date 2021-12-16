@@ -42,13 +42,13 @@ class _SignInPageState extends State<SignInPage> {
                     TextFormField(
                         initialValue: '',
                         decoration:
-                            textFieldDecoration.copyWith(hintText: 'Email'),
+                            formFieldDecoration.copyWith(hintText: 'Email'),
                         validator: (val) => val.isEmpty ? 'Enter Email' : null,
                         onChanged: (val) => {}),
                     Text('Password', style: theme.textTheme.headline6),
                     TextFormField(
                       initialValue: '',
-                      decoration: textFieldDecoration.copyWith(
+                      decoration: formFieldDecoration.copyWith(
                           suffixIcon: IconButton(
                               onPressed: () => {},
                               icon: Icon(Icons.visibility)),
