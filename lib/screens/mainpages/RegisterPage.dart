@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mech_track/shared/decorations.dart';
 
+import 'SignInPage.dart';
+
 class RegisterPage extends StatefulWidget {
   @override
   _RegisterPageState createState() => _RegisterPageState();
@@ -74,7 +76,11 @@ class _RegisterPageState extends State<RegisterPage> {
                       obscureText: true,
                     ),
                     TextButton(
-                        onPressed: () => {},
+                        onPressed: () =>
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => SignInPage()),
+                            ),
                         child: Text('Already have account? Sign In')),
                   ]),
             ),

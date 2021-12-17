@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:mech_track/components/QRDisplay.dart';
 import 'package:mech_track/models/Part.dart';
+import 'package:mech_track/screens/subpages/PartEditor.dart';
 
 class PartViewer extends StatefulWidget {
   @override
@@ -16,8 +18,20 @@ class _PartViewerState extends State<PartViewer> {
       appBar: AppBar(
         title: Text('Part Viewer'),
         actions: [
-          IconButton(icon: Icon(Icons.edit), onPressed: (){}),
-          IconButton(icon: Icon(Icons.qr_code), onPressed: (){}),
+          IconButton(icon: Icon(Icons.edit), onPressed: () =>
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => PartEditor()),
+            ),
+          ),
+          IconButton(icon: Icon(Icons.qr_code), onPressed: () =>
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) =>
+                QRDisplay(title: part.pid, data: part.pid + '<=MechTrack=>' + part.pid)
+              )
+            )
+          ),
         ],
       ),
       body: Container(

@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:mech_track/models/Part.dart';
-import 'package:mech_track/screens/mainpages/RegisterPage.dart';
-import 'package:mech_track/screens/mainpages/SignInPage.dart';
-import 'package:mech_track/wrappers/MainWrapper.dart';
 import 'package:provider/provider.dart';
 
+import 'package:mech_track/models/Part.dart';
 import 'package:mech_track/models/Account.dart';
 import 'package:mech_track/models/AccountData.dart';
-import 'package:mech_track/components/Loading.dart';
 import 'package:mech_track/screens/mainpages/FrontPage.dart';
 import 'package:mech_track/services/DatabaseService.dart';
+import 'package:mech_track/wrappers/MainWrapper.dart';
 
 class AuthWrapper extends StatefulWidget {
   @override
@@ -19,7 +16,9 @@ class AuthWrapper extends StatefulWidget {
 class _AuthWrapperState extends State<AuthWrapper> {
   @override
   Widget build(BuildContext context) {
-    final authUser = Provider.of<Account>(context);
+    // final authUser = Provider.of<Account>(context);
+    final authUser = Account(uid: 'Axsj3dj5esa21', email: 'johndoe@gmail.com');
+    // final authUser = null;
 
     if(authUser != null) {
       return MultiProvider(
@@ -29,12 +28,10 @@ class _AuthWrapperState extends State<AuthWrapper> {
             // StreamProvider<List<Activity>>.value(value: DatabaseService(uid: authUser.uid).activity, initialData: null),
             // StreamProvider<List<String>>.value(value: DatabaseService(uid: authUser.uid).myEventIds, initialData: null)
           ],
-          child: Loading('Loading contents')
+        child: MainWrapper()
       );
     } else {
-      // return FrontPage();
-      return MainWrapper();
-      // return SignInPage();
+      return FrontPage();
     }
   }
 }

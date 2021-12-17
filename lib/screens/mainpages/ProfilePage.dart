@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mech_track/screens/subpages/ProfileEditor.dart';
 
 class ProfilePage extends StatefulWidget {
   @override
@@ -58,7 +59,12 @@ class _ProfilePageState extends State<ProfilePage> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: <Widget>[
                     ElevatedButton(
-                        onPressed: () => {}, child: Text('EDIT ACCOUNT')),
+                      onPressed: () =>
+                        Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => ProfileEditor()),
+                      ),
+                      child: Text('EDIT ACCOUNT')),
                     ElevatedButton(onPressed: () => {}, child: Text('SIGN OUT')),
                   ])
             ],

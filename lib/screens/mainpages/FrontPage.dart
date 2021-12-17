@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:mech_track/screens/mainpages/SignInPage.dart';
+
+import 'RegisterPage.dart';
 
 class FrontPage extends StatefulWidget {
   @override
@@ -35,8 +38,18 @@ class _FrontPageState extends State<FrontPage> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
                   ElevatedButton(
-                      onPressed: () => {}, child: Text('CREATE ACCOUNT')),
-                  ElevatedButton(onPressed: () => {}, child: Text('SIGN IN')),
+                      onPressed: () =>
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => RegisterPage()),
+                        )
+                      , child: Text('CREATE ACCOUNT')),
+                  ElevatedButton(onPressed: () =>
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => SignInPage()),
+                    )
+                  , child: Text('SIGN IN')),
                   ElevatedButton(
                       onPressed: () => {}, child: Text('Enter as Guest')),
                   IconButton(

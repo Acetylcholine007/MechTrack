@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+
 import 'package:mech_track/components/PartListTile.dart';
 import 'package:mech_track/components/SearchBar.dart';
+import 'package:mech_track/screens/subpages/PartViewer.dart';
 
 class InventoryLocalPage extends StatefulWidget {
   @override
@@ -33,7 +35,11 @@ class _InventoryLocalPageState extends State<InventoryLocalPage> {
                 itemCount: items.length,
                 itemBuilder: (BuildContext context, int index) {
                   return GestureDetector(
-                    onTap: () => {},
+                    onTap: () =>
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => PartViewer()),
+                        ),
                     child: PartListTile(
                       key: Key(index.toString()),
                       name: items[index][0], caption:
