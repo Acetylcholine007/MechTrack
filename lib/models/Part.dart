@@ -20,26 +20,30 @@ class Part {
   String criticalByPM;
 
   Part({
-    this.pid,
-    this.assetAccountCode,
-    this.process,
-    this.subProcess,
-    this.description,
-    this.type,
-    this.criticality,
-    this.status,
-    this.yearInstalled,
-    this.description2,
-    this.brand,
-    this.model,
-    this.spec1,
-    this.spec2,
-    this.dept,
-    this.facility,
-    this.facilityType,
-    this.sapFacility,
-    this.criticalByPM,
+    this.pid = '',
+    this.assetAccountCode = '',
+    this.process = '',
+    this.subProcess = '',
+    this.description = '',
+    this.type = '',
+    this.criticality = '',
+    this.status = '',
+    this.yearInstalled = '',
+    this.description2 = '',
+    this.brand = '',
+    this.model = '',
+    this.spec1 = '',
+    this.spec2 = '',
+    this.dept = '',
+    this.facility = '',
+    this.facilityType = '',
+    this.sapFacility = '',
+    this.criticalByPM = '',
   });
+
+  void setDescription(String description) {
+    this.description = description;
+  }
 
   Part copy() => Part(
     pid: this.pid,

@@ -5,6 +5,9 @@ import 'package:mech_track/screens/mainpages/DataPage.dart';
 import 'package:mech_track/screens/mainpages/InventoryGlobalPage.dart';
 import 'package:mech_track/screens/mainpages/InventoryLocalPage.dart';
 import 'package:mech_track/screens/mainpages/ProfilePage.dart';
+import 'package:mech_track/screens/subpages/PartEditor.dart';
+import 'package:mech_track/screens/subpages/PartViewer.dart';
+import 'package:mech_track/screens/subpages/ProfileEditor.dart';
 
 class MainWrapper extends StatefulWidget {
 
@@ -16,7 +19,7 @@ class _MainWrapperState extends State<MainWrapper> {
   int _currentIndex = 0;
   List<Page> pages = [
     Page(
-      DataPage(),
+      PartViewer(),
       BottomNavigationBarItem(
         label: 'Data',
         icon: Icon(Icons.archive_rounded),
@@ -24,7 +27,7 @@ class _MainWrapperState extends State<MainWrapper> {
       1
     ),
     Page(
-      InventoryLocalPage(),
+      PartEditor(),
       BottomNavigationBarItem(
         label: 'Local',
         icon: Icon(Icons.sd_card_rounded),
@@ -32,7 +35,7 @@ class _MainWrapperState extends State<MainWrapper> {
       1
     ),
     Page(
-      InventoryGlobalPage(),
+      ProfileEditor(),
       BottomNavigationBarItem(
         label: 'Global',
         icon: Icon(Icons.storage_rounded),
