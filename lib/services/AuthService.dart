@@ -12,7 +12,13 @@ class AuthService {
   //MAPPING FUNCTION SECTION
 
   Account _userFromFirebaseUser(User user) {
-    return user != null && user.emailVerified ? Account(uid: user.uid, email: user.email) : null;
+    // return user != null && user.emailVerified ? Account(uid: user.uid, email: user.email) : null;
+    return user != null ? Account(
+      uid: user.uid,
+      email: user.email,
+      isAnon: user.isAnonymous,
+      isEmailVerified: user.emailVerified
+    ) : null;
   }
 
   //STREAM SECTION
@@ -23,31 +29,42 @@ class AuthService {
 
   //OPERATOR FUNCTIONS SECTION
 
-  Future<String> logIn(String email, String password) async {
+  Future<String> signInEmail(String email, String password) async {
     try {
-      await _auth.signInWithEmailAndPassword(email: email, password: password);
+      UserCredential result = await _auth.signInWithEmailAndPassword(email: email, password: password);
+      print(result);
       return _auth.currentUser.emailVerified ? 'SUCCESS' : 'Account is not verified';
     } on FirebaseAuthException catch (error) {
       return error.message;
     }
   }
 
-  // Future<String> signIn(AccountData accountData, String email, String password, File file) async {
-  //   try {
-  //     UserCredential result = await _auth.createUserWithEmailAndPassword(email: email, password: password);
-  //     User user = result.user;
-  //
-  //     await DatabaseService(uid: user.uid).createAccount(accountData, email = user.email);
-  //     await StorageService().uploadId(user.uid, file, await getTemporaryDirectory());
-  //     user.sendEmailVerification();
-  //
-  //     return 'SUCCESS';
-  //   } on FirebaseAuthException catch (error) {
-  //     return error.message;
-  //   }
-  // }
+  Future<String> signInAnon() async {
+    try {
+      UserCredential result = await _auth.signInAnonymously();
+      User user = result.user;
+      print(result);
+      return 'SUCCESS';
+    } on FirebaseAuthException catch (error) {
+      return error.message;
+    }
+  }
 
-  Future<String> logOut() async {
+  Future<String> register(AccountData accountData, String email, String password) async {
+    try {
+      UserCredential result = await _auth.createUserWithEmailAndPassword(email: email, password: password);
+      User user = result.user;
+
+      await DatabaseService(uid: user.uid).createAccount(accountData, email = user.email);
+      // user.sendEmailVerification();
+
+      return 'SUCCESS';
+    } on FirebaseAuthException catch (error) {
+      return error.message;
+    }
+  }
+
+  Future<String> signOut() async {
     String result  = '';
     await _auth.signOut()
         .then((value) => result = 'SUCCESS')

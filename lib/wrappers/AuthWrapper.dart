@@ -16,20 +16,18 @@ class AuthWrapper extends StatefulWidget {
 class _AuthWrapperState extends State<AuthWrapper> {
   @override
   Widget build(BuildContext context) {
-    // final authUser = Provider.of<Account>(context);
-    final authUser = Account(uid: 'Axsj3dj5esa21', email: 'johndoe@gmail.com');
-    // final authUser = null;
+    final authUser = Provider.of<Account>(context);
 
-    if(authUser != null) {
+    if(authUser != null && !authUser.isAnon) {
       return MultiProvider(
           providers: [
             StreamProvider<AccountData>.value(value: DatabaseService(uid: authUser.uid).user, initialData: null),
             StreamProvider<List<Part>>.value(value: DatabaseService(uid: authUser.uid).parts, initialData: null),
-            // StreamProvider<List<Activity>>.value(value: DatabaseService(uid: authUser.uid).activity, initialData: null),
-            // StreamProvider<List<String>>.value(value: DatabaseService(uid: authUser.uid).myEventIds, initialData: null)
           ],
         child: MainWrapper()
       );
+    } else if (authUser != null && authUser.isAnon) {
+      return MainWrapper();
     } else {
       return FrontPage();
     }

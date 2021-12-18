@@ -281,20 +281,17 @@ class DatabaseService {
   //   return result;
   // }
   //
-  // Future createAccount(AccountData person, String email) async {
-  //   return await userCollection.doc(uid).set({
-  //     'idUri': person.idUri,
-  //     'fullName': person.fullName,
-  //     'address': person.address,
-  //     'birthday': person.birthday,
-  //     'accountType': person.accountType,
-  //     'contact': person.contact,
-  //     'sex': person.sex,
-  //     'email': email
-  //   })
-  //       .then((value) => print('User data created'))
-  //       .catchError((error) => print('Failed to create user data'));
-  // }
+  Future createAccount(AccountData person, String email) async {
+    return await userCollection.doc(uid).set({
+      'fullName': person.fullName,
+      'username': person.username,
+      'accountType': 'EMPLOYEE',
+      'isVerified': true,
+      'email': email
+    })
+        .then((value) => print('User data created'))
+        .catchError((error) => print('Failed to create user data'));
+  }
   //
   // Future editAccount(AccountData user, Activity activity) async {
   //   String result = '';

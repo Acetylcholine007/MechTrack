@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:mech_track/screens/mainpages/SignInPage.dart';
+import 'package:mech_track/services/AuthService.dart';
 
 import 'RegisterPage.dart';
 
@@ -10,6 +11,8 @@ class FrontPage extends StatefulWidget {
 }
 
 class _FrontPageState extends State<FrontPage> {
+  final AuthService _auth = AuthService();
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -51,7 +54,11 @@ class _FrontPageState extends State<FrontPage> {
                     )
                   , child: Text('SIGN IN')),
                   ElevatedButton(
-                      onPressed: () => {}, child: Text('Enter as Guest')),
+                      onPressed: () async {
+                        dynamic result = await _auth.signInAnon();
+                        print(result);
+                      }, child: Text('Enter as Guest')),
+                  SizedBox(height: 60),
                   IconButton(
                     icon: FaIcon(FontAwesomeIcons.facebook),
                     // icon: Icon(Icons.android),
@@ -62,7 +69,13 @@ class _FrontPageState extends State<FrontPage> {
                   Text('Find us on Facebook',
                       style: theme.textTheme.subtitle1,
                       textAlign: TextAlign.center)
-                ])
+                ]),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+
+              ],
+            )
           ],
         ),
       )),
