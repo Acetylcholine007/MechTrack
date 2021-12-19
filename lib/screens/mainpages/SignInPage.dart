@@ -109,7 +109,9 @@ class _SignInPageState extends State<SignInPage> {
                       // );
                       // ScaffoldMessenger.of(context).showSnackBar(snackBar);
                     }
-                  }, child: Text('Log In')),
+                  }, child: Text('Log In'),
+                    style: buttonDecoration
+                  ),
                 ],
               ),
             )),

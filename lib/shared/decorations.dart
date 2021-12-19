@@ -17,4 +17,11 @@ InputDecoration searchFieldDecoration = InputDecoration(
     hintText: 'Search'
 );
 
-ButtonStyle buttonDecoration = ButtonStyle();
+ButtonStyle buttonDecoration = ButtonStyle(
+  shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+    RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(100),
+      side: BorderSide.none
+    )
+  )
+);

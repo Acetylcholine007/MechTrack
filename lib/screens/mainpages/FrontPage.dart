@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:mech_track/screens/mainpages/SignInPage.dart';
 import 'package:mech_track/services/AuthService.dart';
+import 'package:mech_track/shared/decorations.dart';
 
 import 'RegisterPage.dart';
 
@@ -44,20 +45,24 @@ class _FrontPageState extends State<FrontPage> {
                       onPressed: () =>
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => RegisterPage()),
-                        )
-                      , child: Text('CREATE ACCOUNT')),
+                          MaterialPageRoute(builder: (context) => RegisterPage())
+                        ),
+                      style: buttonDecoration,
+                      child: Text('CREATE ACCOUNT')),
                   ElevatedButton(onPressed: () =>
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => SignInPage()),
-                    )
-                  , child: Text('SIGN IN')),
+                    ),
+                    style: buttonDecoration,
+                    child: Text('SIGN IN')),
                   ElevatedButton(
                       onPressed: () async {
                         dynamic result = await _auth.signInAnon();
                         print(result);
-                      }, child: Text('Enter as Guest')),
+                      },
+                    style: buttonDecoration,
+                    child: Text('Enter as Guest')),
                   SizedBox(height: 60),
                   IconButton(
                     icon: FaIcon(FontAwesomeIcons.facebook),

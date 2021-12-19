@@ -133,7 +133,9 @@ class _RegisterPageState extends State<RegisterPage> {
                     } else {
                       print('Fill all the fields');
                     }
-                  }, child: Text('Register')),
+                  }, child: Text('Register'),
+                    style: buttonDecoration
+                  ),
                 ],
               ),
             )),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:mech_track/components/PartListTile.dart';
-import 'package:mech_track/components/SearchBar.dart';
+import 'package:mech_track/components/PartSearchBar.dart';
 import 'package:mech_track/screens/subpages/PartViewer.dart';
 
 class InventoryGlobalPage extends StatefulWidget {
@@ -10,6 +10,9 @@ class InventoryGlobalPage extends StatefulWidget {
 }
 
 class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
+
+  String category = 'Part No.';
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -24,12 +27,16 @@ class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
       ["Item 7", "lorem ipsum"],
     ];
 
+    void categoryHandler(String newCat) {
+      setState(() => category = newCat);
+    }
+
     return Container(
       child: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            SearchBar(controller: _controller, filterHandler: (){}),
+            PartSearchBar(controller: _controller, categoryHandler: categoryHandler, category: category, context: context),
             Expanded(
               child: ListView.builder(
                 itemCount: items.length,

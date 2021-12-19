@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mech_track/screens/subpages/ProfileEditor.dart';
 import 'package:mech_track/services/AuthService.dart';
+import 'package:mech_track/shared/decorations.dart';
 
 class ProfilePage extends StatefulWidget {
   @override
@@ -67,10 +68,13 @@ class _ProfilePageState extends State<ProfilePage> {
                         context,
                         MaterialPageRoute(builder: (context) => ProfileEditor()),
                       ),
+                      style: buttonDecoration,
                       child: Text('EDIT ACCOUNT')),
                     ElevatedButton(
                         onPressed: () => _auth.signOut(),
-                        child: Text('SIGN OUT')),
+                        child: Text('SIGN OUT'),
+                      style: buttonDecoration
+                    ),
                   ])
             ],
           ),

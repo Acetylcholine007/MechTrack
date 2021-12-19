@@ -19,57 +19,62 @@ class _ProfileEditorState extends State<ProfileEditor> {
         title: Text('Account Editor'),
       ),
       body: Container(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Form(
-              key: _formKey1,
-              child: Column(
-                children: [
-                  Text('Account Info', style: theme.textTheme.headline5),
-                  TextFormField(
-                    initialValue: '',
-                    decoration:
-                    formFieldDecoration.copyWith(hintText: 'Full Name'),
-                    validator: (val) => val.isEmpty ? 'Enter Full Name' : null,
-                    onChanged: (val) => {}
-                  ),
-                  TextFormField(
-                    initialValue: '',
-                    decoration:
-                    formFieldDecoration.copyWith(hintText: 'Username'),
-                    validator: (val) => val.isEmpty ? 'Enter Username' : null,
-                    onChanged: (val) => {}
-                  ),
-                  ElevatedButton(onPressed: () => {}, child: Text('SAVE CHANGES'))
-                ],
-              ),
-            ),
-            Form(
-              key: _formKey2,
-              child: Column(
-                children: [
-                  Text('Change Password', style: theme.textTheme.headline5),
-                  TextFormField(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Form(
+                key: _formKey1,
+                child: Column(
+                  children: [
+                    Text('Account Info', style: theme.textTheme.headline5),
+                    TextFormField(
                       initialValue: '',
                       decoration:
-                      formFieldDecoration.copyWith(hintText: 'New Password'),
-                      validator: (val) => val.isEmpty ? 'Enter New Password' : null,
+                      formFieldDecoration.copyWith(hintText: 'Full Name'),
+                      validator: (val) => val.isEmpty ? 'Enter Full Name' : null,
                       onChanged: (val) => {}
-                  ),
-                  TextFormField(
+                    ),
+                    TextFormField(
                       initialValue: '',
                       decoration:
-                      formFieldDecoration.copyWith(hintText: 'Confirm Password'),
-                      validator: (val) => val.isEmpty ? 'Enter Confirm Password' : null,
+                      formFieldDecoration.copyWith(hintText: 'Username'),
+                      validator: (val) => val.isEmpty ? 'Enter Username' : null,
                       onChanged: (val) => {}
-                  ),
-                  ElevatedButton(onPressed: () => {}, child: Text('CHANGE PASSWORD'))
-                ],
+                    ),
+                    ElevatedButton(onPressed: () => {}, child: Text('SAVE CHANGES'),
+                      style: buttonDecoration,)
+                  ],
+                ),
               ),
-            )
-          ],
+              Form(
+                key: _formKey2,
+                child: Column(
+                  children: [
+                    Text('Change Password', style: theme.textTheme.headline5),
+                    TextFormField(
+                        initialValue: '',
+                        decoration:
+                        formFieldDecoration.copyWith(hintText: 'New Password'),
+                        validator: (val) => val.isEmpty ? 'Enter New Password' : null,
+                        onChanged: (val) => {}
+                    ),
+                    TextFormField(
+                        initialValue: '',
+                        decoration:
+                        formFieldDecoration.copyWith(hintText: 'Confirm Password'),
+                        validator: (val) => val.isEmpty ? 'Enter Confirm Password' : null,
+                        onChanged: (val) => {}
+                    ),
+                    ElevatedButton(onPressed: () => {}, child: Text('CHANGE PASSWORD'),
+                      style: buttonDecoration)
+                  ],
+                ),
+              )
+            ],
+          ),
         ),
       ),
     );

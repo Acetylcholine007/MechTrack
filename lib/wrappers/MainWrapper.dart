@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:barcode_scan2/barcode_scan2.dart';
+import 'package:mech_track/models/Account.dart';
 
 import 'package:mech_track/screens/mainpages/AccountPage.dart';
 import 'package:mech_track/screens/mainpages/DataPage.dart';
 import 'package:mech_track/screens/mainpages/InventoryGlobalPage.dart';
 import 'package:mech_track/screens/mainpages/InventoryLocalPage.dart';
 import 'package:mech_track/screens/mainpages/ProfilePage.dart';
+import 'package:provider/provider.dart';
 
 class MainWrapper extends StatefulWidget {
 
@@ -54,7 +56,7 @@ class _MainWrapperState extends State<MainWrapper> {
         label: 'Accounts',
         icon: Icon(Icons.group_rounded),
       ),
-      4
+      3
     ),
   ];
 
@@ -63,18 +65,28 @@ class _MainWrapperState extends State<MainWrapper> {
     return result.rawContent;
   }
 
+  String getAccountType(Account account, String type) {
+    if (account.isAnon)
+      return 'ADMIN';
+    if (!account.isAnon && type == "ADMIN")
+      return '';
+    if (!account.isAnon && type == "EMPLOYEE")
+      return 'EMPLOYEE';
+    return 'GUESS';
+  }
+
   List<Widget> getPages(String accountType) {
-    if(accountType == 'Guess')
+    if(accountType == 'GUESS')
       return pages
         .where((page) => page.accessLevel <= 1)
         .map((page) => page.page)
         .toList();
-    if(accountType == 'Employee')
+    if(accountType == 'EMPLOYEE')
       return pages
         .where((page) => page.accessLevel <= 2)
         .map((page) => page.page)
         .toList();
-    if(accountType == 'Admin')
+    if(accountType == 'ADMIN')
       return pages
         .where((page) => page.accessLevel <= 3)
         .map((page) => page.page)
@@ -83,17 +95,17 @@ class _MainWrapperState extends State<MainWrapper> {
   }
 
   List<BottomNavigationBarItem> getTabs(String accountType) {
-    if(accountType == 'Guess')
+    if(accountType == 'GUESS')
       return pages
         .where((page) => page.accessLevel <= 1)
         .map((page) => page.tab)
         .toList();
-    if(accountType == 'Employee')
+    if(accountType == 'EMPLOYEE')
       return pages
         .where((page) => page.accessLevel <= 2)
         .map((page) => page.tab)
         .toList();
-    if(accountType == 'Admin')
+    if(accountType == 'ADMIN')
       return pages
         .where((page) => page.accessLevel <= 3)
         .map((page) => page.tab)
@@ -103,9 +115,10 @@ class _MainWrapperState extends State<MainWrapper> {
 
   @override
   Widget build(BuildContext context) {
+    final account = Provider.of<Account>(context);
     final theme = Theme.of(context);
-    final pages = getPages('Admin');
-    final tabs = getTabs('Admin');
+    final pages = getPages(getAccountType(account, 'ADMIN'));
+    final tabs = getTabs(getAccountType(account, 'ADMIN'));
 
     return GestureDetector(
       onTap: () => FocusScope.of(context).requestFocus(new FocusNode()),

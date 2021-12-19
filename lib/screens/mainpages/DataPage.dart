@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mech_track/shared/decorations.dart';
 
 class DataPage extends StatefulWidget {
   @override
@@ -26,10 +27,12 @@ class _DataPageState extends State<DataPage> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
                 ElevatedButton(
-                  onPressed: () => {}, child: Text('Import From Local Storage')
+                  onPressed: () => {}, child: Text('Import From Local Storage'),
+                  style: buttonDecoration,
                 ),
                 ElevatedButton(
-                  onPressed: () => {}, child: Text('Existing File')
+                  onPressed: () => {}, child: Text('Existing File'),
+                  style: buttonDecoration,
                 ),
               ]
             )
