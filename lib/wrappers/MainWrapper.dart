@@ -67,12 +67,12 @@ class _MainWrapperState extends State<MainWrapper> {
 
   String getAccountType(Account account, String type) {
     if (account.isAnon)
-      return 'ADMIN';
+      return 'GUESS';
     if (!account.isAnon && type == "ADMIN")
-      return '';
+      return 'ADMIN';
     if (!account.isAnon && type == "EMPLOYEE")
       return 'EMPLOYEE';
-    return 'GUESS';
+    return 'ADMIN';
   }
 
   List<Widget> getPages(String accountType) {

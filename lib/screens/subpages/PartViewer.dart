@@ -4,6 +4,10 @@ import 'package:mech_track/models/Part.dart';
 import 'package:mech_track/screens/subpages/PartEditor.dart';
 
 class PartViewer extends StatefulWidget {
+  final Part part;
+
+  PartViewer({this.part});
+
   @override
   _PartViewerState createState() => _PartViewerState();
 }
@@ -12,7 +16,7 @@ class _PartViewerState extends State<PartViewer> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final part = Part(pid: 'X12', assetAccountCode: 'AS3D', process: 'Hello');
+    final part = widget.part;
 
     return Scaffold(
       appBar: AppBar(
@@ -21,7 +25,7 @@ class _PartViewerState extends State<PartViewer> {
           IconButton(icon: Icon(Icons.edit), onPressed: () =>
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => PartEditor()),
+              MaterialPageRoute(builder: (context) => PartEditor(isNew: false, oldPart: widget.part)),
             ),
           ),
           IconButton(icon: Icon(Icons.qr_code), onPressed: () =>
