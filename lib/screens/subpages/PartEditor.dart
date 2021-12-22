@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:mech_track/BLoCs/LocalDatabaseBloc.dart';
 import 'package:mech_track/models/Account.dart';
 import 'package:mech_track/models/LocalPart.dart';
 import 'package:mech_track/models/Part.dart';
 import 'package:mech_track/services/DatabaseService.dart';
-import 'package:mech_track/services/LocalDatabaseService.dart';
 import 'package:mech_track/shared/decorations.dart';
 import 'dart:async';
 
@@ -14,8 +14,9 @@ class PartEditor extends StatefulWidget {
   final bool isNew;
   final bool isLocal;
   final Part oldPart;
+  final PartsBloc bloc;
 
-  PartEditor({this.isNew, this.isLocal, this.oldPart});
+  PartEditor({this.isNew, this.isLocal, this.oldPart, this.bloc});
 
   @override
   _PartEditorState createState() => _PartEditorState();
@@ -84,11 +85,10 @@ class _PartEditorState extends State<PartEditor> {
     final theme = Theme.of(context);
     final account = Provider.of<Account>(context);
     final DatabaseService _database = DatabaseService(uid: account.uid);
-    final LocalDatabaseService _localDatabase = LocalDatabaseService();
 
     void deleteHandler() async {
       if(widget.isLocal) {
-        await _localDatabase.deletePart(widget.oldPart.pid);
+        await widget.bloc.deletePart(widget.oldPart.pid);
       } else {
         await _database.removePart(widget.oldPart.pid);
       }
@@ -99,7 +99,7 @@ class _PartEditorState extends State<PartEditor> {
     void saveHandler() async {
       if(widget.isNew) {
         if(widget.isLocal){
-          await _localDatabase.insertPart(LocalPart(
+          await widget.bloc.addPart(LocalPart(
             pid: uuid.v4().replaceAll(RegExp('-'), ''),
             assetAccountCode: newPart['assetAccountCode'],
             process: newPart['process'],
@@ -144,7 +144,7 @@ class _PartEditorState extends State<PartEditor> {
         Navigator.pop(context);
       } else {
         if(widget.isLocal) {
-          await _localDatabase.updatePart(LocalPart(
+          await widget.bloc.editPart(LocalPart(
             pid: widget.oldPart.pid,
             assetAccountCode: newPart['assetAccountCode'],
             process: newPart['process'],

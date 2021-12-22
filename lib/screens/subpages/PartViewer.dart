@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mech_track/BLoCs/LocalDatabaseBloc.dart';
 import 'package:mech_track/components/QRDisplay.dart';
 import 'package:mech_track/models/Part.dart';
 import 'package:mech_track/screens/subpages/PartEditor.dart';
@@ -6,8 +7,9 @@ import 'package:mech_track/screens/subpages/PartEditor.dart';
 class PartViewer extends StatefulWidget {
   final Part part;
   final bool isLocal;
+  final PartsBloc bloc;
 
-  PartViewer({this.part, this.isLocal});
+  PartViewer({this.part, this.isLocal, this.bloc});
 
   @override
   _PartViewerState createState() => _PartViewerState();
@@ -26,7 +28,11 @@ class _PartViewerState extends State<PartViewer> {
           IconButton(icon: Icon(Icons.edit), onPressed: () =>
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => PartEditor(isNew: false, isLocal: widget.isLocal, oldPart: widget.part)),
+              MaterialPageRoute(builder: (context) => PartEditor(
+                isNew: false,
+                isLocal: widget.isLocal,
+                oldPart: widget.part,
+                bloc: widget.bloc)),
             ),
           ),
           IconButton(icon: Icon(Icons.qr_code), onPressed: () =>

@@ -5,8 +5,15 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
 class LocalDatabaseService {
-  Future<Database> getDatabaseConnection() async {
-    return await openDatabase(
+  LocalDatabaseService._();
+
+  static final LocalDatabaseService db = LocalDatabaseService._();
+
+  Database _database;
+
+  Future<Database> get database async {
+    if(_database != null) return _database;
+    _database = await openDatabase(
       join(await getDatabasesPath(), 'part_database.db'),
       onCreate: (db, version) {
         return db.execute(
@@ -34,10 +41,11 @@ class LocalDatabaseService {
       },
       version: 1
     );
+    return _database;
   }
 
-  Future insertPart(LocalPart part) async {
-    Database db = await getDatabaseConnection();
+  Future addPart(LocalPart part) async {
+    Database db = await database;
     await db.insert(
       'parts',
       part.toMap(),
@@ -46,8 +54,8 @@ class LocalDatabaseService {
     print('Complete');
   }
 
-  Future updatePart(LocalPart part) async {
-    Database db = await getDatabaseConnection();
+  Future editPart(LocalPart part) async {
+    Database db = await database;
     await db.update(
       'parts',
       part.toMap(),
@@ -57,7 +65,7 @@ class LocalDatabaseService {
   }
 
   Future<List<LocalPart>> getParts() async {
-    Database db = await getDatabaseConnection();
+    Database db = await database;
     List<Map<String, Object>> maps = await db.query('parts');
 
     return List.generate(maps.length, (i) {
@@ -86,7 +94,7 @@ class LocalDatabaseService {
   }
 
   Future deletePart(String pid) async {
-    Database db = await getDatabaseConnection();
+    Database db = await database;
     await db.delete(
       'parts',
       where: 'pid = ?',

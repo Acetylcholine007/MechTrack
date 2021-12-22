@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mech_track/BLoCs/LocalDatabaseBloc.dart';
 import 'package:mech_track/components/Loading.dart';
 
 import 'package:mech_track/components/PartListTile.dart';
@@ -14,30 +15,35 @@ class InventoryLocalPage extends StatefulWidget {
 }
 
 class _InventoryLocalPageState extends State<InventoryLocalPage> {
-
   String category = 'Part No.';
+  final bloc = PartsBloc();
+
+  @override
+  void dispose() {
+    bloc.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final LocalDatabaseService _localDatabaseService = LocalDatabaseService();
     final TextEditingController _controller = TextEditingController();
 
     void categoryHandler(String newCat) {
       setState(() => category = newCat);
     }
 
-    return FutureBuilder<List<LocalPart>>(
-      future: _localDatabaseService.getParts(),
-      builder: (context, snapshot) {
-        if(snapshot.connectionState == ConnectionState.done) {
+    return StreamBuilder<List<LocalPart>>(
+      stream: bloc.localParts,
+      builder: (BuildContext context, AsyncSnapshot<List<LocalPart>> snapshot) {
+        if(snapshot.hasData) {
           return Scaffold(
             floatingActionButton: FloatingActionButton(
               child: Icon(Icons.add),
               onPressed: () =>
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => PartEditor(isNew: true, isLocal: true)),
+                  MaterialPageRoute(builder: (context) => PartEditor(isNew: true, isLocal: true, bloc: bloc)),
                 ),
             ),
             body: Container(
@@ -54,7 +60,11 @@ class _InventoryLocalPageState extends State<InventoryLocalPage> {
                             onTap: () =>
                               Navigator.push(
                                 context,
-                                MaterialPageRoute(builder: (context) => PartViewer(part: snapshot.data[index].toPart(), isLocal: true)),
+                                MaterialPageRoute(builder: (context) => PartViewer(
+                                  part: snapshot.data[index].toPart(),
+                                  isLocal: true,
+                                  bloc: bloc)
+                                ),
                               ),
                             child: PartListTile(
                               key: Key(index.toString()),
