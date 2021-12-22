@@ -6,7 +6,6 @@ import 'package:mech_track/components/PartSearchBar.dart';
 import 'package:mech_track/models/Part.dart';
 import 'package:mech_track/screens/subpages/PartEditor.dart';
 import 'package:mech_track/screens/subpages/PartViewer.dart';
-import 'package:mech_track/services/DatabaseService.dart';
 import 'package:provider/provider.dart';
 
 class InventoryGlobalPage extends StatefulWidget {
@@ -34,7 +33,7 @@ class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
         onPressed: () =>
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => PartEditor(isNew: true)),
+            MaterialPageRoute(builder: (context) => PartEditor(isNew: true, isLocal: false,)),
           ),
       ),
       body: Container(
@@ -51,7 +50,7 @@ class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
                       onTap: () =>
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => PartViewer(part: parts[index])),
+                            MaterialPageRoute(builder: (context) => PartViewer(part: parts[index], isLocal: false)),
                           ),
                       child: PartListTile(
                         key: Key(index.toString()),

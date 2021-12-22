@@ -1,18 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:mech_track/models/Account.dart';
-import 'package:mech_track/models/AccountData.dart';
+import 'package:mech_track/models/LocalPart.dart';
 import 'package:mech_track/models/Part.dart';
 import 'package:mech_track/services/DatabaseService.dart';
+import 'package:mech_track/services/LocalDatabaseService.dart';
 import 'package:mech_track/shared/decorations.dart';
 import 'dart:async';
 
 import 'package:provider/provider.dart';
+import 'package:uuid/uuid.dart';
 
 class PartEditor extends StatefulWidget {
   final bool isNew;
+  final bool isLocal;
   final Part oldPart;
 
-  PartEditor({this.isNew, this.oldPart});
+  PartEditor({this.isNew, this.isLocal, this.oldPart});
 
   @override
   _PartEditorState createState() => _PartEditorState();
@@ -20,6 +23,7 @@ class PartEditor extends StatefulWidget {
 
 class _PartEditorState extends State<PartEditor> {
   final _formKey = GlobalKey<FormState>();
+  Uuid uuid = Uuid();
   Map newPart;
   Timer _debounce;
 
@@ -80,58 +84,109 @@ class _PartEditorState extends State<PartEditor> {
     final theme = Theme.of(context);
     final account = Provider.of<Account>(context);
     final DatabaseService _database = DatabaseService(uid: account.uid);
+    final LocalDatabaseService _localDatabase = LocalDatabaseService();
 
     void deleteHandler() async {
-      await _database.removePart(widget.oldPart.pid);
+      if(widget.isLocal) {
+        await _localDatabase.deletePart(widget.oldPart.pid);
+      } else {
+        await _database.removePart(widget.oldPart.pid);
+      }
       Navigator.pop(context);
       Navigator.pop(context);
     }
 
     void saveHandler() async {
       if(widget.isNew) {
-        await _database.addPart(Part(
-          assetAccountCode: newPart['assetAccountCode'],
-          process: newPart['process'],
-          subProcess: newPart['subProcess'],
-          description: newPart['description'],
-          type: newPart['type'],
-          criticality: newPart['criticality'],
-          status: newPart['status'],
-          yearInstalled: newPart['yearInstalled'],
-          description2: newPart['description2'],
-          brand: newPart['brand'],
-          model: newPart['model'],
-          spec1: newPart['spec1'],
-          spec2: newPart['spec2'],
-          dept: newPart['dept'],
-          facility: newPart['facility'],
-          facilityType: newPart['facilityType'],
-          sapFacility: newPart['sapFacility'],
-          criticalByPM: newPart['criticalByPM']
-        ));
+        if(widget.isLocal){
+          await _localDatabase.insertPart(LocalPart(
+            pid: uuid.v4().replaceAll(RegExp('-'), ''),
+            assetAccountCode: newPart['assetAccountCode'],
+            process: newPart['process'],
+            subProcess: newPart['subProcess'],
+            description: newPart['description'],
+            type: newPart['type'],
+            criticality: newPart['criticality'],
+            status: newPart['status'],
+            yearInstalled: newPart['yearInstalled'],
+            description2: newPart['description2'],
+            brand: newPart['brand'],
+            model: newPart['model'],
+            spec1: newPart['spec1'],
+            spec2: newPart['spec2'],
+            dept: newPart['dept'],
+            facility: newPart['facility'],
+            facilityType: newPart['facilityType'],
+            sapFacility: newPart['sapFacility'],
+            criticalByPM: newPart['criticalByPM']
+          ));
+        } else {
+          await _database.addPart(Part(
+            assetAccountCode: newPart['assetAccountCode'],
+            process: newPart['process'],
+            subProcess: newPart['subProcess'],
+            description: newPart['description'],
+            type: newPart['type'],
+            criticality: newPart['criticality'],
+            status: newPart['status'],
+            yearInstalled: newPart['yearInstalled'],
+            description2: newPart['description2'],
+            brand: newPart['brand'],
+            model: newPart['model'],
+            spec1: newPart['spec1'],
+            spec2: newPart['spec2'],
+            dept: newPart['dept'],
+            facility: newPart['facility'],
+            facilityType: newPart['facilityType'],
+            sapFacility: newPart['sapFacility'],
+            criticalByPM: newPart['criticalByPM']));
+        }
         Navigator.pop(context);
       } else {
-        await _database.editPart(Part(
-          pid: widget.oldPart.pid,
-          assetAccountCode: newPart['assetAccountCode'],
-          process: newPart['process'],
-          subProcess: newPart['subProcess'],
-          description: newPart['description'],
-          type: newPart['type'],
-          criticality: newPart['criticality'],
-          status: newPart['status'],
-          yearInstalled: newPart['yearInstalled'],
-          description2: newPart['description2'],
-          brand: newPart['brand'],
-          model: newPart['model'],
-          spec1: newPart['spec1'],
-          spec2: newPart['spec2'],
-          dept: newPart['dept'],
-          facility: newPart['facility'],
-          facilityType: newPart['facilityType'],
-          sapFacility: newPart['sapFacility'],
-          criticalByPM: newPart['criticalByPM']
-        ));
+        if(widget.isLocal) {
+          await _localDatabase.updatePart(LocalPart(
+            pid: widget.oldPart.pid,
+            assetAccountCode: newPart['assetAccountCode'],
+            process: newPart['process'],
+            subProcess: newPart['subProcess'],
+            description: newPart['description'],
+            type: newPart['type'],
+            criticality: newPart['criticality'],
+            status: newPart['status'],
+            yearInstalled: newPart['yearInstalled'],
+            description2: newPart['description2'],
+            brand: newPart['brand'],
+            model: newPart['model'],
+            spec1: newPart['spec1'],
+            spec2: newPart['spec2'],
+            dept: newPart['dept'],
+            facility: newPart['facility'],
+            facilityType: newPart['facilityType'],
+            sapFacility: newPart['sapFacility'],
+            criticalByPM: newPart['criticalByPM']
+          ));
+        } else {
+          await _database.editPart(Part(
+            pid: widget.oldPart.pid,
+            assetAccountCode: newPart['assetAccountCode'],
+            process: newPart['process'],
+            subProcess: newPart['subProcess'],
+            description: newPart['description'],
+            type: newPart['type'],
+            criticality: newPart['criticality'],
+            status: newPart['status'],
+            yearInstalled: newPart['yearInstalled'],
+            description2: newPart['description2'],
+            brand: newPart['brand'],
+            model: newPart['model'],
+            spec1: newPart['spec1'],
+            spec2: newPart['spec2'],
+            dept: newPart['dept'],
+            facility: newPart['facility'],
+            facilityType: newPart['facilityType'],
+            sapFacility: newPart['sapFacility'],
+            criticalByPM: newPart['criticalByPM']));
+        }
         Navigator.pop(context);
         Navigator.pop(context);
       }

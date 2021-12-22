@@ -5,8 +5,9 @@ import 'package:mech_track/screens/subpages/PartEditor.dart';
 
 class PartViewer extends StatefulWidget {
   final Part part;
+  final bool isLocal;
 
-  PartViewer({this.part});
+  PartViewer({this.part, this.isLocal});
 
   @override
   _PartViewerState createState() => _PartViewerState();
@@ -25,7 +26,7 @@ class _PartViewerState extends State<PartViewer> {
           IconButton(icon: Icon(Icons.edit), onPressed: () =>
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => PartEditor(isNew: false, oldPart: widget.part)),
+              MaterialPageRoute(builder: (context) => PartEditor(isNew: false, isLocal: widget.isLocal, oldPart: widget.part)),
             ),
           ),
           IconButton(icon: Icon(Icons.qr_code), onPressed: () =>

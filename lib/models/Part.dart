@@ -41,10 +41,6 @@ class Part {
     this.criticalByPM = '',
   });
 
-  void setDescription(String description) {
-    this.description = description;
-  }
-
   Part copy() => Part(
     pid: this.pid,
     assetAccountCode: this.assetAccountCode,

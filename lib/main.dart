@@ -6,7 +6,6 @@ import 'package:mech_track/wrappers/AuthWrapper.dart';
 import 'package:mech_track/models/Account.dart';
 import 'package:mech_track/services/AuthService.dart';
 
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
