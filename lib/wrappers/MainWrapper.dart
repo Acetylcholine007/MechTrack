@@ -43,20 +43,20 @@ class _MainWrapperState extends State<MainWrapper> {
       2
     ),
     Page(
+        AccountPage(),
+        BottomNavigationBarItem(
+          label: 'Accounts',
+          icon: Icon(Icons.group_rounded),
+        ),
+        3
+    ),
+    Page(
       ProfilePage(),
       BottomNavigationBarItem(
         label: 'Profile',
         icon: Icon(Icons.account_circle_rounded),
       ),
       2
-    ),
-    Page(
-      AccountPage(),
-      BottomNavigationBarItem(
-        label: 'Accounts',
-        icon: Icon(Icons.group_rounded),
-      ),
-      3
     ),
   ];
 

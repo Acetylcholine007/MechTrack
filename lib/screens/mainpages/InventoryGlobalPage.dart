@@ -14,7 +14,6 @@ class InventoryGlobalPage extends StatefulWidget {
 }
 
 class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
-
   String category = 'Part No.';
 
   @override
@@ -28,6 +27,12 @@ class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
     }
 
     return parts != null ? Scaffold(
+      appBar: AppBar(
+        title: Text('Global Database'),
+        actions: [
+          IconButton(icon: Icon(Icons.qr_code_scanner), onPressed: () {})
+        ],
+      ),
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.add),
         onPressed: () =>
@@ -37,33 +42,31 @@ class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
           ),
       ),
       body: Container(
-        child: SafeArea(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              PartSearchBar(controller: _controller, categoryHandler: categoryHandler, category: category, context: context),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: parts.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    return GestureDetector(
-                      onTap: () =>
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => PartViewer(part: parts[index], isLocal: false)),
-                          ),
-                      child: PartListTile(
-                        key: Key(index.toString()),
-                        name: parts[index].pid,
-                        caption: parts[index].assetAccountCode,
-                        index: index
-                      ),
-                    );
-                  }
-                )
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            PartSearchBar(controller: _controller, categoryHandler: categoryHandler, category: category, context: context),
+            Expanded(
+              child: ListView.builder(
+                itemCount: parts.length,
+                itemBuilder: (BuildContext context, int index) {
+                  return GestureDetector(
+                    onTap: () =>
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => PartViewer(part: parts[index], isLocal: false)),
+                        ),
+                    child: PartListTile(
+                      key: Key(index.toString()),
+                      name: parts[index].pid,
+                      caption: parts[index].assetAccountCode,
+                      index: index
+                    ),
+                  );
+                }
               )
-            ],
-          ),
+            )
+          ],
         ),
       ),
     ) : Loading('Loading Parts');

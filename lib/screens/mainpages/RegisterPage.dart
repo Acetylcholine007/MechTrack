@@ -39,8 +39,8 @@ class _RegisterPageState extends State<RegisterPage> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
                       Image(
-                          image: AssetImage('assets/images/logoFull.png'),
-                          width: 100,
+                          image: AssetImage('assets/images/newLogoFull.gif'),
+                          width: 150,
                           fit: BoxFit.cover),
                       Text('Create your Account',
                           style: theme.textTheme.headline5,

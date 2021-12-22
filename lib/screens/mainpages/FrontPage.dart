@@ -30,11 +30,11 @@ class _FrontPageState extends State<FrontPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 Image(
-                    image: AssetImage('assets/images/logoHalf.png'),
-                    width: 100,
+                    image: AssetImage('assets/images/newLogoHalf.gif'),
+                    width: 200,
                     fit: BoxFit.cover),
                 Text('Mechanical Equipment Inventory',
-                    style: theme.textTheme.headline5,
+                    style: theme.textTheme.headline4,
                     textAlign: TextAlign.center)
               ],
             ),

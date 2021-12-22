@@ -7,7 +7,6 @@ import 'package:mech_track/components/PartSearchBar.dart';
 import 'package:mech_track/models/LocalPart.dart';
 import 'package:mech_track/screens/subpages/PartEditor.dart';
 import 'package:mech_track/screens/subpages/PartViewer.dart';
-import 'package:mech_track/services/LocalDatabaseService.dart';
 
 class InventoryLocalPage extends StatefulWidget {
   @override
@@ -38,6 +37,12 @@ class _InventoryLocalPageState extends State<InventoryLocalPage> {
       builder: (BuildContext context, AsyncSnapshot<List<LocalPart>> snapshot) {
         if(snapshot.hasData) {
           return Scaffold(
+            appBar: AppBar(
+              title: Text('Local Database'),
+              actions: [
+                IconButton(icon: Icon(Icons.qr_code_scanner), onPressed: () {})
+              ],
+            ),
             floatingActionButton: FloatingActionButton(
               child: Icon(Icons.add),
               onPressed: () =>
@@ -47,38 +52,36 @@ class _InventoryLocalPageState extends State<InventoryLocalPage> {
                 ),
             ),
             body: Container(
-              child: SafeArea(
-                child: snapshot.data != null ? Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    PartSearchBar(controller: _controller, categoryHandler: categoryHandler, category: category, context: context),
-                    Expanded(
-                      child: ListView.builder(
-                        itemCount: snapshot.data.length,
-                        itemBuilder: (BuildContext context, int index) {
-                          return GestureDetector(
-                            onTap: () =>
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (context) => PartViewer(
-                                  part: snapshot.data[index].toPart(),
-                                  isLocal: true,
-                                  bloc: bloc)
-                                ),
+              child: snapshot.data != null ? Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  PartSearchBar(controller: _controller, categoryHandler: categoryHandler, category: category, context: context),
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: snapshot.data.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        return GestureDetector(
+                          onTap: () =>
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => PartViewer(
+                                part: snapshot.data[index].toPart(),
+                                isLocal: true,
+                                bloc: bloc)
                               ),
-                            child: PartListTile(
-                              key: Key(index.toString()),
-                              name: snapshot.data[index].pid,
-                              caption: snapshot.data[index].assetAccountCode,
-                              index: index
                             ),
-                          );
-                        }
-                      )
+                          child: PartListTile(
+                            key: Key(index.toString()),
+                            name: snapshot.data[index].pid,
+                            caption: snapshot.data[index].assetAccountCode,
+                            index: index
+                          ),
+                        );
+                      }
                     )
-                  ],
-                ) : Center(child: Text('No Parts'))
-              ),
+                  )
+                ],
+              ) : Center(child: Text('No Parts')),
             ),
           );
         } else {

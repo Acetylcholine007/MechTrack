@@ -23,6 +23,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
           providers: [
             StreamProvider<AccountData>.value(value: DatabaseService(uid: authUser.uid).user, initialData: null),
             StreamProvider<List<Part>>.value(value: DatabaseService(uid: authUser.uid).parts, initialData: null),
+            StreamProvider<List<AccountData>>.value(value: DatabaseService(uid: authUser.uid).users, initialData: null),
           ],
         child: MainWrapper()
       );

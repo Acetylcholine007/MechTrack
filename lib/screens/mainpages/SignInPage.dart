@@ -37,8 +37,8 @@ class _SignInPageState extends State<SignInPage> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
                       Image(
-                          image: AssetImage('assets/images/logoFull.png'),
-                          width: 100,
+                          image: AssetImage('assets/images/newLogoFull.gif'),
+                          width: 150,
                           fit: BoxFit.cover),
                       Text('Welcome back, Log In!',
                           style: theme.textTheme.headline5,

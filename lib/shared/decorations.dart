@@ -8,6 +8,7 @@ InputDecoration formFieldDecoration = InputDecoration(
 );
 
 InputDecoration searchFieldDecoration = InputDecoration(
+    isDense: true,
     border: OutlineInputBorder(
       borderSide: BorderSide.none,
       borderRadius: BorderRadius.circular(100),
