@@ -14,7 +14,8 @@ class InventoryLocalPage extends StatefulWidget {
 }
 
 class _InventoryLocalPageState extends State<InventoryLocalPage> {
-  String category = 'Part No.';
+  String category = 'Part ID';
+  String query = '';
   final bloc = PartsBloc();
 
   @override
@@ -26,7 +27,10 @@ class _InventoryLocalPageState extends State<InventoryLocalPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final TextEditingController _controller = TextEditingController();
+
+    void searchHandler(String val) {
+      return setState(() => query = val);
+    }
 
     void categoryHandler(String newCat) {
       setState(() => category = newCat);
@@ -55,7 +59,7 @@ class _InventoryLocalPageState extends State<InventoryLocalPage> {
               child: snapshot.data != null ? Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  PartSearchBar(controller: _controller, categoryHandler: categoryHandler, category: category, context: context),
+                  PartSearchBar(categoryHandler: categoryHandler, searchHandler: searchHandler, category: category, context: context),
                   Expanded(
                     child: ListView.builder(
                       itemCount: snapshot.data.length,

@@ -15,18 +15,50 @@ class AccountPage extends StatefulWidget {
 
 class _AccountPageState extends State<AccountPage> {
   String category = 'Full Name';
+  String query = '';
+
+  List<AccountData> filterHandler (List<AccountData> accounts) {
+    if(query != "") {
+      switch (category) {
+        case 'Full Name':
+          return accounts
+              .where((account) =>
+              account.fullName.contains(new RegExp(query, caseSensitive: false)))
+              .toList();
+        case 'Username':
+          return accounts
+              .where((account) => account.username
+              .contains(new RegExp(query, caseSensitive: false)))
+              .toList();
+        case 'Email':
+          return accounts
+              .where((account) => account.email
+              .contains(new RegExp(query, caseSensitive: false)))
+              .toList();
+        default:
+          return accounts;
+      }
+    } else {
+      return accounts;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final account = Provider.of<Account>(context);
-    final accounts = Provider.of<List<AccountData>>(context);
-    final TextEditingController _controller = TextEditingController();
     final DatabaseService _database = DatabaseService(uid: account.uid);
+    List<AccountData> accounts = Provider.of<List<AccountData>>(context);
+
+    void searchHandler(String val) {
+      return setState(() => query = val);
+    }
 
     void categoryHandler(String newCat) {
       setState(() => category = newCat);
     }
+
+    accounts = filterHandler(accounts);
 
     return accounts != null ? Scaffold(
       appBar: AppBar(
@@ -36,7 +68,7 @@ class _AccountPageState extends State<AccountPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            AccountSearchBar(controller: _controller, category: category, categoryHandler: categoryHandler, context: context),
+            AccountSearchBar(category: category, categoryHandler: categoryHandler, searchHandler: searchHandler, context: context),
             Expanded(
                 child: ListView.builder(
                     itemCount: accounts.length,

@@ -2,13 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:mech_track/shared/decorations.dart';
 
 class PartSearchBar extends StatelessWidget {
-  const PartSearchBar({Key key, this.controller, this.categoryHandler, this.category, this.context}) : super(key: key);
-  final TextEditingController controller;
+  const PartSearchBar({Key key,
+    this.categoryHandler,
+    this.searchHandler,
+    this.category,
+    this.context}) : super(key: key);
   final Function(String) categoryHandler;
+  final Function(String) searchHandler;
   final String category;
   final BuildContext context;
   final categories = const [
-    'Part No.',
+    'Part ID',
     'Asset Account Code',
     'Process',
     'Subprocess',
@@ -68,13 +72,9 @@ class PartSearchBar extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 0),
         child: ListTile(
           title: TextFormField(
-            controller: controller,
-            decoration: searchFieldDecoration
-              .copyWith(
-              suffixIcon: IconButton(
-                icon: Icon(Icons.highlight_off), onPressed: () => controller.clear()
-              )
-            )
+            initialValue: "",
+            decoration: searchFieldDecoration,
+            onChanged: searchHandler,
           ),
           trailing: IconButton(
             icon: Icon(Icons.filter_list_rounded), onPressed: filterHandler
