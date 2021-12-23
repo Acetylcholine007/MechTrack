@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mech_track/components/Loading.dart';
+import 'package:mech_track/models/Account.dart';
+import 'package:mech_track/services/DatabaseService.dart';
 import 'package:provider/provider.dart';
 
 import 'package:mech_track/components/AccountSearchBar.dart';
@@ -12,23 +14,15 @@ class AccountPage extends StatefulWidget {
 }
 
 class _AccountPageState extends State<AccountPage> {
-
   String category = 'Full Name';
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final account = Provider.of<Account>(context);
     final accounts = Provider.of<List<AccountData>>(context);
     final TextEditingController _controller = TextEditingController();
-    final items = [
-      ["Item 1", "lorem ipsum"],
-      ["Item 2", "lorem ipsum"],
-      ["Item 3", "lorem ipsum"],
-      ["Item 4", "lorem ipsum"],
-      ["Item 5", "lorem ipsum"],
-      ["Item 6", "lorem ipsum"],
-      ["Item 7", "lorem ipsum"],
-    ];
+    final DatabaseService _database = DatabaseService(uid: account.uid);
 
     void categoryHandler(String newCat) {
       setState(() => category = newCat);
@@ -80,22 +74,28 @@ class _AccountPageState extends State<AccountPage> {
                             ),
                             actions: [
                               TextButton(
-                                onPressed: () {
-
+                                onPressed: () async {
+                                  await _database.promoteAccount(
+                                    accounts[index].uid,
+                                    accounts[index].accountType == 'EMPLOYEE' ? 'ADMIN' :
+                                    accounts[index].accountType == 'ADMIN' ? 'EMPLOYEE' :
+                                    accounts[index].accountType,
+                                  );
+                                  Navigator.pop(context);
                                 },
-                                child: Text('Promote')
+                                child: Text(accounts[index].accountType == 'EMPLOYEE' ? 'Promote' :
+                                accounts[index].accountType == 'ADMIN' ? 'Demote' :
+                                'Promote')
                               ),
                               TextButton(
-                                  onPressed: () {
-
+                                  onPressed: () async {
+                                    await _database.verifyAccount(
+                                      accounts[index].uid,
+                                      !accounts[index].isVerified,
+                                    );
+                                    Navigator.pop(context);
                                   },
-                                  child: Text('Verify')
-                              ),
-                              TextButton(
-                                  onPressed: () {
-
-                                  },
-                                  child: Text('Delete')
+                                  child: Text(accounts[index].isVerified ? 'Suspend' : 'Verify')
                               ),
                             ],
                           )

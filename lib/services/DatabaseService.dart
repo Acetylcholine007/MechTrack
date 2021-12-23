@@ -86,7 +86,6 @@ class DatabaseService {
   }
 
   // OPERATOR FUNCTIONS SECTION
-  // TODO: removePart
   Future removePart(String pid) async {
     return partCollection
       .doc(pid).delete()
@@ -94,7 +93,6 @@ class DatabaseService {
       .catchError((error) => print('Failed to remove part'));
   }
 
-  //TODO: addPart
   Future<String> addPart(Part part) async {
     print('>>>>>> Starting');
     print(part.assetAccountCode);
@@ -128,7 +126,6 @@ class DatabaseService {
     return partId;
   }
 
-  //TODO: Edit part
   Future<String> editPart(Part part) async {
     print('>>>>>>>>');
     print(part.pid);
@@ -177,6 +174,24 @@ class DatabaseService {
     await userCollection.doc(uid).update({
       'fullName': user.fullName,
       'username': user.username
+    })
+        .catchError((error) => result = error.toString());
+    return result;
+  }
+
+  Future promoteAccount(String uid, String accountType) async {
+    String result = '';
+    await userCollection.doc(uid).update({
+      'accountType': accountType,
+    })
+        .catchError((error) => result = error.toString());
+    return result;
+  }
+
+  Future verifyAccount(String uid, bool isVerified) async {
+    String result = '';
+    await userCollection.doc(uid).update({
+      'isVerified': isVerified
     })
         .catchError((error) => result = error.toString());
     return result;
