@@ -64,9 +64,15 @@ class LocalDatabaseService {
     );
   }
 
-  Future<List<LocalPart>> getParts() async {
+  Future<List<LocalPart>> getParts(String query, String category) async {
     Database db = await database;
     List<Map<String, Object>> maps = await db.query('parts');
+
+    if (query.isNotEmpty) {
+      maps = await db.query('parts', where: '$category LIKE ?', whereArgs: ["%$query%"]);
+    } else {
+      maps = await db.query('parts');
+    }
 
     return List.generate(maps.length, (i) {
       return LocalPart(

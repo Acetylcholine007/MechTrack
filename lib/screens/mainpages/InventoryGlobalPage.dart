@@ -14,103 +14,103 @@ class InventoryGlobalPage extends StatefulWidget {
 }
 
 class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
-  String category = 'Part ID';
+  String category = 'pid';
   String query = '';
 
   List<Part> filterHandler (List<Part> parts) {
     if(query != "") {
       switch (category) {
-        case 'Part ID':
+        case 'pid':
           return parts
               .where((part) =>
                   part.pid.contains(new RegExp(query, caseSensitive: false)))
               .toList();
-        case 'Asset Account Code':
+        case 'assetAccountCode':
           return parts
               .where((part) => part.assetAccountCode
                   .contains(new RegExp(query, caseSensitive: false)))
               .toList();
-        case 'Process':
+        case 'process':
           return parts
               .where((part) => part.process
                   .contains(new RegExp(query, caseSensitive: false)))
               .toList();
-        case 'Subprocess':
+        case 'subProcess':
           return parts
               .where((part) => part.subProcess
                   .contains(new RegExp(query, caseSensitive: false)))
               .toList();
-        case 'Description':
+        case 'description':
           return parts
               .where((part) => part.description
                   .contains(new RegExp(query, caseSensitive: false)))
               .toList();
-        case 'Type':
+        case 'type':
           return parts
               .where((part) =>
                   part.type.contains(new RegExp(query, caseSensitive: false)))
               .toList();
-        case 'Criticality':
+        case 'criticality':
           return parts
               .where((part) => part.criticality
                   .contains(new RegExp(query, caseSensitive: false)))
               .toList();
-        case 'Status':
+        case 'status':
           return parts
               .where((part) =>
                   part.status.contains(new RegExp(query, caseSensitive: false)))
               .toList();
-        case 'Year Installed':
+        case 'yearInstalled':
           return parts
               .where((part) => part.yearInstalled
                   .contains(new RegExp(query, caseSensitive: false)))
               .toList();
-        case 'Description 2':
+        case 'description2':
           return parts
               .where((part) => part.description2
                   .contains(new RegExp(query, caseSensitive: false)))
               .toList();
-        case 'Brand':
+        case 'brand':
           return parts
               .where((part) =>
                   part.brand.contains(new RegExp(query, caseSensitive: false)))
               .toList();
-        case 'Model':
+        case 'model':
           return parts
               .where((part) =>
                   part.model.contains(new RegExp(query, caseSensitive: false)))
               .toList();
-        case 'Spec 1':
+        case 'spec1':
           return parts
               .where((part) =>
                   part.spec1.contains(new RegExp(query, caseSensitive: false)))
               .toList();
-        case 'Spec 2':
+        case 'spec2':
           return parts
               .where((part) =>
                   part.spec2.contains(new RegExp(query, caseSensitive: false)))
               .toList();
-        case 'Dept':
+        case 'dept':
           return parts
               .where((part) =>
                   part.dept.contains(new RegExp(query, caseSensitive: false)))
               .toList();
-        case 'Facility':
+        case 'facility':
           return parts
               .where((part) => part.facility
                   .contains(new RegExp(query, caseSensitive: false)))
               .toList();
-        case 'Facility Type':
+        case 'facilityType':
           return parts
               .where((part) => part.facilityType
                   .contains(new RegExp(query, caseSensitive: false)))
               .toList();
-        case 'SAP Facility':
+        case 'sapFacility':
           return parts
               .where((part) => part.sapFacility
                   .contains(new RegExp(query, caseSensitive: false)))
               .toList();
-        case 'Critical by PM':
+        case 'criticalByPM':
           return parts
               .where((part) => part.criticalByPM
                   .contains(new RegExp(query, caseSensitive: false)))

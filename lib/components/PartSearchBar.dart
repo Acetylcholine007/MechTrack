@@ -11,27 +11,27 @@ class PartSearchBar extends StatelessWidget {
   final Function(String) searchHandler;
   final String category;
   final BuildContext context;
-  final categories = const [
-    'Part ID',
-    'Asset Account Code',
-    'Process',
-    'Subprocess',
-    'Description',
-    'Type',
-    'Criticality',
-    'Status',
-    'Year Installed',
-    'Description 2',
-    'Brand',
-    'Model',
-    'Spec 1',
-    'Spec 2',
-    'Dept',
-    'Facility',
-    'Facility Type',
-    'SAP Facility',
-    'Critical by PM',
-  ];
+  final categories = const {
+    'pid': 'Part ID',
+    'assetAccountCode': 'Asset Account Code',
+    'process': 'Process',
+    'subProcess': 'Subprocess',
+    'description': 'Description',
+    'type': 'Type',
+    'criticality': 'Criticality',
+    'status': 'Status',
+    'yearInstalled': 'Year Installed',
+    'description2': 'Description 2',
+    'brand': 'Brand',
+    'model': 'Model',
+    'spec1': 'Spec 1',
+    'spec2': 'Spec 2',
+    'dept': 'Dept',
+    'facility': 'Facility',
+    'facilityType': 'Facility Type',
+    'sapFacility': 'SAP Facility',
+    'criticalByPM': 'Critical by PM',
+  };
 
   void filterHandler() {
     String newCat = category;
@@ -42,9 +42,9 @@ class PartSearchBar extends StatelessWidget {
           title: Text('Search Selector'),
           content: DropdownButtonFormField(
             value: newCat,
-            items: categories.map((String category) => DropdownMenuItem(
+            items: categories.keys.map((String category) => DropdownMenuItem(
                 value: category,
-                child: Text(category)
+                child: Text(categories[category])
             )).toList(),
             onChanged: (value) => newCat = value,
             decoration: formFieldDecoration,

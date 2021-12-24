@@ -14,9 +14,9 @@ class InventoryLocalPage extends StatefulWidget {
 }
 
 class _InventoryLocalPageState extends State<InventoryLocalPage> {
-  String category = 'Part ID';
+  String category = 'pid';
   String query = '';
-  final bloc = PartsBloc();
+  PartsBloc bloc;
 
   @override
   void dispose() {
@@ -27,6 +27,7 @@ class _InventoryLocalPageState extends State<InventoryLocalPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    bloc = PartsBloc(query, category);
 
     void searchHandler(String val) {
       return setState(() => query = val);
