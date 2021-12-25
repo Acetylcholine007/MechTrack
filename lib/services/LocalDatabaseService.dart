@@ -134,6 +134,10 @@ class LocalDatabaseService {
     });
   }
 
+  Future importParts(List<Part> parts) async {
+    return Future.wait(parts.map((part) => addPart(part)));
+  }
+
   Future deletePart(String pid) async {
     Database db = await database;
     await db.delete(

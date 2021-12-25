@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:mech_track/models/Part.dart';
 import 'package:mech_track/shared/decorations.dart';
+import 'package:mech_track/services/LocalDatabaseService.dart';
+import 'package:provider/provider.dart';
 
 class DataPage extends StatefulWidget {
   @override
@@ -7,13 +10,20 @@ class DataPage extends StatefulWidget {
 }
 
 class _DataPageState extends State<DataPage> {
+  bool isSyncing = false;
+
   @override
   Widget build(BuildContext context) {
+    List<Part> parts = Provider.of<List<Part>>(context);
     final theme = Theme.of(context);
 
     return Scaffold(
       appBar: AppBar(
         title: Text('Data Management Page'),
+        bottom: isSyncing ? PreferredSize(
+          preferredSize: Size(double.infinity, 1.0),
+          child: LinearProgressIndicator()
+        ) : null,
       ),
       body: Container(
         child: Padding(
@@ -21,7 +31,7 @@ class _DataPageState extends State<DataPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
+            children: <Widget>[
               Image(
                 image: AssetImage('assets/images/newLogoFull.gif'),
                 width: 200,
@@ -31,11 +41,22 @@ class _DataPageState extends State<DataPage> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
                   ElevatedButton(
-                    onPressed: () => {}, child: Text('Import CSV From Local Storage'),
+                    onPressed: () => {},
+                    child: Text('Import CSV for Local Database'),
                     style: buttonDecoration,
                   ),
                   ElevatedButton(
-                    onPressed: () => {}, child: Text('Sync Local Database from Firebase'),
+                    onPressed: () => {},
+                    child: Text('Import CSV for Global Database'),
+                    style: buttonDecoration,
+                  ),
+                  ElevatedButton(
+                    onPressed: () async {
+                      setState(() => isSyncing = true);
+                      await LocalDatabaseService.db.importParts(parts);
+                      setState(() => isSyncing = false);
+                    },
+                    child: Text('Sync Local Database from Firebase'),
                     style: buttonDecoration,
                   ),
                 ]

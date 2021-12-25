@@ -40,6 +40,11 @@ class PartsBloc {
     getParts(query, category);
   }
 
+  importParts(List<Part> parts) async {
+    await LocalDatabaseService.db.importParts(parts);
+    getParts(query, category);
+  }
+
   dispose() {
     _partController.close();
   }
