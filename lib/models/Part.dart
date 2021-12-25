@@ -62,4 +62,52 @@ class Part {
     sapFacility: this.sapFacility,
     criticalByPM: this.criticalByPM,
   );
+
+  Map<String, String> toMap() {
+    return {
+      'pid': this.pid,
+      'assetAccountCode': this.assetAccountCode,
+      'process': this.process,
+      'subProcess': this.subProcess,
+      'description': this.description,
+      'type': this.type,
+      'criticality': this.criticality,
+      'status': this.status,
+      'yearInstalled': this.yearInstalled,
+      'description2': this.description2,
+      'brand': this.brand,
+      'model': this.model,
+      'spec1': this.spec1,
+      'spec2': this.spec2,
+      'dept': this.dept,
+      'facility': this.facility,
+      'facilityType': this.facilityType,
+      'sapFacility': this.sapFacility,
+      'criticalByPM': this.criticalByPM,
+    };
+  }
+
+  @override
+  String toString() {
+    return 'Part{'
+      'pid: $pid, '
+      'assetAccountCode: $assetAccountCode,'
+      'process: $process,'
+      'subProcess: $subProcess,'
+      'description: $description,'
+      'type: $type,'
+      'criticality: $criticality,'
+      'status: $status,'
+      'yearInstalled: $yearInstalled,'
+      'description2: $description2,'
+      'brand: $brand,'
+      'model: $model,'
+      'spec1: $spec1,'
+      'spec2: $spec2,'
+      'dept: $dept,'
+      'facility: $facility,'
+      'facilityType: $facilityType,'
+      'sapFacility: $sapFacility,'
+      'criticalityByPM: $criticalByPM}';
+  }
 }

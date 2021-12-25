@@ -6,7 +6,6 @@ import 'package:mech_track/components/NoPart.dart';
 
 import 'package:mech_track/components/PartListTile.dart';
 import 'package:mech_track/components/PartSearchBar.dart';
-import 'package:mech_track/models/LocalPart.dart';
 import 'package:mech_track/models/Part.dart';
 import 'package:mech_track/screens/subpages/PartEditor.dart';
 import 'package:mech_track/screens/subpages/PartViewer.dart';
@@ -40,9 +39,9 @@ class _InventoryLocalPageState extends State<InventoryLocalPage> {
       setState(() => category = newCat);
     }
 
-    return StreamBuilder<List<LocalPart>>(
+    return StreamBuilder<List<Part>>(
       stream: bloc.localParts,
-      builder: (BuildContext context, AsyncSnapshot<List<LocalPart>> snapshot) {
+      builder: (BuildContext context, AsyncSnapshot<List<Part>> snapshot) {
         if(snapshot.hasData) {
           return Scaffold(
             appBar: AppBar(
@@ -52,12 +51,12 @@ class _InventoryLocalPageState extends State<InventoryLocalPage> {
                   var result = await BarcodeScanner.scan();
                   List<String> data = result.rawContent.contains('<=MechTrack=>') ? result.rawContent.split('<=MechTrack=>') : null;
                   if(data != null && data[0] == data[1]) {
-                    LocalPart part = await bloc.getPart(data[0]);
+                    Part part = await bloc.getPart(data[0]);
                     if(part != null) {
                       Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) =>
-                            PartViewer(part: part.toPart(), isLocal: true, bloc: bloc))
+                            PartViewer(part: part, isLocal: true, bloc: bloc))
                       );
                     } else {
                       Navigator.push(
@@ -96,7 +95,7 @@ class _InventoryLocalPageState extends State<InventoryLocalPage> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(builder: (context) => PartViewer(
-                                part: snapshot.data[index].toPart(),
+                                part: snapshot.data[index],
                                 isLocal: true,
                                 bloc: bloc)
                               ),

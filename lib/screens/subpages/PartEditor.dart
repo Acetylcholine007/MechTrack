@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mech_track/BLoCs/LocalDatabaseBloc.dart';
 import 'package:mech_track/models/Account.dart';
-import 'package:mech_track/models/LocalPart.dart';
 import 'package:mech_track/models/Part.dart';
 import 'package:mech_track/services/DatabaseService.dart';
 import 'package:mech_track/shared/decorations.dart';
@@ -99,7 +98,7 @@ class _PartEditorState extends State<PartEditor> {
     void saveHandler() async {
       if(widget.isNew) {
         if(widget.isLocal){
-          await widget.bloc.addPart(LocalPart(
+          await widget.bloc.addPart(Part(
             pid: uuid.v4().replaceAll(RegExp('-'), ''),
             assetAccountCode: newPart['assetAccountCode'],
             process: newPart['process'],
@@ -144,7 +143,7 @@ class _PartEditorState extends State<PartEditor> {
         Navigator.pop(context);
       } else {
         if(widget.isLocal) {
-          await widget.bloc.editPart(LocalPart(
+          await widget.bloc.editPart(Part(
             pid: widget.oldPart.pid,
             assetAccountCode: newPart['assetAccountCode'],
             process: newPart['process'],

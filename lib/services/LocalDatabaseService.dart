@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:mech_track/models/LocalPart.dart';
+import 'package:mech_track/models/Part.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
@@ -44,7 +44,7 @@ class LocalDatabaseService {
     return _database;
   }
 
-  Future addPart(LocalPart part) async {
+  Future addPart(Part part) async {
     Database db = await database;
     await db.insert(
       'parts',
@@ -54,7 +54,7 @@ class LocalDatabaseService {
     print('Complete');
   }
 
-  Future editPart(LocalPart part) async {
+  Future editPart(Part part) async {
     Database db = await database;
     await db.update(
       'parts',
@@ -64,7 +64,7 @@ class LocalDatabaseService {
     );
   }
 
-  Future<LocalPart> getPart(String pid) async {
+  Future<Part> getPart(String pid) async {
     Database db = await database;
     List<Map<String, Object>> maps = await db.query(
       'parts',
@@ -76,7 +76,7 @@ class LocalDatabaseService {
     if(maps == null || maps.isEmpty)
       return null;
 
-    return LocalPart(
+    return Part(
       pid: maps[0]['pid'],
       assetAccountCode: maps[0]['assetAccountCode'],
       process: maps[0]['process'],
@@ -99,7 +99,7 @@ class LocalDatabaseService {
     );
   }
 
-  Future<List<LocalPart>> getParts(String query, String category) async {
+  Future<List<Part>> getParts(String query, String category) async {
     Database db = await database;
     List<Map<String, Object>> maps = await db.query('parts');
 
@@ -110,7 +110,7 @@ class LocalDatabaseService {
     }
 
     return List.generate(maps.length, (i) {
-      return LocalPart(
+      return Part(
         pid: maps[i]['pid'],
         assetAccountCode: maps[i]['assetAccountCode'],
         process: maps[i]['process'],
