@@ -1,10 +1,13 @@
+import 'package:barcode_scan2/platform_wrapper.dart';
 import 'package:flutter/material.dart';
 import 'package:mech_track/BLoCs/LocalDatabaseBloc.dart';
 import 'package:mech_track/components/Loading.dart';
+import 'package:mech_track/components/NoPart.dart';
 
 import 'package:mech_track/components/PartListTile.dart';
 import 'package:mech_track/components/PartSearchBar.dart';
 import 'package:mech_track/models/LocalPart.dart';
+import 'package:mech_track/models/Part.dart';
 import 'package:mech_track/screens/subpages/PartEditor.dart';
 import 'package:mech_track/screens/subpages/PartViewer.dart';
 
@@ -45,7 +48,30 @@ class _InventoryLocalPageState extends State<InventoryLocalPage> {
             appBar: AppBar(
               title: Text('Local Database'),
               actions: [
-                IconButton(icon: Icon(Icons.qr_code_scanner), onPressed: () {})
+                IconButton(icon: Icon(Icons.qr_code_scanner), onPressed: () async {
+                  var result = await BarcodeScanner.scan();
+                  List<String> data = result.rawContent.contains('<=MechTrack=>') ? result.rawContent.split('<=MechTrack=>') : null;
+                  if(data != null && data[0] == data[1]) {
+                    LocalPart part = await bloc.getPart(data[0]);
+                    if(part != null) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) =>
+                            PartViewer(part: part.toPart(), isLocal: true, bloc: bloc))
+                      );
+                    } else {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => NoPart(isValid: true))
+                      );
+                    }
+                  } else {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => NoPart(isValid: false))
+                    );
+                  }
+                })
               ],
             ),
             floatingActionButton: FloatingActionButton(

@@ -22,29 +22,27 @@ class DatabaseService {
     );
   }
 
-  List<Part> _partFromSnapshot(QuerySnapshot snapshot) {
-    return snapshot.docs.map((doc) {
-      return Part(
-        pid: doc.id,
-        assetAccountCode: doc.get('assetAccountCode') ?? '',
-        process: doc.get('process') ?? '',
-        subProcess: doc.get('subProcess') ?? '',
-        description: doc.get('description') ?? '',
-        type: doc.get('type') ?? '',
-        criticality: doc.get('criticality') ?? '',
-        status: doc.get('status') ?? '',
-        yearInstalled: doc.get('yearInstalled') ?? '',
-        description2: doc.get('description2') ?? '',
-        brand: doc.get('brand') ?? '',
-        model: doc.get('model') ?? '',
-        spec1: doc.get('spec1') ?? '',
-        spec2: doc.get('spec2') ?? '',
-        dept: doc.get('dept') ?? '',
-        facility: doc.get('facility') ?? '',
-        facilityType: doc.get('facilityType') ?? '',
-        criticalByPM: doc.get('criticalByPM') ?? '',
-      );
-    }).toList();
+  Part _partFromSnapshot(DocumentSnapshot snapshot) {
+    return Part(
+      pid: snapshot.id,
+      assetAccountCode: snapshot.get('assetAccountCode') ?? '',
+      process: snapshot.get('process') ?? '',
+      subProcess: snapshot.get('subProcess') ?? '',
+      description: snapshot.get('description') ?? '',
+      type: snapshot.get('type') ?? '',
+      criticality: snapshot.get('criticality') ?? '',
+      status: snapshot.get('status') ?? '',
+      yearInstalled: snapshot.get('yearInstalled') ?? '',
+      description2: snapshot.get('description2') ?? '',
+      brand: snapshot.get('brand') ?? '',
+      model: snapshot.get('model') ?? '',
+      spec1: snapshot.get('spec1') ?? '',
+      spec2: snapshot.get('spec2') ?? '',
+      dept: snapshot.get('dept') ?? '',
+      facility: snapshot.get('facility') ?? '',
+      facilityType: snapshot.get('facilityType') ?? '',
+      criticalByPM: snapshot.get('criticalByPM') ?? '',
+    );
   }
 
   List<Part> _partListFromSnapshot(QuerySnapshot snapshot) {
@@ -94,8 +92,6 @@ class DatabaseService {
   }
 
   Future<String> addPart(Part part) async {
-    print('>>>>>> Starting');
-    print(part.assetAccountCode);
     String partId = '';
     await partCollection
     .add({
@@ -127,8 +123,6 @@ class DatabaseService {
   }
 
   Future<String> editPart(Part part) async {
-    print('>>>>>>>>');
-    print(part.pid);
     await partCollection.doc(part.pid)
     .update({
       'assetAccountCode': part.assetAccountCode,
@@ -155,6 +149,14 @@ class DatabaseService {
     })
     .catchError((error) => print('Failed to edit part'));
     return part.pid;
+  }
+
+  Future<Part> getPart(String pid) async {
+    Part part;
+    await partCollection.doc(pid).get()
+      .then((DocumentSnapshot snapshot) => part = _partFromSnapshot(snapshot))
+      .catchError((error) {print('Failed to get part');});
+    return part;
   }
 
   Future createAccount(AccountData person, String email) async {

@@ -21,6 +21,10 @@ class PartsBloc {
     _partController.sink.add(await LocalDatabaseService.db.getParts(query, category));
   }
 
+  getPart(String pid) async {
+    return await LocalDatabaseService.db.getPart(pid);
+  }
+
   addPart(LocalPart part) async {
     await LocalDatabaseService.db.addPart(part);
     getParts(query, category);

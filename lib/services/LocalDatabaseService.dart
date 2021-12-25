@@ -64,6 +64,41 @@ class LocalDatabaseService {
     );
   }
 
+  Future<LocalPart> getPart(String pid) async {
+    Database db = await database;
+    List<Map<String, Object>> maps = await db.query(
+      'parts',
+      where: 'pid = ?',
+      whereArgs: [pid],
+      limit: 1
+    );
+
+    if(maps == null || maps.isEmpty)
+      return null;
+
+    return LocalPart(
+      pid: maps[0]['pid'],
+      assetAccountCode: maps[0]['assetAccountCode'],
+      process: maps[0]['process'],
+      subProcess: maps[0]['subProcess'],
+      description: maps[0]['description'],
+      type: maps[0]['type'],
+      criticality: maps[0]['criticality'],
+      status: maps[0]['status'],
+      yearInstalled: maps[0]['yearInstalled'],
+      description2: maps[0]['description2'],
+      brand: maps[0]['brand'],
+      model: maps[0]['model'],
+      spec1: maps[0]['spec1'],
+      spec2: maps[0]['spec2'],
+      dept: maps[0]['dept'],
+      facility: maps[0]['facility'],
+      facilityType: maps[0]['facilityType'],
+      sapFacility: maps[0]['sapFacility'],
+      criticalByPM: maps[0]['criticalByPM'],
+    );
+  }
+
   Future<List<LocalPart>> getParts(String query, String category) async {
     Database db = await database;
     List<Map<String, Object>> maps = await db.query('parts');
