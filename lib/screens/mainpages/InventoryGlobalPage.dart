@@ -5,7 +5,6 @@ import 'package:mech_track/components/NoPart.dart';
 
 import 'package:mech_track/components/PartListTile.dart';
 import 'package:mech_track/components/PartSearchBar.dart';
-import 'package:mech_track/models/Account.dart';
 import 'package:mech_track/models/Part.dart';
 import 'package:mech_track/screens/subpages/PartEditor.dart';
 import 'package:mech_track/screens/subpages/PartViewer.dart';
@@ -131,8 +130,6 @@ class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     List<Part> parts = Provider.of<List<Part>>(context);
-    final account = Provider.of<Account>(context);
-    final DatabaseService _database = DatabaseService(uid: account.uid);
 
     void searchHandler(String val) {
       return setState(() => query = val);
@@ -152,7 +149,7 @@ class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
             var result = await BarcodeScanner.scan();
             List<String> data = result.rawContent.contains('<=MechTrack=>') ? result.rawContent.split('<=MechTrack=>') : null;
             if(data != null && data[0] == data[1]) {
-              Part part = await _database.getPart(data[0]);
+              Part part = await DatabaseService.db.getPart(data[0]);
               if(part != null) {
                 Navigator.push(
                   context,

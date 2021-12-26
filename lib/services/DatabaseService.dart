@@ -4,8 +4,12 @@ import 'package:mech_track/models/Part.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class DatabaseService {
-  final String uid;
-  DatabaseService({this.uid});
+  DatabaseService._();
+
+  static final DatabaseService db = DatabaseService._();
+
+  // final String uid;
+  // DatabaseService({this.uid});
 
   final CollectionReference userCollection = FirebaseFirestore.instance.collection('users');
   final CollectionReference partCollection = FirebaseFirestore.instance.collection('parts');
@@ -159,7 +163,7 @@ class DatabaseService {
     return part;
   }
 
-  Future createAccount(AccountData person, String email) async {
+  Future createAccount(AccountData person, String email, String uid) async {
     return await userCollection.doc(uid).set({
       'fullName': person.fullName,
       'username': person.username,
@@ -171,11 +175,11 @@ class DatabaseService {
       .catchError((error) => print('Failed to create user data'));
   }
 
-  Future editAccount(AccountData user) async {
+  Future editAccount(String fullName, String username, String uid) async {
     String result = '';
     await userCollection.doc(uid).update({
-      'fullName': user.fullName,
-      'username': user.username
+      'fullName': fullName,
+      'username': username
     })
         .catchError((error) => result = error.toString());
     return result;
@@ -198,6 +202,12 @@ class DatabaseService {
         .catchError((error) => result = error.toString());
     return result;
   }
+  
+  Future importParts(List<Part> parts) async {
+    String result = '';
+    await Future.wait(parts.map((part) => addPart(part)));
+    return result;
+  }
 
   // //GETTER FUNCTIONS
 
@@ -215,7 +225,7 @@ class DatabaseService {
 
   // //STREAM SECTION
 
-  Stream<AccountData> get user {
+  Stream<AccountData> getUser(String uid) {
     return userCollection.doc(uid).snapshots().map(_accountFromSnapshot);
   }
   //

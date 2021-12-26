@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:mech_track/BLoCs/LocalDatabaseBloc.dart';
-import 'package:mech_track/models/Account.dart';
 import 'package:mech_track/models/Part.dart';
 import 'package:mech_track/services/DatabaseService.dart';
 import 'package:mech_track/shared/decorations.dart';
 import 'dart:async';
 
-import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 
 class PartEditor extends StatefulWidget {
@@ -82,20 +80,19 @@ class _PartEditorState extends State<PartEditor> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final account = Provider.of<Account>(context);
-    final DatabaseService _database = DatabaseService(uid: account.uid);
 
     void deleteHandler() async {
       if(widget.isLocal) {
         await widget.bloc.deletePart(widget.oldPart.pid);
       } else {
-        await _database.removePart(widget.oldPart.pid);
+        await DatabaseService.db.removePart(widget.oldPart.pid);
       }
       Navigator.pop(context);
       Navigator.pop(context);
     }
 
     void saveHandler() async {
+      //TODO: Implement Validation
       if(widget.isNew) {
         if(widget.isLocal){
           await widget.bloc.addPart(Part(
@@ -120,7 +117,7 @@ class _PartEditorState extends State<PartEditor> {
             criticalByPM: newPart['criticalByPM']
           ));
         } else {
-          await _database.addPart(Part(
+          await DatabaseService.db.addPart(Part(
             assetAccountCode: newPart['assetAccountCode'],
             process: newPart['process'],
             subProcess: newPart['subProcess'],
@@ -165,7 +162,7 @@ class _PartEditorState extends State<PartEditor> {
             criticalByPM: newPart['criticalByPM']
           ));
         } else {
-          await _database.editPart(Part(
+          await DatabaseService.db.editPart(Part(
             pid: widget.oldPart.pid,
             assetAccountCode: newPart['assetAccountCode'],
             process: newPart['process'],

@@ -1,10 +1,8 @@
-import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:mech_track/models/AccountData.dart';
 import 'package:mech_track/models/Account.dart';
 import 'package:mech_track/services/DatabaseService.dart';
-import 'package:path_provider/path_provider.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -42,7 +40,6 @@ class AuthService {
   Future<String> signInAnon() async {
     try {
       UserCredential result = await _auth.signInAnonymously();
-      User user = result.user;
       print(result);
       return 'SUCCESS';
     } on FirebaseAuthException catch (error) {
@@ -55,7 +52,7 @@ class AuthService {
       UserCredential result = await _auth.createUserWithEmailAndPassword(email: email, password: password);
       User user = result.user;
 
-      await DatabaseService(uid: user.uid).createAccount(accountData, email = user.email);
+      await DatabaseService.db.createAccount(accountData, user.email, user.uid);
       // user.sendEmailVerification();
 
       return 'SUCCESS';
@@ -67,14 +64,6 @@ class AuthService {
   Future<String> signOut() async {
     String result  = '';
     await _auth.signOut()
-        .then((value) => result = 'SUCCESS')
-        .catchError((error) => result = error.toString());
-    return result;
-  }
-
-  Future<String> changeEmail(String newEmail) async {
-    String result  = '';
-    await _auth.currentUser.updateEmail(newEmail)
         .then((value) => result = 'SUCCESS')
         .catchError((error) => result = error.toString());
     return result;

@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:mech_track/components/Loading.dart';
+import 'package:mech_track/models/AccountData.dart';
 import 'package:mech_track/screens/subpages/ProfileEditor.dart';
 import 'package:mech_track/services/AuthService.dart';
 import 'package:mech_track/shared/decorations.dart';
+import 'package:provider/provider.dart';
 
 class ProfilePage extends StatefulWidget {
   @override
@@ -13,9 +16,9 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final account = Provider.of<AccountData>(context);
 
-    return Scaffold(
+    return account != null ? Scaffold(
       appBar: AppBar(
         title: Text('Profile Page'),
       ),
@@ -41,22 +44,22 @@ class _ProfilePageState extends State<ProfilePage> {
                     ListTile(
                       leading: Icon(Icons.person_rounded),
                       title: Text('Full Name'),
-                      subtitle: Text('John Doe'),
+                      subtitle: Text(account.fullName),
                     ),
                     ListTile(
                       leading: Icon(Icons.badge),
                       title: Text('Username'),
-                      subtitle: Text('johndoe'),
+                      subtitle: Text(account.username),
                     ),
                     ListTile(
                       leading: Icon(Icons.admin_panel_settings),
                       title: Text('Account Type'),
-                      subtitle: Text('Admin'),
+                      subtitle: Text(account.accountType),
                     ),
                     ListTile(
                       leading: Icon(Icons.mail_rounded),
                       title: Text('Email'),
-                      subtitle: Text('johndoe@gmail.com'),
+                      subtitle: Text(account.email),
                     ),
                   ],
                 ),
@@ -81,6 +84,6 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
           )
       ),
-    );
+    ) : Loading('Loading Account Info');
   }
 }

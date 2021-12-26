@@ -79,6 +79,8 @@ class _SignInPageState extends State<SignInPage> {
                   ElevatedButton(onPressed: () async {
                     if(_formKey.currentState.validate()) {
                       // setState(() => loading = true);
+                      //TODO: Implement Loading Indication, validation and dialogs
+                      //TODO: Add Navigator.pop
                       String result = await _auth.signInEmail(email, password);
                       print(result);
                       if(result != 'SUCCESS') {

@@ -102,6 +102,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   ),
                   SizedBox(height: 60),
                   ElevatedButton(onPressed: () async {
+                    //TODO: Implement Loading Indication, validation and dialogs
                     if(_formKey.currentState.validate()) {
                       // setState(() => loading = true);
                       String result = await _auth.register(

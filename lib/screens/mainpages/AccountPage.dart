@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:mech_track/components/Loading.dart';
-import 'package:mech_track/models/Account.dart';
 import 'package:mech_track/services/DatabaseService.dart';
 import 'package:provider/provider.dart';
 
@@ -46,8 +45,6 @@ class _AccountPageState extends State<AccountPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final account = Provider.of<Account>(context);
-    final DatabaseService _database = DatabaseService(uid: account.uid);
     List<AccountData> accounts = Provider.of<List<AccountData>>(context);
 
     void searchHandler(String val) {
@@ -107,7 +104,7 @@ class _AccountPageState extends State<AccountPage> {
                             actions: [
                               TextButton(
                                 onPressed: () async {
-                                  await _database.promoteAccount(
+                                  await DatabaseService.db.promoteAccount(
                                     accounts[index].uid,
                                     accounts[index].accountType == 'EMPLOYEE' ? 'ADMIN' :
                                     accounts[index].accountType == 'ADMIN' ? 'EMPLOYEE' :
@@ -121,7 +118,7 @@ class _AccountPageState extends State<AccountPage> {
                               ),
                               TextButton(
                                   onPressed: () async {
-                                    await _database.verifyAccount(
+                                    await DatabaseService.db.verifyAccount(
                                       accounts[index].uid,
                                       !accounts[index].isVerified,
                                     );
