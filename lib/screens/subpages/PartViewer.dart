@@ -39,7 +39,7 @@ class _PartViewerState extends State<PartViewer> {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) =>
-                QRDisplay(title: part.pid, data: part.pid + '<=MechTrack=>' + part.pid)
+                QRDisplay(title: 'Part QR Code', data: part.pid + '<=MechTrack=>' + part.pid)
               )
             )
           ),

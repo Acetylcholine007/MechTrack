@@ -132,7 +132,13 @@ class _RegisterPageState extends State<RegisterPage> {
                         // );
                       }
                     } else {
-                      print('Fill all the fields');
+                      final snackBar = SnackBar(
+                        duration: Duration(seconds: 2),
+                        behavior: SnackBarBehavior.floating,
+                        content: Text('Fill up all the fields'),
+                        action: SnackBarAction(label: 'OK', onPressed: () => ScaffoldMessenger.of(context).hideCurrentSnackBar()),
+                      );
+                      ScaffoldMessenger.of(context).showSnackBar(snackBar);
                     }
                   }, child: Text('Register'),
                     style: buttonDecoration

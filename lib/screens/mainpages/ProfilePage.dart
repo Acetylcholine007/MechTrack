@@ -70,7 +70,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         onPressed: () =>
                           Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => ProfileEditor()),
+                          MaterialPageRoute(builder: (context) => ProfileEditor(account: account)),
                         ),
                         style: buttonDecoration,
                         child: Text('EDIT ACCOUNT')),

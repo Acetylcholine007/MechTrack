@@ -8,9 +8,6 @@ class DatabaseService {
 
   static final DatabaseService db = DatabaseService._();
 
-  // final String uid;
-  // DatabaseService({this.uid});
-
   final CollectionReference userCollection = FirebaseFirestore.instance.collection('users');
   final CollectionReference partCollection = FirebaseFirestore.instance.collection('parts');
 
@@ -45,6 +42,7 @@ class DatabaseService {
       dept: snapshot.get('dept') ?? '',
       facility: snapshot.get('facility') ?? '',
       facilityType: snapshot.get('facilityType') ?? '',
+      sapFacility: snapshot.get('sapFacility') ?? '',
       criticalByPM: snapshot.get('criticalByPM') ?? '',
     );
   }
@@ -69,6 +67,7 @@ class DatabaseService {
         dept: doc.get('dept') ?? '',
         facility: doc.get('facility') ?? '',
         facilityType: doc.get('facilityType') ?? '',
+        sapFacility: doc.get('sapFacility') ?? '',
         criticalByPM: doc.get('criticalByPM') ?? '',
       );
     }).toList();
@@ -77,56 +76,56 @@ class DatabaseService {
   List<AccountData> _accountListFromSnapshot(QuerySnapshot snapshot) {
     return snapshot.docs.map((doc) {
       return AccountData(
-          uid: doc.id,
-          fullName: doc.get('fullName') ?? '',
-          username: doc.get('username') ?? '',
-          accountType: doc.get('accountType') ?? '',
-          email: doc.get('email') ?? '',
-          isVerified: doc.get('isVerified') ?? ''
+        uid: doc.id,
+        fullName: doc.get('fullName') ?? '',
+        username: doc.get('username') ?? '',
+        accountType: doc.get('accountType') ?? '',
+        email: doc.get('email') ?? '',
+        isVerified: doc.get('isVerified') ?? ''
       );
     }).toList();
   }
 
   // OPERATOR FUNCTIONS SECTION
   Future removePart(String pid) async {
-    return partCollection
+    String result = '';
+    await partCollection
       .doc(pid).delete()
-      .then((value) => print('Part Removed'))
-      .catchError((error) => print('Failed to remove part'));
+      .then((value) => result = 'SUCCESS')
+      .catchError((error) => result = error.toString());
+    return result;
   }
 
   Future<String> addPart(Part part) async {
-    String partId = '';
+    String result = '';
     await partCollection
-    .add({
-      'assetAccountCode': part.assetAccountCode,
-      'process': part.process,
-      'subProcess': part.subProcess,
-      'description': part.description,
-      'type': part.type,
-      'criticality': part.criticality,
-      'status': part.status,
-      'yearInstalled': part.yearInstalled,
-      'description2': part.description2,
-      'brand': part.brand,
-      'model': part.model,
-      'spec1': part.spec1,
-      'spec2': part.spec2,
-      'dept': part.dept,
-      'facility': part.facility,
-      'facilityType': part.facilityType,
-      'sapFacility': part.sapFacility,
-      'criticalByPM': part.criticalByPM,
-    })
-    .then((value) {
-      partId = value.id;
-      print('Part ${value.id} created');
-    })
-    .catchError((error) => print('Failed to add part'));
-    return partId;
+      .add({
+        'assetAccountCode': part.assetAccountCode,
+        'process': part.process,
+        'subProcess': part.subProcess,
+        'description': part.description,
+        'type': part.type,
+        'criticality': part.criticality,
+        'status': part.status,
+        'yearInstalled': part.yearInstalled,
+        'description2': part.description2,
+        'brand': part.brand,
+        'model': part.model,
+        'spec1': part.spec1,
+        'spec2': part.spec2,
+        'dept': part.dept,
+        'facility': part.facility,
+        'facilityType': part.facilityType,
+        'sapFacility': part.sapFacility,
+        'criticalByPM': part.criticalByPM,
+      })
+        .then((value) => result = 'SUCCESS')
+        .catchError((error) => result = error.toString());
+    return result;
   }
 
   Future<String> editPart(Part part) async {
+    String result = '';
     await partCollection.doc(part.pid)
     .update({
       'assetAccountCode': part.assetAccountCode,
@@ -148,11 +147,9 @@ class DatabaseService {
       'sapFacility': part.sapFacility,
       'criticalByPM': part.criticalByPM,
     })
-    .then((value) {
-      print('Part ${part.pid} edited');
-    })
-    .catchError((error) => print('Failed to edit part'));
-    return part.pid;
+    .then((value) => result = 'SUCCESS')
+    .catchError((error) => result = error.toString());
+    return result;
   }
 
   Future<Part> getPart(String pid) async {
@@ -164,48 +161,55 @@ class DatabaseService {
   }
 
   Future createAccount(AccountData person, String email, String uid) async {
-    return await userCollection.doc(uid).set({
+    String result = '';
+    await userCollection.doc(uid).set({
       'fullName': person.fullName,
       'username': person.username,
       'accountType': 'EMPLOYEE',
       'isVerified': true,
       'email': email
     })
-      .then((value) => print('User data created'))
-      .catchError((error) => print('Failed to create user data'));
+      .then((value) => result = 'SUCCESS')
+      .catchError((error) => result = error.toString());
+    return result;
   }
 
-  Future editAccount(String fullName, String username, String uid) async {
+  Future<String> editAccount(String fullName, String username, String uid) async {
     String result = '';
     await userCollection.doc(uid).update({
       'fullName': fullName,
       'username': username
     })
-        .catchError((error) => result = error.toString());
+      .then((value) => result = 'SUCCESS')
+      .catchError((error) => result = error.toString());
     return result;
   }
 
-  Future promoteAccount(String uid, String accountType) async {
+  Future<String> promoteAccount(String uid, String accountType) async {
     String result = '';
     await userCollection.doc(uid).update({
       'accountType': accountType,
     })
-        .catchError((error) => result = error.toString());
+      .then((value) => result = 'SUCCESS')
+      .catchError((error) => result = error.toString());
     return result;
   }
 
-  Future verifyAccount(String uid, bool isVerified) async {
+  Future<String> verifyAccount(String uid, bool isVerified) async {
     String result = '';
     await userCollection.doc(uid).update({
       'isVerified': isVerified
     })
-        .catchError((error) => result = error.toString());
+      .then((value) => result = 'SUCCESS')
+      .catchError((error) => result = error.toString());
     return result;
   }
   
-  Future importParts(List<Part> parts) async {
+  Future<String> importParts(List<Part> parts) async {
     String result = '';
-    await Future.wait(parts.map((part) => addPart(part)));
+    await Future.wait(parts.map((part) => addPart(part)))
+      .then((value) => result = 'SUCCESS')
+      .catchError((error) => result = error.toString());
     return result;
   }
 

@@ -14,7 +14,7 @@ class _SignInPageState extends State<SignInPage> {
   String password = '';
   // String error = '';
   // bool loading = false;
-  bool showPassword = true;
+  bool hidePassword = true;
 
   @override
   Widget build(BuildContext context) {
@@ -64,12 +64,12 @@ class _SignInPageState extends State<SignInPage> {
                             initialValue: '',
                             decoration: formFieldDecoration.copyWith(
                                 suffixIcon: IconButton(
-                                    onPressed: () => setState(() => showPassword = !showPassword),
+                                    onPressed: () => setState(() => hidePassword = !hidePassword),
                                     icon: Icon(Icons.visibility)),
                                 hintText: 'Password'),
                             validator: (val) => val.isEmpty ? 'Enter Password' : null,
                             onChanged: (val) => setState(() => password = val),
-                            obscureText: showPassword,
+                            obscureText: hidePassword,
                           ),
                           TextButton(
                               onPressed: () => {}, child: Text('Forgot Password?')),
@@ -79,7 +79,7 @@ class _SignInPageState extends State<SignInPage> {
                   ElevatedButton(onPressed: () async {
                     if(_formKey.currentState.validate()) {
                       // setState(() => loading = true);
-                      //TODO: Implement Loading Indication, validation and dialogs
+                      //TODO: Implement Loading Indication
                       //TODO: Add Navigator.pop
                       String result = await _auth.signInEmail(email, password);
                       print(result);
@@ -103,13 +103,13 @@ class _SignInPageState extends State<SignInPage> {
                         // );
                       }
                     } else {
-                      // final snackBar = SnackBar(
-                      //   duration: Duration(seconds: 2),
-                      //   behavior: SnackBarBehavior.floating,
-                      //   content: Text('Fill up all the fields'),
-                      //   action: SnackBarAction(label: 'OK', onPressed: () => ScaffoldMessenger.of(context).hideCurrentSnackBar()),
-                      // );
-                      // ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                      final snackBar = SnackBar(
+                        duration: Duration(seconds: 2),
+                        behavior: SnackBarBehavior.floating,
+                        content: Text('Fill up all the fields'),
+                        action: SnackBarAction(label: 'OK', onPressed: () => ScaffoldMessenger.of(context).hideCurrentSnackBar()),
+                      );
+                      ScaffoldMessenger.of(context).showSnackBar(snackBar);
                     }
                   }, child: Text('Log In'),
                     style: buttonDecoration

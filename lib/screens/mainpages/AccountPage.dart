@@ -104,13 +104,41 @@ class _AccountPageState extends State<AccountPage> {
                             actions: [
                               TextButton(
                                 onPressed: () async {
-                                  await DatabaseService.db.promoteAccount(
+                                  String result = await DatabaseService.db.promoteAccount(
                                     accounts[index].uid,
                                     accounts[index].accountType == 'EMPLOYEE' ? 'ADMIN' :
                                     accounts[index].accountType == 'ADMIN' ? 'EMPLOYEE' :
                                     accounts[index].accountType,
                                   );
-                                  Navigator.pop(context);
+
+                                  if(result == 'SUCCESS') {
+                                    final snackBar = SnackBar(
+                                      duration: Duration(seconds: 3),
+                                      behavior: SnackBarBehavior.floating,
+                                      content: Text("Account ${accounts[index].accountType == 'EMPLOYEE' ? 'Promoted' :
+                                      accounts[index].accountType == 'ADMIN' ? 'Demoted' :
+                                      'Promoted'}"),
+                                      action: SnackBarAction(label: 'OK', onPressed: () => ScaffoldMessenger.of(context).hideCurrentSnackBar()),
+                                    );
+                                    Navigator.pop(context);
+                                    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                                  } else {
+                                    showDialog(
+                                        context: context,
+                                        builder: (context) => AlertDialog(
+                                          title: Text('Account Promotion'),
+                                          content: Text(result),
+                                          actions: [
+                                            TextButton(
+                                                onPressed: () {
+                                                  Navigator.pop(context);
+                                                },
+                                                child: Text('OK')
+                                            )
+                                          ],
+                                        )
+                                    );
+                                  }
                                 },
                                 child: Text(accounts[index].accountType == 'EMPLOYEE' ? 'Promote' :
                                 accounts[index].accountType == 'ADMIN' ? 'Demote' :
@@ -118,11 +146,37 @@ class _AccountPageState extends State<AccountPage> {
                               ),
                               TextButton(
                                   onPressed: () async {
-                                    await DatabaseService.db.verifyAccount(
+                                    String result = await DatabaseService.db.verifyAccount(
                                       accounts[index].uid,
                                       !accounts[index].isVerified,
                                     );
-                                    Navigator.pop(context);
+
+                                    if(result == 'SUCCESS') {
+                                      final snackBar = SnackBar(
+                                        duration: Duration(seconds: 3),
+                                        behavior: SnackBarBehavior.floating,
+                                        content: Text("Account ${accounts[index].isVerified ? 'Suspended' : 'Verified'}"),
+                                        action: SnackBarAction(label: 'OK', onPressed: () => ScaffoldMessenger.of(context).hideCurrentSnackBar()),
+                                      );
+                                      Navigator.pop(context);
+                                      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                                    } else {
+                                      showDialog(
+                                          context: context,
+                                          builder: (context) => AlertDialog(
+                                            title: Text('Account Verification'),
+                                            content: Text(result),
+                                            actions: [
+                                              TextButton(
+                                                  onPressed: () {
+                                                    Navigator.pop(context);
+                                                  },
+                                                  child: Text('OK')
+                                              )
+                                            ],
+                                          )
+                                      );
+                                    }
                                   },
                                   child: Text(accounts[index].isVerified ? 'Suspend' : 'Verify')
                               ),

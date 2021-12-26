@@ -82,109 +82,178 @@ class _PartEditorState extends State<PartEditor> {
     final theme = Theme.of(context);
 
     void deleteHandler() async {
+      String result = '';
       if(widget.isLocal) {
-        await widget.bloc.deletePart(widget.oldPart.pid);
+        result = await widget.bloc.deletePart(widget.oldPart.pid);
       } else {
-        await DatabaseService.db.removePart(widget.oldPart.pid);
+        result = await DatabaseService.db.removePart(widget.oldPart.pid);
       }
-      Navigator.pop(context);
-      Navigator.pop(context);
+
+      if(result == 'SUCCESS') {
+        Navigator.pop(context);
+        Navigator.pop(context);
+      } else {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text('Delete Part'),
+            content: Text(result),
+            actions: [
+              TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: Text('OK')
+              )
+            ],
+          )
+        );
+      }
     }
 
     void saveHandler() async {
-      //TODO: Implement Validation
-      if(widget.isNew) {
-        if(widget.isLocal){
-          await widget.bloc.addPart(Part(
-            pid: uuid.v4().replaceAll(RegExp('-'), ''),
-            assetAccountCode: newPart['assetAccountCode'],
-            process: newPart['process'],
-            subProcess: newPart['subProcess'],
-            description: newPart['description'],
-            type: newPart['type'],
-            criticality: newPart['criticality'],
-            status: newPart['status'],
-            yearInstalled: newPart['yearInstalled'],
-            description2: newPart['description2'],
-            brand: newPart['brand'],
-            model: newPart['model'],
-            spec1: newPart['spec1'],
-            spec2: newPart['spec2'],
-            dept: newPart['dept'],
-            facility: newPart['facility'],
-            facilityType: newPart['facilityType'],
-            sapFacility: newPart['sapFacility'],
-            criticalByPM: newPart['criticalByPM']
-          ));
+      if(_formKey.currentState.validate()) {
+        if(widget.isNew) {
+          String result = '';
+          if(widget.isLocal){
+            result = await widget.bloc.addPart(Part(
+              pid: uuid.v4().replaceAll(RegExp('-'), ''),
+              assetAccountCode: newPart['assetAccountCode'],
+              process: newPart['process'],
+              subProcess: newPart['subProcess'],
+              description: newPart['description'],
+              type: newPart['type'],
+              criticality: newPart['criticality'],
+              status: newPart['status'],
+              yearInstalled: newPart['yearInstalled'],
+              description2: newPart['description2'],
+              brand: newPart['brand'],
+              model: newPart['model'],
+              spec1: newPart['spec1'],
+              spec2: newPart['spec2'],
+              dept: newPart['dept'],
+              facility: newPart['facility'],
+              facilityType: newPart['facilityType'],
+              sapFacility: newPart['sapFacility'],
+              criticalByPM: newPart['criticalByPM']
+            ));
+          } else {
+            result = await DatabaseService.db.addPart(Part(
+              assetAccountCode: newPart['assetAccountCode'],
+              process: newPart['process'],
+              subProcess: newPart['subProcess'],
+              description: newPart['description'],
+              type: newPart['type'],
+              criticality: newPart['criticality'],
+              status: newPart['status'],
+              yearInstalled: newPart['yearInstalled'],
+              description2: newPart['description2'],
+              brand: newPart['brand'],
+              model: newPart['model'],
+              spec1: newPart['spec1'],
+              spec2: newPart['spec2'],
+              dept: newPart['dept'],
+              facility: newPart['facility'],
+              facilityType: newPart['facilityType'],
+              sapFacility: newPart['sapFacility'],
+              criticalByPM: newPart['criticalByPM']));
+          }
+
+          if(result == 'SUCCESS') {
+            Navigator.pop(context);
+          } else {
+            showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: Text('Add Part'),
+                  content: Text(result),
+                  actions: [
+                    TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        child: Text('OK')
+                    )
+                  ],
+                )
+            );
+          }
         } else {
-          await DatabaseService.db.addPart(Part(
-            assetAccountCode: newPart['assetAccountCode'],
-            process: newPart['process'],
-            subProcess: newPart['subProcess'],
-            description: newPart['description'],
-            type: newPart['type'],
-            criticality: newPart['criticality'],
-            status: newPart['status'],
-            yearInstalled: newPart['yearInstalled'],
-            description2: newPart['description2'],
-            brand: newPart['brand'],
-            model: newPart['model'],
-            spec1: newPart['spec1'],
-            spec2: newPart['spec2'],
-            dept: newPart['dept'],
-            facility: newPart['facility'],
-            facilityType: newPart['facilityType'],
-            sapFacility: newPart['sapFacility'],
-            criticalByPM: newPart['criticalByPM']));
+          String result = '';
+          if(widget.isLocal) {
+            result = await widget.bloc.editPart(Part(
+              pid: widget.oldPart.pid,
+              assetAccountCode: newPart['assetAccountCode'],
+              process: newPart['process'],
+              subProcess: newPart['subProcess'],
+              description: newPart['description'],
+              type: newPart['type'],
+              criticality: newPart['criticality'],
+              status: newPart['status'],
+              yearInstalled: newPart['yearInstalled'],
+              description2: newPart['description2'],
+              brand: newPart['brand'],
+              model: newPart['model'],
+              spec1: newPart['spec1'],
+              spec2: newPart['spec2'],
+              dept: newPart['dept'],
+              facility: newPart['facility'],
+              facilityType: newPart['facilityType'],
+              sapFacility: newPart['sapFacility'],
+              criticalByPM: newPart['criticalByPM']
+            ));
+          } else {
+            result = await DatabaseService.db.editPart(Part(
+              pid: widget.oldPart.pid,
+              assetAccountCode: newPart['assetAccountCode'],
+              process: newPart['process'],
+              subProcess: newPart['subProcess'],
+              description: newPart['description'],
+              type: newPart['type'],
+              criticality: newPart['criticality'],
+              status: newPart['status'],
+              yearInstalled: newPart['yearInstalled'],
+              description2: newPart['description2'],
+              brand: newPart['brand'],
+              model: newPart['model'],
+              spec1: newPart['spec1'],
+              spec2: newPart['spec2'],
+              dept: newPart['dept'],
+              facility: newPart['facility'],
+              facilityType: newPart['facilityType'],
+              sapFacility: newPart['sapFacility'],
+              criticalByPM: newPart['criticalByPM']));
+          }
+
+          if(result == 'SUCCESS') {
+            Navigator.pop(context);
+            Navigator.pop(context);
+          } else {
+            showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: Text('Edit Part'),
+                  content: Text(result),
+                  actions: [
+                    TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        child: Text('OK')
+                    )
+                  ],
+                )
+            );
+          }
         }
-        Navigator.pop(context);
       } else {
-        if(widget.isLocal) {
-          await widget.bloc.editPart(Part(
-            pid: widget.oldPart.pid,
-            assetAccountCode: newPart['assetAccountCode'],
-            process: newPart['process'],
-            subProcess: newPart['subProcess'],
-            description: newPart['description'],
-            type: newPart['type'],
-            criticality: newPart['criticality'],
-            status: newPart['status'],
-            yearInstalled: newPart['yearInstalled'],
-            description2: newPart['description2'],
-            brand: newPart['brand'],
-            model: newPart['model'],
-            spec1: newPart['spec1'],
-            spec2: newPart['spec2'],
-            dept: newPart['dept'],
-            facility: newPart['facility'],
-            facilityType: newPart['facilityType'],
-            sapFacility: newPart['sapFacility'],
-            criticalByPM: newPart['criticalByPM']
-          ));
-        } else {
-          await DatabaseService.db.editPart(Part(
-            pid: widget.oldPart.pid,
-            assetAccountCode: newPart['assetAccountCode'],
-            process: newPart['process'],
-            subProcess: newPart['subProcess'],
-            description: newPart['description'],
-            type: newPart['type'],
-            criticality: newPart['criticality'],
-            status: newPart['status'],
-            yearInstalled: newPart['yearInstalled'],
-            description2: newPart['description2'],
-            brand: newPart['brand'],
-            model: newPart['model'],
-            spec1: newPart['spec1'],
-            spec2: newPart['spec2'],
-            dept: newPart['dept'],
-            facility: newPart['facility'],
-            facilityType: newPart['facilityType'],
-            sapFacility: newPart['sapFacility'],
-            criticalByPM: newPart['criticalByPM']));
-        }
-        Navigator.pop(context);
-        Navigator.pop(context);
+        final snackBar = SnackBar(
+          duration: Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+          content: Text('Fill up all the fields'),
+          action: SnackBarAction(label: 'OK', onPressed: () => ScaffoldMessenger.of(context).hideCurrentSnackBar()),
+        );
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
       }
     }
 

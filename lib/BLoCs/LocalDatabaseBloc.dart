@@ -25,24 +25,32 @@ class PartsBloc {
     return await LocalDatabaseService.db.getPart(pid);
   }
 
-  addPart(Part part) async {
-    await LocalDatabaseService.db.addPart(part);
+  Future<String> addPart(Part part) async {
+    String result = '';
+    result = await LocalDatabaseService.db.addPart(part);
     getParts(query, category);
+    return result;
   }
 
-  editPart(Part part) async {
-    await LocalDatabaseService.db.editPart(part);
+  Future<String> editPart(Part part) async {
+    String result = '';
+    result = await LocalDatabaseService.db.editPart(part);
     getParts(query, category);
+    return result;
   }
 
-  deletePart(String pid) async {
-    await LocalDatabaseService.db.deletePart(pid);
+  Future<String> deletePart(String pid) async {
+    String result = '';
+    result = await LocalDatabaseService.db.deletePart(pid);
     getParts(query, category);
+    return result;
   }
 
-  importParts(List<Part> parts) async {
-    await LocalDatabaseService.db.importParts(parts);
+  Future<String> importParts(List<Part> parts) async {
+    String result = '';
+    result = await LocalDatabaseService.db.importParts(parts);
     getParts(query, category);
+    return result;
   }
 
   dispose() {

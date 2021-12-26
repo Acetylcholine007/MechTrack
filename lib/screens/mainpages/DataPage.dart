@@ -19,6 +19,8 @@ class DataPage extends StatefulWidget {
 
 class _DataPageState extends State<DataPage> {
   bool isSyncing = false;
+  bool isGlobalImporting = false;
+  bool isLocalImporting = false;
   Uuid uuid = Uuid();
 
   Future<List<Part>> csvReader() async {
@@ -85,17 +87,69 @@ class _DataPageState extends State<DataPage> {
   }
 
   void localCSVImport() async {
-    setState(() => isSyncing = true);
+    setState(() => isLocalImporting = true);
     List<Part> parts = await csvReader();
-    await LocalDatabaseService.db.importParts(parts);
-    setState(() => isSyncing = false);
+    String result = await LocalDatabaseService.db.importParts(parts);
+    setState(() => isLocalImporting = false);
+
+    if(result == 'SUCCESS') {
+      final snackBar = SnackBar(
+        duration: Duration(seconds: 3),
+        behavior: SnackBarBehavior.floating,
+        content: Text('CSV imported to Global Database'),
+        action: SnackBarAction(label: 'OK', onPressed: () => ScaffoldMessenger.of(context).hideCurrentSnackBar()),
+      );
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    } else {
+      showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text('Global CSV Import'),
+            content: Text(result),
+            actions: [
+              TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: Text('OK')
+              )
+            ],
+          )
+      );
+    }
   }
 
   void globalCSVImport() async {
-    setState(() => isSyncing = true);
+    setState(() => isGlobalImporting = true);
     List<Part> parts = await csvReader();
-    await DatabaseService.db.importParts(parts);
-    setState(() => isSyncing = false);
+    String result = await DatabaseService.db.importParts(parts);
+    setState(() => isGlobalImporting = false);
+
+    if(result == 'SUCCESS') {
+      final snackBar = SnackBar(
+        duration: Duration(seconds: 3),
+        behavior: SnackBarBehavior.floating,
+        content: Text('CSV imported to Global Database'),
+        action: SnackBarAction(label: 'OK', onPressed: () => ScaffoldMessenger.of(context).hideCurrentSnackBar()),
+      );
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    } else {
+      showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text('Global CSV Import'),
+            content: Text(result),
+            actions: [
+              TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: Text('OK')
+              )
+            ],
+          )
+      );
+    }
   }
 
   @override
@@ -105,7 +159,7 @@ class _DataPageState extends State<DataPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Data Management Page'),
-        bottom: isSyncing ? PreferredSize(
+        bottom: isSyncing || isGlobalImporting || isLocalImporting ? PreferredSize(
           preferredSize: Size(double.infinity, 1.0),
           child: LinearProgressIndicator(backgroundColor: Colors.deepOrangeAccent)
         ) : null,
@@ -138,8 +192,34 @@ class _DataPageState extends State<DataPage> {
                   ElevatedButton(
                     onPressed: () async {
                       setState(() => isSyncing = true);
-                      await LocalDatabaseService.db.importParts(parts);
+                      String result = await LocalDatabaseService.db.importParts(parts);
                       setState(() => isSyncing = false);
+
+                      if(result == 'SUCCESS') {
+                        final snackBar = SnackBar(
+                          duration: Duration(seconds: 3),
+                          behavior: SnackBarBehavior.floating,
+                          content: Text('Local Database synced to Firebase'),
+                          action: SnackBarAction(label: 'OK', onPressed: () => ScaffoldMessenger.of(context).hideCurrentSnackBar()),
+                        );
+                        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                      } else {
+                        showDialog(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: Text('Local Database Sync'),
+                              content: Text(result),
+                              actions: [
+                                TextButton(
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                    },
+                                    child: Text('OK')
+                                )
+                              ],
+                            )
+                        );
+                      }
                     },
                     child: Text('Sync Local Database from Firebase'),
                     style: buttonDecoration,

@@ -44,24 +44,31 @@ class LocalDatabaseService {
     return _database;
   }
 
-  Future addPart(Part part) async {
+  Future<String> addPart(Part part) async {
+    String result = '';
     Database db = await database;
     await db.insert(
       'parts',
       part.toMap(),
       conflictAlgorithm: ConflictAlgorithm.replace,
-    );
-    print('Complete');
+    )
+      .then((value) => result = 'SUCCESS')
+      .catchError((error) => result = error.toString());
+    return result;
   }
 
-  Future editPart(Part part) async {
+  Future<String> editPart(Part part) async {
+    String result = '';
     Database db = await database;
     await db.update(
       'parts',
       part.toMap(),
       where: 'pid = ?',
       whereArgs: [part.pid],
-    );
+    )
+      .then((value) => result = 'SUCCESS')
+      .catchError((error) => result = error.toString());
+    return result;
   }
 
   Future<Part> getPart(String pid) async {
@@ -134,16 +141,24 @@ class LocalDatabaseService {
     });
   }
 
-  Future importParts(List<Part> parts) async {
-    return Future.wait(parts.map((part) => addPart(part)));
+  Future<String> importParts(List<Part> parts) async {
+    String result = '';
+    await Future.wait(parts.map((part) => addPart(part)))
+      .then((value) => result = 'SUCCESS')
+      .catchError((error) => result = error.toString());
+    return result;
   }
 
-  Future deletePart(String pid) async {
+  Future<String> deletePart(String pid) async {
+    String result = '';
     Database db = await database;
     await db.delete(
       'parts',
       where: 'pid = ?',
       whereArgs: [pid],
-    );
+    )
+      .then((value) => result = 'SUCCESS')
+      .catchError((error) => result = error.toString());
+    return result;
   }
 }
