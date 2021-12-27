@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mech_track/components/Loading.dart';
 import 'package:mech_track/services/AuthService.dart';
 import 'package:mech_track/shared/decorations.dart';
 
@@ -9,7 +10,9 @@ class SignInPage extends StatefulWidget {
 
 class _SignInPageState extends State<SignInPage> {
   final AuthService _auth = AuthService();
-  final _formKey = GlobalKey<FormState>();
+  final _formKey1 = GlobalKey<FormState>();
+  final _formKey2 = GlobalKey<FormState>();
+  String resetEmail = '';
   String email = '';
   String password = '';
   bool hidePassword = true;
@@ -19,7 +22,7 @@ class _SignInPageState extends State<SignInPage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return GestureDetector(
+    return loading ? Loading('Logging In') : GestureDetector(
       onTap: () => FocusScope.of(context).requestFocus(new FocusNode()),
       child: Scaffold(
         body: Center(
@@ -46,11 +49,11 @@ class _SignInPageState extends State<SignInPage> {
                   ),
                   SizedBox(height: 60),
                   Form(
-                    key: _formKey,
+                    key: _formKey1,
                     child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: <Widget>[
-                          Text('Username', style: theme.textTheme.headline6),
+                          Text('Email', style: theme.textTheme.headline6),
                           TextFormField(
                               initialValue: '',
                               decoration:
@@ -71,14 +74,67 @@ class _SignInPageState extends State<SignInPage> {
                             obscureText: hidePassword,
                           ),
                           TextButton(
-                              onPressed: () => {}, child: Text('Forgot Password?')),
+                              onPressed: () {
+                                showDialog(
+                                    context: context,
+                                    builder: (context) => AlertDialog(
+                                      title: Text('Reset Password'),
+                                      content: Form(
+                                        key: _formKey2,
+                                        child: TextFormField(
+                                          initialValue: resetEmail,
+                                          decoration: formFieldDecoration.copyWith(hintText: 'Email'),
+                                          validator: (val) => val.isEmpty ? 'Enter Email' : null,
+                                          onChanged: (val) => setState(() => resetEmail = val)
+                                        ),
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                            onPressed: () async {
+                                              if (_formKey2.currentState.validate()) {
+                                                String result = await _auth.resetPassword(resetEmail);
+                                                if (result == 'SUCCESS') {
+                                                  Navigator.pop(context);
+                                                  final snackBar = SnackBar(
+                                                    duration: Duration(seconds: 2),
+                                                    behavior: SnackBarBehavior.floating,
+                                                    content: Text('Password Reset sent to your email.'),
+                                                    action: SnackBarAction(label: 'OK',
+                                                      onPressed: () => ScaffoldMessenger.of(context).hideCurrentSnackBar()),
+                                                  );
+                                                  ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                                                } else {
+                                                  Navigator.pop(context);
+                                                  showDialog(
+                                                    context: context,
+                                                    builder: (context) =>
+                                                        AlertDialog(
+                                                          title: Text('Reset Password'),
+                                                          content: Text(result),
+                                                          actions: [
+                                                            TextButton(
+                                                              onPressed: () =>
+                                                                  Navigator.pop(context),
+                                                              child: Text('OK')
+                                                            )
+                                                          ],
+                                                        )
+                                                  );
+                                                }
+                                              }
+                                            },
+                                            child: Text('RESET PASSWORD')
+                                        )
+                                      ],
+                                    )
+                                );
+                              }, child: Text('Forgot Password?')),
                         ]),
                   ),
                   SizedBox(height: 60),
                   ElevatedButton(onPressed: () async {
-                    if(_formKey.currentState.validate()) {
+                    if(_formKey1.currentState.validate()) {
                       setState(() => loading = true);
-                      //TODO: Implement Loading Indication
                       String result = await _auth.signInEmail(email, password);
                       print(result);
                       if(result != 'SUCCESS') {

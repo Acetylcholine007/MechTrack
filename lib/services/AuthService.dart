@@ -10,7 +10,6 @@ class AuthService {
   //MAPPING FUNCTION SECTION
 
   Account _userFromFirebaseUser(User user) {
-    // return user != null && user.emailVerified ? Account(uid: user.uid, email: user.email) : null;
     return user != null ? Account(
       uid: user.uid,
       email: user.email,

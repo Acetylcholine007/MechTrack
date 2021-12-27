@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:barcode_scan2/barcode_scan2.dart';
 import 'package:mech_track/components/AccountSuspended.dart';
+import 'package:mech_track/components/Loading.dart';
 import 'package:mech_track/models/Account.dart';
 import 'package:mech_track/models/AccountData.dart';
 
@@ -129,30 +130,35 @@ class _MainWrapperState extends State<MainWrapper> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final account = widget.account.isAnon ? null : Provider.of<AccountData>(context);
-    final pages = getPages(widget.account.isAnon ? 'GUESS' : account.accountType);
-    final tabs = getTabs(widget.account.isAnon ? 'GUESS' : account.accountType);
 
-    if(!widget.account.isAnon && !account.isVerified)
-      return AccountSuspended();
+    return !widget.account.isAnon && account == null ? Loading('Loading Account Data') : Builder(
+      builder: (context) {
+        final pages = getPages(widget.account.isAnon ? 'GUESS' : account.accountType);
+        final tabs = getTabs(widget.account.isAnon ? 'GUESS' : account.accountType);
 
-    return GestureDetector(
-      onTap: () => FocusScope.of(context).requestFocus(new FocusNode()),
-      child: Scaffold(
-        bottomNavigationBar: BottomNavigationBar(
-          type: BottomNavigationBarType.fixed,
-          backgroundColor: theme.primaryColor,
-          selectedItemColor: Colors.white,
-          unselectedItemColor: Colors.white.withOpacity(.60),
-          selectedFontSize: 14,
-          unselectedFontSize: 14,
-          currentIndex: _currentIndex,
-          onTap: (value) => setState(() => _currentIndex = value),
-          items: tabs,
-        ),
-        body: Container(
-          child: pages[_currentIndex]
-        )
-      ),
+        if(!widget.account.isAnon && !account.isVerified)
+          return AccountSuspended();
+
+        return GestureDetector(
+          onTap: () => FocusScope.of(context).requestFocus(new FocusNode()),
+          child: Scaffold(
+              bottomNavigationBar: BottomNavigationBar(
+                type: BottomNavigationBarType.fixed,
+                backgroundColor: theme.primaryColor,
+                selectedItemColor: Colors.white,
+                unselectedItemColor: Colors.white.withOpacity(.60),
+                selectedFontSize: 14,
+                unselectedFontSize: 14,
+                currentIndex: _currentIndex,
+                onTap: (value) => setState(() => _currentIndex = value),
+                items: tabs,
+              ),
+              body: Container(
+                  child: pages[_currentIndex]
+              )
+          ),
+        );
+      },
     );
   }
 }

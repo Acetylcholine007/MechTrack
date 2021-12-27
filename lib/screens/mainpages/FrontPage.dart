@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:mech_track/components/Loading.dart';
 import 'package:mech_track/screens/mainpages/SignInPage.dart';
 import 'package:mech_track/services/AuthService.dart';
 import 'package:mech_track/shared/decorations.dart';
@@ -13,12 +14,13 @@ class FrontPage extends StatefulWidget {
 
 class _FrontPageState extends State<FrontPage> {
   final AuthService _auth = AuthService();
+  bool loading = false;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Scaffold(
+    return loading ? Loading('Signing as guess') : Scaffold(
       body: Container(
           child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -58,8 +60,24 @@ class _FrontPageState extends State<FrontPage> {
                     child: Text('SIGN IN')),
                   ElevatedButton(
                       onPressed: () async {
+                        setState(() => loading = true);
                         dynamic result = await _auth.signInAnon();
-                        print(result);
+                        setState(() => loading = false);
+                        if(result != 'SUCCESS') {
+                          showDialog(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                title: Text('Log In'),
+                                content: Text(result),
+                                actions: [
+                                  TextButton(
+                                      onPressed: () => Navigator.pop(context),
+                                      child: Text('OK')
+                                  )
+                                ],
+                              )
+                          );
+                        }
                       },
                     style: buttonDecoration,
                     child: Text('Enter as Guest')),

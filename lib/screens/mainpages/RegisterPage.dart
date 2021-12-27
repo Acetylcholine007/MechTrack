@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mech_track/components/Loading.dart';
 import 'package:mech_track/models/AccountData.dart';
 import 'package:mech_track/screens/subpages/VerificationPage.dart';
 import 'package:mech_track/services/AuthService.dart';
@@ -27,7 +28,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
     return Builder(
       builder: (context) {
-        return verifying ?
+        return loading ? Loading('Signing Up') : verifying ?
           VerificationPage(
             callback: () {
             final snackBar = SnackBar(
