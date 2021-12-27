@@ -3,13 +3,12 @@ import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:mech_track/BLoCs/LocalDatabaseBloc.dart';
+import 'package:mech_track/components/PartTableText.dart';
 import 'package:mech_track/models/AccountData.dart';
 import 'package:mech_track/models/Part.dart';
 import 'package:mech_track/services/DatabaseService.dart';
 import 'package:mech_track/shared/decorations.dart';
 import 'dart:async';
-
-import 'package:uuid/uuid.dart';
 
 class PartEditor extends StatefulWidget {
   final bool isNew;
@@ -26,7 +25,6 @@ class PartEditor extends StatefulWidget {
 
 class _PartEditorState extends State<PartEditor> {
   final _formKey = GlobalKey<FormState>();
-  Uuid uuid = Uuid();
   Map newPart;
   Timer _debounce;
 
@@ -92,8 +90,6 @@ class _PartEditorState extends State<PartEditor> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     void deleteHandler() async {
       String result = '';
       if(widget.isLocal) {
@@ -284,211 +280,279 @@ class _PartEditorState extends State<PartEditor> {
         ]) + [IconButton(icon: Icon(Icons.save), onPressed: saveHandler)],
       ),
       body: Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(image: new AssetImage("assets/images/background.jpg"), fit: BoxFit.cover,),
+        ),
         child: Form(
           key: _formKey,
           child: SingleChildScrollView(
-            child: Table(
-              border: TableBorder.all(color: Colors.blueAccent, width: 1),
-              children: [
-                TableRow(
-                    children: [
-                      Text('AAC', style: theme.textTheme.headline5),
-                      TextFormField(
-                        initialValue: newPart['assetAccountCode'],
-                        decoration: formFieldDecoration.copyWith(hintText: 'AAC'),
-                        validator: (val) => val.isEmpty ? 'Enter AAC' : null,
-                        onChanged: (val) => setState(() => _onTextChanged(val, 'assetAccountCode')),
-                      ),
-                    ]
-                ),
-                TableRow(
-                    children: [
-                      Text('Process', style: theme.textTheme.headline5),
-                      TextFormField(
-                        initialValue: newPart['process'],
-                        decoration: formFieldDecoration.copyWith(hintText: 'Process'),
-                        validator: (val) => val.isEmpty ? 'Enter Process' : null,
-                        onChanged: (val) => setState(() => _onTextChanged(val, 'process')),
-                      ),
-                    ]
-                ),
-                TableRow(
-                    children: [
-                      Text('Subprocess', style: theme.textTheme.headline5),
-                      TextFormField(
-                        initialValue: newPart['subProcess'],
-                        decoration: formFieldDecoration.copyWith(hintText: 'Subprocess'),
-                        validator: (val) => val.isEmpty ? 'Enter Subprocess' : null,
-                        onChanged: (val) => setState(() => _onTextChanged(val, 'subProcess')),
-                      ),
-                    ]
-                ),
-                TableRow(
-                    children: [
-                      Text('Description', style: theme.textTheme.headline5),
-                      TextFormField(
-                        initialValue: newPart['description'],
-                        decoration: formFieldDecoration.copyWith(hintText: 'Description'),
-                        validator: (val) => val.isEmpty ? 'Enter Description' : null,
-                        onChanged: (val) => setState(() => _onTextChanged(val, 'description')),
-                      ),
-                    ]
-                ),
-                TableRow(
-                    children: [
-                      Text('Type', style: theme.textTheme.headline5),
-                      TextFormField(
-                        initialValue: newPart['type'],
-                        decoration: formFieldDecoration.copyWith(hintText: 'Type'),
-                        validator: (val) => val.isEmpty ? 'Enter Type' : null,
-                        onChanged: (val) => setState(() => _onTextChanged(val, 'type')),
-                      ),
-                    ]
-                ),
-                TableRow(
-                    children: [
-                      Text('Criticality', style: theme.textTheme.headline5),
-                      TextFormField(
-                        initialValue: newPart['criticality'],
-                        decoration: formFieldDecoration.copyWith(hintText: 'Criticality'),
-                        validator: (val) => val.isEmpty ? 'Enter Criticality' : null,
-                        onChanged: (val) => setState(() => _onTextChanged(val, 'criticality')),
-                      ),
-                    ]
-                ),
-                TableRow(
-                    children: [
-                      Text('Status', style: theme.textTheme.headline5),
-                      TextFormField(
-                        initialValue: newPart['status'],
-                        decoration: formFieldDecoration.copyWith(hintText: 'Status'),
-                        validator: (val) => val.isEmpty ? 'Enter Status' : null,
-                        onChanged: (val) => setState(() => _onTextChanged(val, 'status')),
-                      ),
-                    ]
-                ),
-                TableRow(
-                    children: [
-                      Text('Year Installed', style: theme.textTheme.headline5),
-                      TextFormField(
-                        initialValue: newPart['yearInstalled'],
-                        decoration: formFieldDecoration.copyWith(hintText: 'Year Installed'),
-                        validator: (val) => val.isEmpty ? 'Enter Year Installed' : null,
-                        onChanged: (val) => setState(() => _onTextChanged(val, 'yearInstalled')),
-                      ),
-                    ]
-                ),
-                TableRow(
-                    children: [
-                      Text('Description 2', style: theme.textTheme.headline5),
-                      TextFormField(
-                        initialValue: newPart['description2'],
-                        decoration: formFieldDecoration.copyWith(hintText: 'Description 2'),
-                        validator: (val) => val.isEmpty ? 'Enter Description 2' : null,
-                        onChanged: (val) => setState(() => _onTextChanged(val, 'description2')),
-                      ),
-                    ]
-                ),
-                TableRow(
-                    children: [
-                      Text('Brand', style: theme.textTheme.headline5),
-                      TextFormField(
-                        initialValue: newPart['brand'],
-                        decoration: formFieldDecoration.copyWith(hintText: 'Brand'),
-                        validator: (val) => val.isEmpty ? 'Enter Brand' : null,
-                        onChanged: (val) => setState(() => _onTextChanged(val, 'brand')),
-                      ),
-                    ]
-                ),
-                TableRow(
-                    children: [
-                      Text('Model', style: theme.textTheme.headline5),
-                      TextFormField(
-                        initialValue: newPart['model'],
-                        decoration: formFieldDecoration.copyWith(hintText: 'Model'),
-                        validator: (val) => val.isEmpty ? 'Enter AAC' : null,
-                        onChanged: (val) => setState(() => _onTextChanged(val, 'model')),
-                      ),
-                    ]
-                ),
-                TableRow(
-                    children: [
-                      Text('Spec 1', style: theme.textTheme.headline5),
-                      TextFormField(
-                        initialValue: newPart['spec1'],
-                        decoration: formFieldDecoration.copyWith(hintText: 'Spec 1'),
-                        validator: (val) => val.isEmpty ? 'Enter Spec 1' : null,
-                        onChanged: (val) => setState(() => _onTextChanged(val, 'spec1')),
-                      ),
-                    ]
-                ),
-                TableRow(
-                    children: [
-                      Text('Spec 2', style: theme.textTheme.headline5),
-                      TextFormField(
-                        initialValue: newPart['spec2'],
-                        decoration: formFieldDecoration.copyWith(hintText: 'Spec 2'),
-                        validator: (val) => val.isEmpty ? 'Enter Spec 2' : null,
-                        onChanged: (val) => setState(() => _onTextChanged(val, 'spec2')),
-                      ),
-                    ]
-                ),
-                TableRow(
-                    children: [
-                      Text('Dept', style: theme.textTheme.headline5),
-                      TextFormField(
-                        initialValue: newPart['dept'],
-                        decoration: formFieldDecoration.copyWith(hintText: 'Dept'),
-                        validator: (val) => val.isEmpty ? 'Enter Dept' : null,
-                        onChanged: (val) => setState(() => _onTextChanged(val, 'dept')),
-                      ),
-                    ]
-                ),
-                TableRow(
-                    children: [
-                      Text('Facility', style: theme.textTheme.headline5),
-                      TextFormField(
-                        initialValue: newPart['facility'],
-                        decoration: formFieldDecoration.copyWith(hintText: 'Facility'),
-                        validator: (val) => val.isEmpty ? 'Enter Facility' : null,
-                        onChanged: (val) => setState(() => _onTextChanged(val, 'facility')),
-                      ),
-                    ]
-                ),
-                TableRow(
-                    children: [
-                      Text('Facility Type', style: theme.textTheme.headline5),
-                      TextFormField(
-                        initialValue: newPart['facilityType'],
-                        decoration: formFieldDecoration.copyWith(hintText: 'Facility Type'),
-                        validator: (val) => val.isEmpty ? 'Enter Facility Type' : null,
-                        onChanged: (val) => setState(() => _onTextChanged(val, 'facilityType')),
-                      ),
-                    ]
-                ),
-                TableRow(
-                    children: [
-                      Text('SAP Facility', style: theme.textTheme.headline5),
-                      TextFormField(
-                        initialValue: newPart['sapFacility'],
-                        decoration: formFieldDecoration.copyWith(hintText: 'SAP Facility'),
-                        validator: (val) => val.isEmpty ? 'SAP Facility' : null,
-                        onChanged: (val) => setState(() => _onTextChanged(val, 'sapFacility')),
-                      ),
-                    ]
-                ),
-                TableRow(
-                    children: [
-                      Text('Critical by PM', style: theme.textTheme.headline5),
-                      TextFormField(
-                        initialValue: newPart['criticalByPM'],
-                        decoration: formFieldDecoration.copyWith(hintText: 'Critical by PM'),
-                        validator: (val) => val.isEmpty ? 'Enter Critical by PM' : null,
-                        onChanged: (val) => setState(() => _onTextChanged(val, 'criticalByPM')),
-                      ),
-                    ]
-                ),
-              ],
+            child: Padding(
+              padding: const EdgeInsets.all(10),
+              child: Table(
+                defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+                columnWidths: const <int, TableColumnWidth>{
+                  0: IntrinsicColumnWidth(),
+                  1: FlexColumnWidth(),
+                },
+                children: [
+                  TableRow(
+                      children: [
+                        PartTableText('AAC', 'LABEL'),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(0,0,0,5),
+                          child: TextFormField(
+                            initialValue: newPart['assetAccountCode'],
+                            decoration: formFieldDecoration.copyWith(hintText: 'AAC'),
+                            validator: (val) => val.isEmpty ? 'Enter AAC' : null,
+                            onChanged: (val) => setState(() => _onTextChanged(val, 'assetAccountCode')),
+                          ),
+                        ),
+                      ]
+                  ),
+                  TableRow(
+                      children: [
+                        PartTableText('Process', 'LABEL'),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(0,0,0,5),
+                          child: TextFormField(
+                            initialValue: newPart['process'],
+                            decoration: formFieldDecoration.copyWith(hintText: 'Process'),
+                            validator: (val) => val.isEmpty ? 'Enter Process' : null,
+                            onChanged: (val) => setState(() => _onTextChanged(val, 'process')),
+                          ),
+                        ),
+                      ]
+                  ),
+                  TableRow(
+                      children: [
+                        PartTableText('Subprocess', 'LABEL'),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(0,0,0,5),
+                          child: TextFormField(
+                            initialValue: newPart['subProcess'],
+                            decoration: formFieldDecoration.copyWith(hintText: 'Subprocess'),
+                            validator: (val) => val.isEmpty ? 'Enter Subprocess' : null,
+                            onChanged: (val) => setState(() => _onTextChanged(val, 'subProcess')),
+                          ),
+                        ),
+                      ]
+                  ),
+                  TableRow(
+                      children: [
+                        PartTableText('Type', 'LABEL'),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(0,0,0,5),
+                          child: TextFormField(
+                            initialValue: newPart['type'],
+                            decoration: formFieldDecoration.copyWith(hintText: 'Type'),
+                            validator: (val) => val.isEmpty ? 'Enter Type' : null,
+                            onChanged: (val) => setState(() => _onTextChanged(val, 'type')),
+                          ),
+                        ),
+                      ]
+                  ),
+                  TableRow(
+                      children: [
+                        PartTableText('Criticality', 'LABEL'),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(0,0,0,5),
+                          child: TextFormField(
+                            initialValue: newPart['criticality'],
+                            decoration: formFieldDecoration.copyWith(hintText: 'Criticality'),
+                            validator: (val) => val.isEmpty ? 'Enter Criticality' : null,
+                            onChanged: (val) => setState(() => _onTextChanged(val, 'criticality')),
+                          ),
+                        ),
+                      ]
+                  ),
+                  TableRow(
+                      children: [
+                        PartTableText('Status', 'LABEL'),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(0,0,0,5),
+                          child: TextFormField(
+                            initialValue: newPart['status'],
+                            decoration: formFieldDecoration.copyWith(hintText: 'Status'),
+                            validator: (val) => val.isEmpty ? 'Enter Status' : null,
+                            onChanged: (val) => setState(() => _onTextChanged(val, 'status')),
+                          ),
+                        ),
+                      ]
+                  ),
+                  TableRow(
+                      children: [
+                        PartTableText('Year Installed', 'LABEL'),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(0,0,0,5),
+                          child: TextFormField(
+                            initialValue: newPart['yearInstalled'],
+                            decoration: formFieldDecoration.copyWith(hintText: 'Year Installed'),
+                            validator: (val) => val.isEmpty ? 'Enter Year Installed' : null,
+                            onChanged: (val) => setState(() => _onTextChanged(val, 'yearInstalled')),
+                          ),
+                        ),
+                      ]
+                  ),
+                  TableRow(
+                      children: [
+                        PartTableText('Brand', 'LABEL'),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(0,0,0,5),
+                          child: TextFormField(
+                            initialValue: newPart['brand'],
+                            decoration: formFieldDecoration.copyWith(hintText: 'Brand'),
+                            validator: (val) => val.isEmpty ? 'Enter Brand' : null,
+                            onChanged: (val) => setState(() => _onTextChanged(val, 'brand')),
+                          ),
+                        ),
+                      ]
+                  ),
+                  TableRow(
+                      children: [
+                        PartTableText('Model', 'LABEL'),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(0,0,0,5),
+                          child: TextFormField(
+                            initialValue: newPart['model'],
+                            decoration: formFieldDecoration.copyWith(hintText: 'Model'),
+                            validator: (val) => val.isEmpty ? 'Enter AAC' : null,
+                            onChanged: (val) => setState(() => _onTextChanged(val, 'model')),
+                          ),
+                        ),
+                      ]
+                  ),
+                  TableRow(
+                      children: [
+                        PartTableText('Spec 1', 'LABEL'),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(0,0,0,5),
+                          child: TextFormField(
+                            initialValue: newPart['spec1'],
+                            decoration: formFieldDecoration.copyWith(hintText: 'Spec 1'),
+                            validator: (val) => val.isEmpty ? 'Enter Spec 1' : null,
+                            onChanged: (val) => setState(() => _onTextChanged(val, 'spec1')),
+                          ),
+                        ),
+                      ]
+                  ),
+                  TableRow(
+                      children: [
+                        PartTableText('Spec 2', 'LABEL'),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(0,0,0,5),
+                          child: TextFormField(
+                            initialValue: newPart['spec2'],
+                            decoration: formFieldDecoration.copyWith(hintText: 'Spec 2'),
+                            validator: (val) => val.isEmpty ? 'Enter Spec 2' : null,
+                            onChanged: (val) => setState(() => _onTextChanged(val, 'spec2')),
+                          ),
+                        ),
+                      ]
+                  ),
+                  TableRow(
+                      children: [
+                        PartTableText('Dept', 'LABEL'),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(0,0,0,5),
+                          child: TextFormField(
+                            initialValue: newPart['dept'],
+                            decoration: formFieldDecoration.copyWith(hintText: 'Dept'),
+                            validator: (val) => val.isEmpty ? 'Enter Dept' : null,
+                            onChanged: (val) => setState(() => _onTextChanged(val, 'dept')),
+                          ),
+                        ),
+                      ]
+                  ),
+                  TableRow(
+                      children: [
+                        PartTableText('Facility', 'LABEL'),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(0,0,0,5),
+                          child: TextFormField(
+                            initialValue: newPart['facility'],
+                            decoration: formFieldDecoration.copyWith(hintText: 'Facility'),
+                            validator: (val) => val.isEmpty ? 'Enter Facility' : null,
+                            onChanged: (val) => setState(() => _onTextChanged(val, 'facility')),
+                          ),
+                        ),
+                      ]
+                  ),
+                  TableRow(
+                      children: [
+                        PartTableText('Facility Type', 'LABEL'),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(0,0,0,5),
+                          child: TextFormField(
+                            initialValue: newPart['facilityType'],
+                            decoration: formFieldDecoration.copyWith(hintText: 'Facility Type'),
+                            validator: (val) => val.isEmpty ? 'Enter Facility Type' : null,
+                            onChanged: (val) => setState(() => _onTextChanged(val, 'facilityType')),
+                          ),
+                        ),
+                      ]
+                  ),
+                  TableRow(
+                      children: [
+                        PartTableText('SAP Facility', 'LABEL'),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(0,0,0,5),
+                          child: TextFormField(
+                            initialValue: newPart['sapFacility'],
+                            decoration: formFieldDecoration.copyWith(hintText: 'SAP Facility'),
+                            validator: (val) => val.isEmpty ? 'SAP Facility' : null,
+                            onChanged: (val) => setState(() => _onTextChanged(val, 'sapFacility')),
+                          ),
+                        ),
+                      ]
+                  ),
+                  TableRow(
+                      children: [
+                        PartTableText('Critical by PM', 'LABEL'),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(0,0,0,5),
+                          child: TextFormField(
+                            initialValue: newPart['criticalByPM'],
+                            decoration: formFieldDecoration.copyWith(hintText: 'Critical by PM'),
+                            validator: (val) => val.isEmpty ? 'Enter Critical by PM' : null,
+                            onChanged: (val) => setState(() => _onTextChanged(val, 'criticalByPM')),
+                          ),
+                        ),
+                      ]
+                  ),
+                  TableRow(
+                      children: [
+                        PartTableText('Description', 'LABEL'),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(0,0,0,5),
+                          child: TextFormField(
+                            keyboardType: TextInputType.multiline,
+                            maxLines: 5,
+                            initialValue: newPart['description'],
+                            decoration: formFieldDecoration.copyWith(hintText: 'Description'),
+                            validator: (val) => val.isEmpty ? 'Enter Description' : null,
+                            onChanged: (val) => setState(() => _onTextChanged(val, 'description')),
+                          ),
+                        ),
+                      ]
+                  ),
+                  TableRow(
+                      children: [
+                        PartTableText('Description 2', 'LABEL'),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(0,0,0,5),
+                          child: TextFormField(
+                            keyboardType: TextInputType.multiline,
+                            maxLines: 5,
+                            initialValue: newPart['description2'],
+                            decoration: formFieldDecoration.copyWith(hintText: 'Description 2'),
+                            validator: (val) => val.isEmpty ? 'Enter Description 2' : null,
+                            onChanged: (val) => setState(() => _onTextChanged(val, 'description2')),
+                          ),
+                        ),
+                      ]
+                  ),
+                ],
+              ),
             ),
           ),
         ),

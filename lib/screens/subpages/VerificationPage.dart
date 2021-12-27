@@ -40,6 +40,9 @@ class _VerificationPageState extends State<VerificationPage> {
 
     return Scaffold(
       body: Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(image: new AssetImage("assets/images/background.jpg"), fit: BoxFit.cover,),
+        ),
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,

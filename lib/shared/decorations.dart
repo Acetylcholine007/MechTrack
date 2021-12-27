@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 
 InputDecoration formFieldDecoration = InputDecoration(
     border: OutlineInputBorder(
-        borderSide: BorderSide(color: Colors.white)),
+      borderSide: BorderSide(color: Colors.white),
+      borderRadius: BorderRadius.circular(10),
+    ),
     filled: true,
-    fillColor: Colors.white
+    fillColor: Colors.white,
+  isDense: true
 );
 
 InputDecoration searchFieldDecoration = InputDecoration(

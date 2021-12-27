@@ -130,7 +130,7 @@ class _MainWrapperState extends State<MainWrapper> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final account = widget.account.isAnon ? null : Provider.of<AccountData>(context);
-
+    
     return !widget.account.isAnon && account == null ? Loading('Loading Account Data') : Builder(
       builder: (context) {
         final pages = getPages(widget.account.isAnon ? 'GUESS' : account.accountType);

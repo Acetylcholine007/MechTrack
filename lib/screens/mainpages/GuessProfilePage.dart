@@ -21,6 +21,9 @@ class _GuessProfilePageState extends State<GuessProfilePage> {
         title: Text('Profile Page'),
       ),
       body: Container(
+          decoration: BoxDecoration(
+            image: DecorationImage(image: new AssetImage("assets/images/background.jpg"), fit: BoxFit.cover,),
+          ),
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(

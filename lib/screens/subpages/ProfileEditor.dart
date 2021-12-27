@@ -40,149 +40,176 @@ class _ProfileEditorState extends State<ProfileEditor> {
         appBar: AppBar(
           title: Text('Account Editor'),
         ),
-        body: SingleChildScrollView(
-          physics: ClampingScrollPhysics(),
-          child: Container(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  Form(
-                    key: _formKey1,
-                    child: Column(
-                      children: [
-                        Text('Account Info', style: theme.textTheme.headline5),
-                        TextFormField(
-                          initialValue: fullName,
-                          decoration:
-                          formFieldDecoration.copyWith(hintText: 'Full Name'),
-                          validator: (val) => val.isEmpty ? 'Enter Full Name' : null,
-                          onChanged: (val) => setState(() => fullName = val),
-                        ),
-                        TextFormField(
-                          initialValue: username,
-                          decoration:
-                          formFieldDecoration.copyWith(hintText: 'Username'),
-                          validator: (val) => val.isEmpty ? 'Enter Username' : null,
-                          onChanged: (val) => setState(() => username = val),
-                        ),
-                        ElevatedButton(onPressed: () async {
-                          if(_formKey1.currentState.validate()) {
-                            String result = await DatabaseService.db.editAccount(fullName, username, widget.account.uid);
-                            if(result == 'SUCCESS') {
+        body: Container(
+          decoration: BoxDecoration(
+            image: DecorationImage(image: new AssetImage("assets/images/background.jpg"), fit: BoxFit.cover,),
+          ),
+          child: Center(
+            child: SingleChildScrollView(
+              physics: ClampingScrollPhysics(),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.max,
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Form(
+                      key: _formKey1,
+                      child: Column(
+                        children: [
+                          Text('Account Info', style: theme.textTheme.headline5),
+                          Text('Full Name',
+                              style: theme.textTheme.button),
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(0,5,0,10),
+                            child: TextFormField(
+                              initialValue: fullName,
+                              decoration:
+                              formFieldDecoration.copyWith(hintText: 'Full Name'),
+                              validator: (val) => val.isEmpty ? 'Enter Full Name' : null,
+                              onChanged: (val) => setState(() => fullName = val),
+                            ),
+                          ),
+                          Text('Username',
+                              style: theme.textTheme.button),
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(0,5,0,10),
+                            child: TextFormField(
+                              initialValue: username,
+                              decoration:
+                              formFieldDecoration.copyWith(hintText: 'Username'),
+                              validator: (val) => val.isEmpty ? 'Enter Username' : null,
+                              onChanged: (val) => setState(() => username = val),
+                            ),
+                          ),
+                          ElevatedButton(onPressed: () async {
+                            if(_formKey1.currentState.validate()) {
+                              String result = await DatabaseService.db.editAccount(fullName, username, widget.account.uid);
+                              if(result == 'SUCCESS') {
+                                final snackBar = SnackBar(
+                                  duration: Duration(seconds: 2),
+                                  behavior: SnackBarBehavior.floating,
+                                  content: Text('Account Info successfully changed'),
+                                  action: SnackBarAction(label: 'OK', onPressed: () => ScaffoldMessenger.of(context).hideCurrentSnackBar()),
+                                );
+                                ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                              } else {
+                                showDialog(
+                                    context: context,
+                                    builder: (context) => AlertDialog(
+                                      title: Text('Change Account Info'),
+                                      content: Text(result),
+                                      actions: [
+                                        TextButton(
+                                            onPressed: () {
+                                              Navigator.pop(context);
+                                            },
+                                            child: Text('OK')
+                                        )
+                                      ],
+                                    )
+                                );
+                              }
+                            } else {
                               final snackBar = SnackBar(
-                                duration: Duration(seconds: 2),
+                                duration: Duration(seconds: 3),
                                 behavior: SnackBarBehavior.floating,
-                                content: Text('Account Info successfully changed'),
+                                content: Text('Fill up both Full Name and Username fields'),
                                 action: SnackBarAction(label: 'OK', onPressed: () => ScaffoldMessenger.of(context).hideCurrentSnackBar()),
                               );
                               ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                            } else {
-                              showDialog(
+                            }
+                          }, child: Text('SAVE CHANGES'),
+                            style: buttonDecoration,)
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 60),
+                    Form(
+                      key: _formKey2,
+                      child: Column(
+                        children: [
+                          Text('Change Password', style: theme.textTheme.headline5),
+                          Text('New Password',
+                              style: theme.textTheme.button),
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(0,5,0,10),
+                            child: TextFormField(
+                              initialValue: '',
+                              decoration:
+                              formFieldDecoration.copyWith(hintText: 'New Password',
+                                suffixIcon: IconButton(
+                                  onPressed: () => setState(() => hideNewPassword = !hideNewPassword),
+                                  icon: Icon(Icons.visibility)),
+                              ),
+                              validator: (val) => val.isEmpty ? 'Enter New Password' : val.length < 6 ? 'Should be 6 or more characters in length' : null,
+                              onChanged: (val) => setState(() => newPassword = val),
+                              obscureText: hideNewPassword,
+                            ),
+                          ),
+                          Text('Confirm Password',
+                              style: theme.textTheme.button),
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(0,5,0,10),
+                            child: TextFormField(
+                              initialValue: '',
+                              decoration:
+                              formFieldDecoration.copyWith(hintText: 'Confirm Password',
+                                suffixIcon: IconButton(
+                                  onPressed: () => setState(() => hideConfirmPassword = !hideConfirmPassword),
+                                  icon: Icon(Icons.visibility)
+                                ),
+                              ),
+                              validator: (val) => val.isEmpty ? 'Enter Confirm Password' : val.length < 6 ? 'Should be 6 or more characters in length' : null,
+                              onChanged: (val) => setState(() => confirmPassword = val),
+                              obscureText: hideConfirmPassword,
+                            ),
+                          ),
+                          ElevatedButton(onPressed: () async {
+                            if(_formKey2.currentState.validate() && newPassword == confirmPassword) {
+                              String result = await _auth.changePassword(newPassword);
+                              if(result == 'SUCCESS') {
+                                final snackBar = SnackBar(
+                                  duration: Duration(seconds: 2),
+                                  behavior: SnackBarBehavior.floating,
+                                  content: Text('Password successfully changed'),
+                                  action: SnackBarAction(label: 'OK', onPressed: () => ScaffoldMessenger.of(context).hideCurrentSnackBar()),
+                                );
+                                ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                              } else {
+                                showDialog(
                                   context: context,
                                   builder: (context) => AlertDialog(
-                                    title: Text('Change Account Info'),
+                                    title: Text('Change Password'),
                                     content: Text(result),
                                     actions: [
                                       TextButton(
-                                          onPressed: () {
-                                            Navigator.pop(context);
-                                          },
-                                          child: Text('OK')
+                                        onPressed: () {
+                                          Navigator.pop(context);
+                                          Navigator.pop(context);
+                                        },
+                                        child: Text('OK')
                                       )
                                     ],
                                   )
-                              );
-                            }
-                          } else {
-                            final snackBar = SnackBar(
-                              duration: Duration(seconds: 3),
-                              behavior: SnackBarBehavior.floating,
-                              content: Text('Fill up both Full Name and Username fields'),
-                              action: SnackBarAction(label: 'OK', onPressed: () => ScaffoldMessenger.of(context).hideCurrentSnackBar()),
-                            );
-                            ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                          }
-                        }, child: Text('SAVE CHANGES'),
-                          style: buttonDecoration,)
-                      ],
-                    ),
-                  ),
-                  Form(
-                    key: _formKey2,
-                    child: Column(
-                      children: [
-                        Text('Change Password', style: theme.textTheme.headline5),
-                        TextFormField(
-                          initialValue: '',
-                          decoration:
-                          formFieldDecoration.copyWith(hintText: 'New Password',
-                            suffixIcon: IconButton(
-                              onPressed: () => setState(() => hideNewPassword = !hideNewPassword),
-                              icon: Icon(Icons.visibility)),
-                          ),
-                          validator: (val) => val.isEmpty ? 'Enter New Password' : val.length < 6 ? 'Should be 6 or more characters in length' : null,
-                          onChanged: (val) => setState(() => newPassword = val),
-                          obscureText: hideNewPassword,
-                        ),
-                        TextFormField(
-                          initialValue: '',
-                          decoration:
-                          formFieldDecoration.copyWith(hintText: 'Confirm Password',
-                            suffixIcon: IconButton(
-                              onPressed: () => setState(() => hideConfirmPassword = !hideConfirmPassword),
-                              icon: Icon(Icons.visibility)
-                            ),
-                          ),
-                          validator: (val) => val.isEmpty ? 'Enter Confirm Password' : val.length < 6 ? 'Should be 6 or more characters in length' : null,
-                          onChanged: (val) => setState(() => confirmPassword = val),
-                          obscureText: hideConfirmPassword,
-                        ),
-                        ElevatedButton(onPressed: () async {
-                          if(_formKey2.currentState.validate() && newPassword == confirmPassword) {
-                            String result = await _auth.changePassword(newPassword);
-                            if(result == 'SUCCESS') {
+                                );
+                              }
+                            } else {
                               final snackBar = SnackBar(
-                                duration: Duration(seconds: 2),
+                                duration: Duration(seconds: 3),
                                 behavior: SnackBarBehavior.floating,
-                                content: Text('Password successfully changed'),
+                                content: Text(newPassword != confirmPassword ? 'Password fields mismatched' : 'Fill up New and Confirm password fields properly'),
                                 action: SnackBarAction(label: 'OK', onPressed: () => ScaffoldMessenger.of(context).hideCurrentSnackBar()),
                               );
                               ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                            } else {
-                              showDialog(
-                                context: context,
-                                builder: (context) => AlertDialog(
-                                  title: Text('Change Password'),
-                                  content: Text(result),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () {
-                                        Navigator.pop(context);
-                                        Navigator.pop(context);
-                                      },
-                                      child: Text('OK')
-                                    )
-                                  ],
-                                )
-                              );
                             }
-                          } else {
-                            final snackBar = SnackBar(
-                              duration: Duration(seconds: 3),
-                              behavior: SnackBarBehavior.floating,
-                              content: Text(newPassword != confirmPassword ? 'Password fields mismatched' : 'Fill up New and Confirm password fields properly'),
-                              action: SnackBarAction(label: 'OK', onPressed: () => ScaffoldMessenger.of(context).hideCurrentSnackBar()),
-                            );
-                            ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                          }
-                        }, child: Text('CHANGE PASSWORD'),
-                          style: buttonDecoration)
-                      ],
-                    ),
-                  )
-                ],
+                          }, child: Text('CHANGE PASSWORD'),
+                            style: buttonDecoration)
+                        ],
+                      ),
+                    )
+                  ],
+                ),
               ),
             ),
           ),

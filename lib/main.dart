@@ -10,13 +10,15 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   runApp(
-    StreamProvider<Account>.value(
-      initialData: null,
-      value: AuthService().user,
-      child: MaterialApp(
-        theme: appTheme,
-        home: MyApp()
-      )
+    MultiProvider(
+      providers: [
+        StreamProvider<Account>.value(initialData: null, value: AuthService().user),
+      ],
+      // child: MaterialApp(
+      //   theme: appTheme,
+      //   home: MyApp()
+      // )
+      child: MyApp()
     )
   );
 }

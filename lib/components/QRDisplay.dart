@@ -82,6 +82,9 @@ class QRDisplay extends StatelessWidget {
         ]
       ),
       body: Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(image: new AssetImage("assets/images/background.jpg"), fit: BoxFit.cover,),
+        ),
         child: Center(
           child: QrImage(
             data: data,

@@ -13,7 +13,6 @@ import 'package:provider/provider.dart';
 import 'package:mech_track/models/Part.dart';
 import 'package:mech_track/shared/decorations.dart';
 import 'package:mech_track/services/LocalDatabaseService.dart';
-import 'package:uuid/uuid.dart';
 
 class DataPage extends StatefulWidget {
   @override
@@ -24,7 +23,6 @@ class _DataPageState extends State<DataPage> {
   bool isSyncing = false;
   bool isGlobalImporting = false;
   bool isLocalImporting = false;
-  Uuid uuid = Uuid();
 
   String calculateHash(String data) {
     var bytes = utf8.encode(data); // data being hashed
@@ -282,10 +280,13 @@ class _DataPageState extends State<DataPage> {
         title: Text('Data Management Page'),
         bottom: isSyncing || isGlobalImporting || isLocalImporting ? PreferredSize(
           preferredSize: Size(double.infinity, 1.0),
-          child: LinearProgressIndicator(backgroundColor: Colors.deepOrangeAccent)
+          child: LinearProgressIndicator(backgroundColor: Colors.white)
         ) : null,
       ),
       body: Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(image: new AssetImage("assets/images/background.jpg"), fit: BoxFit.cover,),
+        ),
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(

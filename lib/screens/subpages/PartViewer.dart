@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mech_track/BLoCs/LocalDatabaseBloc.dart';
+import 'package:mech_track/components/PartTableText.dart';
 import 'package:mech_track/components/QRDisplay.dart';
 import 'package:mech_track/models/AccountData.dart';
 import 'package:mech_track/models/Part.dart';
@@ -20,8 +21,8 @@ class PartViewer extends StatefulWidget {
 class _PartViewerState extends State<PartViewer> {
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final part = widget.part;
+    final theme = Theme.of(context);
 
     return Scaffold(
       appBar: AppBar(
@@ -50,122 +51,136 @@ class _PartViewerState extends State<PartViewer> {
         ],
       ),
       body: Container(
-        child: Table(
-          border: TableBorder.all(color: Colors.blueAccent, width: 1),
+        decoration: BoxDecoration(
+          image: DecorationImage(image: new AssetImage("assets/images/background.jpg"), fit: BoxFit.cover,),
+        ),
+        child: Column(
           children: [
-          TableRow(
-            children: [
-              Text('Part ID', style: theme.textTheme.headline5),
-              Text(part.pid, style: theme.textTheme.headline6),
-            ]
-          ),
-          TableRow(
-              children: [
-                Text('AAC', style: theme.textTheme.headline5),
-                Text(part.assetAccountCode, style: theme.textTheme.headline6),
-              ]
-          ),
-          TableRow(
-              children: [
-                Text('Process', style: theme.textTheme.headline5),
-                Text(part.process, style: theme.textTheme.headline6),
-              ]
-          ),
-            TableRow(
+            Expanded(
+              child: Table(
+                defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+                border: TableBorder.all(color: theme.primaryColor, width: 1),
+                columnWidths: const <int, TableColumnWidth>{
+                  0: IntrinsicColumnWidth(),
+                  1: FlexColumnWidth(),
+                },
                 children: [
-                  Text('Subprocess', style: theme.textTheme.headline5),
-                  Text(part.subProcess, style: theme.textTheme.headline6),
-                ]
-            ),
-            TableRow(
-                children: [
-                  Text('Description', style: theme.textTheme.headline5),
-                  Text(part.description, style: theme.textTheme.headline6),
-                ]
-            ),
-            TableRow(
-                children: [
-                  Text('Type', style: theme.textTheme.headline5),
-                  Text(part.type, style: theme.textTheme.headline6),
-                ]
-            ),
-            TableRow(
-                children: [
-                  Text('Criticality', style: theme.textTheme.headline5),
-                  Text(part.criticality, style: theme.textTheme.headline6),
-                ]
-            ),
-            TableRow(
-                children: [
-                  Text('Status', style: theme.textTheme.headline5),
-                  Text(part.status, style: theme.textTheme.headline6),
-                ]
-            ),
-            TableRow(
-                children: [
-                  Text('Year Installed', style: theme.textTheme.headline5),
-                  Text(part.yearInstalled, style: theme.textTheme.headline6),
-                ]
-            ),
-            TableRow(
-                children: [
-                  Text('Description 2', style: theme.textTheme.headline5),
-                  Text(part.description2, style: theme.textTheme.headline6),
-                ]
-            ),
-            TableRow(
-                children: [
-                  Text('Brand', style: theme.textTheme.headline5),
-                  Text(part.brand, style: theme.textTheme.headline6),
-                ]
-            ),
-            TableRow(
-                children: [
-                  Text('Model', style: theme.textTheme.headline5),
-                  Text(part.model, style: theme.textTheme.headline6),
-                ]
-            ),
-            TableRow(
-                children: [
-                  Text('Spec 1', style: theme.textTheme.headline5),
-                  Text(part.spec1, style: theme.textTheme.headline6),
-                ]
-            ),
-            TableRow(
-                children: [
-                  Text('Spec 2', style: theme.textTheme.headline5),
-                  Text(part.spec2, style: theme.textTheme.headline6),
-                ]
-            ),
-            TableRow(
-                children: [
-                  Text('Dept', style: theme.textTheme.headline5),
-                  Text(part.dept, style: theme.textTheme.headline6),
-                ]
-            ),
-            TableRow(
-                children: [
-                  Text('Facility', style: theme.textTheme.headline5),
-                  Text(part.facility, style: theme.textTheme.headline6),
-                ]
-            ),
-            TableRow(
-                children: [
-                  Text('Facility Type', style: theme.textTheme.headline5),
-                  Text(part.facilityType, style: theme.textTheme.headline6),
-                ]
-            ),
-            TableRow(
-                children: [
-                  Text('SAP Facility', style: theme.textTheme.headline5),
-                  Text(part.sapFacility, style: theme.textTheme.headline6),
-                ]
-            ),
-            TableRow(
-                children: [
-                  Text('Critical by PM', style: theme.textTheme.headline5),
-                  Text(part.criticalByPM, style: theme.textTheme.headline6),
-                ]
+                TableRow(
+                  children: [
+                    PartTableText('Part ID', 'LABEL'),
+                    PartTableText(part.pid, 'CONTENT'),
+                  ]
+                ),
+                TableRow(
+                    children: [
+                      PartTableText('AAC', 'LABEL'),
+                      PartTableText(part.assetAccountCode, 'CONTENT'),
+                    ]
+                ),
+                TableRow(
+                    children: [
+                      PartTableText('Process', 'LABEL'),
+                      PartTableText(part.process, 'CONTENT'),
+                    ]
+                ),
+                  TableRow(
+                      children: [
+                        PartTableText('Subprocess', 'LABEL'),
+                        PartTableText(part.subProcess, 'CONTENT'),
+                      ]
+                  ),
+                  TableRow(
+                      children: [
+                        PartTableText('Type', 'LABEL'),
+                        PartTableText(part.type, 'CONTENT'),
+                      ]
+                  ),
+                  TableRow(
+                      children: [
+                        PartTableText('Criticality', 'LABEL'),
+                        PartTableText(part.criticality, 'CONTENT'),
+                      ]
+                  ),
+                  TableRow(
+                      children: [
+                        PartTableText('Status', 'LABEL'),
+                        PartTableText(part.status, 'CONTENT'),
+                      ]
+                  ),
+                  TableRow(
+                      children: [
+                        PartTableText('Year Installed', 'LABEL'),
+                        PartTableText(part.yearInstalled, 'CONTENT'),
+                      ]
+                  ),
+                  TableRow(
+                      children: [
+                        PartTableText('Brand', 'LABEL'),
+                        PartTableText(part.brand, 'CONTENT'),
+                      ]
+                  ),
+                  TableRow(
+                      children: [
+                        PartTableText('Model', 'LABEL'),
+                        PartTableText(part.model, 'CONTENT'),
+                      ]
+                  ),
+                  TableRow(
+                      children: [
+                        PartTableText('Spec 1', 'LABEL'),
+                        PartTableText(part.spec1, 'CONTENT'),
+                      ]
+                  ),
+                  TableRow(
+                      children: [
+                        PartTableText('Spec 2', 'LABEL'),
+                        PartTableText(part.spec2, 'CONTENT'),
+                      ]
+                  ),
+                  TableRow(
+                      children: [
+                        PartTableText('Dept', 'LABEL'),
+                        PartTableText(part.dept, 'CONTENT'),
+                      ]
+                  ),
+                  TableRow(
+                      children: [
+                        PartTableText('Facility', 'LABEL'),
+                        PartTableText(part.facility, 'CONTENT'),
+                      ]
+                  ),
+                  TableRow(
+                      children: [
+                        PartTableText('Facility Type', 'LABEL'),
+                        PartTableText(part.facilityType, 'CONTENT'),
+                      ]
+                  ),
+                  TableRow(
+                      children: [
+                        PartTableText('SAP Facility', 'LABEL'),
+                        PartTableText(part.sapFacility, 'CONTENT'),
+                      ]
+                  ),
+                  TableRow(
+                      children: [
+                        PartTableText('Critical by PM', 'LABEL'),
+                        PartTableText(part.criticalByPM, 'CONTENT'),
+                      ]
+                  ),
+                  TableRow(
+                      children: [
+                        PartTableText('Description', 'LABEL'),
+                        PartTableText(part.description, 'CONTENT'),
+                      ]
+                  ),
+                  TableRow(
+                      children: [
+                        PartTableText('Description 2', 'LABEL'),
+                        PartTableText(part.description2, 'CONTENT'),
+                      ]
+                  ),
+                ],
+              ),
             ),
           ],
         ),

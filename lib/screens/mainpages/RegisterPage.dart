@@ -43,38 +43,43 @@ class _RegisterPageState extends State<RegisterPage> {
         GestureDetector(
           onTap: () => FocusScope.of(context).requestFocus(new FocusNode()),
           child: Scaffold(
-            body: Center(
-              child: SingleChildScrollView(
-                physics: ClampingScrollPhysics(),
-                child: Container(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: <Widget>[
-                              Image(
-                                  image: AssetImage(
-                                      'assets/images/newLogoFull.gif'),
-                                  width: 150,
-                                  fit: BoxFit.cover),
-                              Text('Create your Account',
-                                  style: theme.textTheme.headline5,
-                                  textAlign: TextAlign.center)
-                            ],
-                          ),
-                          SizedBox(height: 60),
-                          Form(
-                            key: _formKey,
-                            child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: <Widget>[
-                                  Text('Full Name',
-                                      style: theme.textTheme.headline6),
-                                  TextFormField(
+            body: Container(
+              decoration: BoxDecoration(
+                image: DecorationImage(image: new AssetImage("assets/images/background.jpg"), fit: BoxFit.cover,),
+              ),
+              child: Center(
+                child: SingleChildScrollView(
+                  physics: ClampingScrollPhysics(),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            Image(
+                                image: AssetImage(
+                                    'assets/images/newLogoFull.gif'),
+                                width: 150,
+                                fit: BoxFit.cover),
+                            Text('Create your Account',
+                                style: theme.textTheme.headline5,
+                                textAlign: TextAlign.center)
+                          ],
+                        ),
+                        SizedBox(height: 60),
+                        Form(
+                          key: _formKey,
+                          child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: <Widget>[
+                                Text('Full Name',
+                                    style: theme.textTheme.button),
+                                Padding(
+                                  padding: const EdgeInsets.fromLTRB(0,5,0,10),
+                                  child: TextFormField(
                                       initialValue: '',
                                       decoration:
                                       formFieldDecoration.copyWith(
@@ -84,9 +89,12 @@ class _RegisterPageState extends State<RegisterPage> {
                                       onChanged: (val) => setState(() =>
                                       accountData.fullName = val)
                                   ),
-                                  Text('Username',
-                                      style: theme.textTheme.headline6),
-                                  TextFormField(
+                                ),
+                                Text('Username',
+                                    style: theme.textTheme.button),
+                                Padding(
+                                  padding: const EdgeInsets.fromLTRB(0,5,0,10),
+                                  child: TextFormField(
                                       initialValue: '',
                                       decoration:
                                       formFieldDecoration.copyWith(
@@ -96,9 +104,12 @@ class _RegisterPageState extends State<RegisterPage> {
                                       onChanged: (val) => setState(() =>
                                       accountData.username = val)
                                   ),
-                                  Text('Email',
-                                      style: theme.textTheme.headline6),
-                                  TextFormField(
+                                ),
+                                Text('Email',
+                                    style: theme.textTheme.button),
+                                Padding(
+                                  padding: const EdgeInsets.fromLTRB(0,5,0,10),
+                                  child: TextFormField(
                                       initialValue: '',
                                       decoration:
                                       formFieldDecoration.copyWith(
@@ -110,9 +121,12 @@ class _RegisterPageState extends State<RegisterPage> {
                                       onChanged: (val) =>
                                           setState(() => email = val)
                                   ),
-                                  Text('Password',
-                                      style: theme.textTheme.headline6),
-                                  TextFormField(
+                                ),
+                                Text('Password',
+                                    style: theme.textTheme.button),
+                                Padding(
+                                  padding: const EdgeInsets.fromLTRB(0,5,0,10),
+                                  child: TextFormField(
                                     initialValue: '',
                                     decoration: formFieldDecoration.copyWith(
                                         suffixIcon: IconButton(
@@ -128,69 +142,76 @@ class _RegisterPageState extends State<RegisterPage> {
                                         setState(() => password = val),
                                     obscureText: hidePassword,
                                   ),
-                                  TextButton(
-                                      onPressed: () =>
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                                builder: (context) =>
-                                                    SignInPage()),
-                                          ),
-                                      child: Text(
-                                          'Already have account? Sign In')),
-                                ]),
-                          ),
-                          SizedBox(height: 60),
-                          ElevatedButton(onPressed: () async {
-                            if (_formKey.currentState.validate()) {
-                              setState(() => loading = true);
-                              String result = await _auth.register(
-                                  accountData, email, password);
-                              if (result == 'SUCCESS') {
-                                setState(() {
-                                  loading = false;
-                                  verifying = true;
-                                });
+                                ),
+                              ]),
+                        ),
+                        SizedBox(height: 60),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            ElevatedButton(onPressed: () async {
+                              if (_formKey.currentState.validate()) {
+                                setState(() => loading = true);
+                                String result = await _auth.register(
+                                    accountData, email, password);
+                                if (result == 'SUCCESS') {
+                                  setState(() {
+                                    loading = false;
+                                    verifying = true;
+                                  });
+                                } else {
+                                  setState(() {
+                                    // error = result;
+                                    loading = false;
+                                  });
+                                  showDialog(
+                                      context: context,
+                                      builder: (context) =>
+                                          AlertDialog(
+                                            title: Text('Sign In'),
+                                            content: Text(result),
+                                            actions: [
+                                              TextButton(
+                                                  onPressed: () =>
+                                                      Navigator.pop(context),
+                                                  child: Text('OK')
+                                              )
+                                            ],
+                                          )
+                                  );
+                                }
                               } else {
-                                setState(() {
-                                  // error = result;
-                                  loading = false;
-                                });
-                                showDialog(
-                                    context: context,
-                                    builder: (context) =>
-                                        AlertDialog(
-                                          title: Text('Sign In'),
-                                          content: Text(result),
-                                          actions: [
-                                            TextButton(
-                                                onPressed: () =>
-                                                    Navigator.pop(context),
-                                                child: Text('OK')
-                                            )
-                                          ],
-                                        )
+                                final snackBar = SnackBar(
+                                  duration: Duration(seconds: 2),
+                                  behavior: SnackBarBehavior.floating,
+                                  content: Text('Fill up all the fields'),
+                                  action: SnackBarAction(label: 'OK',
+                                      onPressed: () =>
+                                          ScaffoldMessenger.of(context)
+                                              .hideCurrentSnackBar()),
                                 );
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                    snackBar);
                               }
-                            } else {
-                              final snackBar = SnackBar(
-                                duration: Duration(seconds: 2),
-                                behavior: SnackBarBehavior.floating,
-                                content: Text('Fill up all the fields'),
-                                action: SnackBarAction(label: 'OK',
-                                    onPressed: () =>
-                                        ScaffoldMessenger.of(context)
-                                            .hideCurrentSnackBar()),
-                              );
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                  snackBar);
-                            }
-                          }, child: Text('Register'),
-                              style: buttonDecoration
-                          ),
-                        ],
-                      ),
-                    )),
+                            }, child: Text('Register'),
+                                style: buttonDecoration
+                            ),
+                            TextButton(
+                              onPressed: () =>
+                                Navigator.push(context,
+                                  MaterialPageRoute(builder: (context) => SignInPage()),
+                                ),
+                              child: Text('Already have account? Sign In'),
+                              style: ButtonStyle(
+                                  foregroundColor: MaterialStateProperty.all(Color(0xFF0D0D0D))
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
             ),
           ),

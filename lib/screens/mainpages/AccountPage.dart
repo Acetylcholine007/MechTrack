@@ -62,6 +62,9 @@ class _AccountPageState extends State<AccountPage> {
         title: Text('Accounts Management Page'),
       ),
       body: Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(image: new AssetImage("assets/images/background.jpg"), fit: BoxFit.cover,),
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [

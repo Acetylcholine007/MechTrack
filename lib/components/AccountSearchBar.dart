@@ -49,8 +49,6 @@ class AccountSearchBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Container(
       color: Theme.of(context).primaryColor,
       child: Padding(
@@ -62,7 +60,7 @@ class AccountSearchBar extends StatelessWidget {
             onChanged: searchHandler,
           ),
           trailing: IconButton(
-              icon: Icon(Icons.filter_list_rounded), onPressed: filterHandler
+              icon: Icon(Icons.filter_list_rounded, color: Colors.white), onPressed: filterHandler
           ),
         ),
       ),

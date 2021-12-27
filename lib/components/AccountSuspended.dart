@@ -19,6 +19,9 @@ class _AccountSuspendedState extends State<AccountSuspended> {
     return Scaffold(
       body: SafeArea(
         child: Container(
+          decoration: BoxDecoration(
+            image: DecorationImage(image: new AssetImage("assets/images/background.jpg"), fit: BoxFit.cover,),
+          ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,

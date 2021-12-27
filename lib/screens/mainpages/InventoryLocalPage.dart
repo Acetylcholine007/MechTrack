@@ -82,7 +82,10 @@ class _InventoryLocalPageState extends State<InventoryLocalPage> {
                 ),
             ),
             body: Container(
-              child: snapshot.data != null ? Column(
+              decoration: BoxDecoration(
+                image: DecorationImage(image: new AssetImage("assets/images/background.jpg"), fit: BoxFit.cover,),
+              ),
+              child: snapshot.data != null ? snapshot.data.isEmpty ? NoPart() :Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   PartSearchBar(categoryHandler: categoryHandler, searchHandler: searchHandler, category: category, context: context),

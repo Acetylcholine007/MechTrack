@@ -130,7 +130,6 @@ class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final authUser = Provider.of<Account>(context);
     final account = authUser.isAnon ? null : Provider.of<AccountData>(context);
     List<Part> parts = Provider.of<List<Part>>(context);
@@ -145,7 +144,7 @@ class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
 
     parts = filterHandler(parts);
 
-    return parts != null ? Scaffold(
+    return parts != null ? parts.isEmpty ? NoPart() : Scaffold(
       appBar: AppBar(
         title: Text('Global Database'),
         actions: [
@@ -184,6 +183,9 @@ class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
           ),
       ) : null,
       body: Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(image: new AssetImage("assets/images/background.jpg"), fit: BoxFit.cover,),
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
