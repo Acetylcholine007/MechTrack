@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:barcode_scan2/barcode_scan2.dart';
+import 'package:mech_track/components/AccountSuspended.dart';
 import 'package:mech_track/models/Account.dart';
 import 'package:mech_track/models/AccountData.dart';
 
@@ -126,11 +127,13 @@ class _MainWrapperState extends State<MainWrapper> {
 
   @override
   Widget build(BuildContext context) {
-    final account = widget.account.isAnon ? null : Provider.of<AccountData>(context);
-
     final theme = Theme.of(context);
+    final account = widget.account.isAnon ? null : Provider.of<AccountData>(context);
     final pages = getPages(widget.account.isAnon ? 'GUESS' : account.accountType);
     final tabs = getTabs(widget.account.isAnon ? 'GUESS' : account.accountType);
+
+    if(!widget.account.isAnon && !account.isVerified)
+      return AccountSuspended();
 
     return GestureDetector(
       onTap: () => FocusScope.of(context).requestFocus(new FocusNode()),

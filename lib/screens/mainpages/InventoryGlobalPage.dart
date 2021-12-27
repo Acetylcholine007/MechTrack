@@ -175,14 +175,14 @@ class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
           })
         ],
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: account.accountType == 'ADMIN' ? FloatingActionButton(
         child: Icon(Icons.add),
         onPressed: () =>
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => PartEditor(isNew: true, isLocal: false, account: account)),
           ),
-      ),
+      ) : null,
       body: Container(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,

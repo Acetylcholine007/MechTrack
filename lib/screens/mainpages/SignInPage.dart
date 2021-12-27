@@ -12,9 +12,8 @@ class _SignInPageState extends State<SignInPage> {
   final _formKey = GlobalKey<FormState>();
   String email = '';
   String password = '';
-  // String error = '';
-  // bool loading = false;
   bool hidePassword = true;
+  bool loading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -78,29 +77,29 @@ class _SignInPageState extends State<SignInPage> {
                   SizedBox(height: 60),
                   ElevatedButton(onPressed: () async {
                     if(_formKey.currentState.validate()) {
-                      // setState(() => loading = true);
+                      setState(() => loading = true);
                       //TODO: Implement Loading Indication
-                      //TODO: Add Navigator.pop
                       String result = await _auth.signInEmail(email, password);
                       print(result);
                       if(result != 'SUCCESS') {
-                        // setState(() {
-                          // error = result;
-                          // loading = false;
-                        // });
-                        // showDialog(
-                        //     context: context,
-                        //     builder: (context) => AlertDialog(
-                        //       title: Text('Log In'),
-                        //       content: Text(error),
-                        //       actions: [
-                        //         TextButton(
-                        //             onPressed: () => Navigator.pop(context),
-                        //             child: Text('OK')
-                        //         )
-                        //       ],
-                        //     )
-                        // );
+                        setState(() {
+                          loading = false;
+                        });
+                        showDialog(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: Text('Log In'),
+                              content: Text(result),
+                              actions: [
+                                TextButton(
+                                    onPressed: () => Navigator.pop(context),
+                                    child: Text('OK')
+                                )
+                              ],
+                            )
+                        );
+                      } else {
+                        Navigator.pop(context);
                       }
                     } else {
                       final snackBar = SnackBar(

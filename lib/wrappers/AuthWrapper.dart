@@ -18,7 +18,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
   Widget build(BuildContext context) {
     final authUser = Provider.of<Account>(context);
 
-    if(authUser != null && !authUser.isAnon) {
+    if(authUser != null && !authUser.isAnon /*&&  authUser.isEmailVerified*/) {
       return MultiProvider(
           providers: [
             StreamProvider<AccountData>.value(value: DatabaseService.db.getUser(authUser.uid), initialData: null),

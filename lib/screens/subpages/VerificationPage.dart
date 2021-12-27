@@ -38,15 +38,17 @@ class _VerificationPageState extends State<VerificationPage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Container(
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text('Verify your email at:', style: theme.textTheme.headline4),
-            SizedBox(height: 20),
-            Text(user.email, style: theme.textTheme.bodyText2)
-          ],
+    return Scaffold(
+      body: Container(
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text('Verify your email at:', style: theme.textTheme.headline4),
+              SizedBox(height: 20),
+              Text(user.email, style: theme.textTheme.bodyText2)
+            ],
+          ),
         ),
       ),
     );

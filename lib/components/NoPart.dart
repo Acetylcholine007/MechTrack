@@ -6,13 +6,17 @@ class NoPart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Part Viewer'),
       ),
       body: Container(
         child: Center(
-          child: Text(isValid ? 'No Part Exist' : 'Invalid Part QR Code'),
+          child: Text(
+          isValid ? 'No Part Exist' : 'Invalid Part QR Code',
+          style: theme.textTheme.headline4),
         ),
       ),
     );
