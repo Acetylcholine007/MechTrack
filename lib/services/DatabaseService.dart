@@ -166,7 +166,7 @@ class DatabaseService {
       'fullName': person.fullName,
       'username': person.username,
       'accountType': 'EMPLOYEE',
-      'isVerified': true,
+      'isVerified': false,
       'email': email
     })
       .then((value) => result = 'SUCCESS')

@@ -1,15 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:barcode_scan2/barcode_scan2.dart';
 import 'package:mech_track/models/Account.dart';
+import 'package:mech_track/models/AccountData.dart';
 
 import 'package:mech_track/screens/mainpages/AccountPage.dart';
 import 'package:mech_track/screens/mainpages/DataPage.dart';
+import 'package:mech_track/screens/mainpages/GuessProfilePage.dart';
 import 'package:mech_track/screens/mainpages/InventoryGlobalPage.dart';
 import 'package:mech_track/screens/mainpages/InventoryLocalPage.dart';
 import 'package:mech_track/screens/mainpages/ProfilePage.dart';
 import 'package:provider/provider.dart';
 
 class MainWrapper extends StatefulWidget {
+  final Account account;
+
+  MainWrapper({this.account});
 
   @override
   _MainWrapperState createState() => _MainWrapperState();
@@ -17,60 +22,19 @@ class MainWrapper extends StatefulWidget {
 
 class _MainWrapperState extends State<MainWrapper> {
   int _currentIndex = 0;
-  List<Page> pages = [
-    Page(
-      DataPage(),
-      BottomNavigationBarItem(
-        label: 'Data',
-        icon: Icon(Icons.archive_rounded),
-      ),
-      1
-    ),
-    Page(
-      InventoryLocalPage(),
-      BottomNavigationBarItem(
-        label: 'Local',
-        icon: Icon(Icons.sd_card_rounded),
-      ),
-      1
-    ),
-    Page(
-      InventoryGlobalPage(),
-      BottomNavigationBarItem(
-        label: 'Global',
-        icon: Icon(Icons.storage_rounded),
-      ),
-      2
-    ),
-    Page(
-        AccountPage(),
-        BottomNavigationBarItem(
-          label: 'Accounts',
-          icon: Icon(Icons.group_rounded),
-        ),
-        3
-    ),
-    Page(
-      ProfilePage(),
-      BottomNavigationBarItem(
-        label: 'Profile',
-        icon: Icon(Icons.account_circle_rounded),
-      ),
-      2
-    ),
-  ];
+  List<Page> pages;
 
   Future<String> scanCode() async {
     var result = await BarcodeScanner.scan();
     return result.rawContent;
   }
 
-  String getAccountType(Account account, String type) {
-    if (account.isAnon)
+  String getAccountType(bool isAnon, String type) {
+    if (isAnon)
       return 'GUESS';
-    if (!account.isAnon && type == "ADMIN")
+    if (!isAnon && type == "ADMIN")
       return 'ADMIN';
-    if (!account.isAnon && type == "EMPLOYEE")
+    if (!isAnon && type == "EMPLOYEE")
       return 'EMPLOYEE';
     return 'ADMIN';
   }
@@ -114,11 +78,59 @@ class _MainWrapperState extends State<MainWrapper> {
   }
 
   @override
+  void initState() {
+    pages = [
+      Page(
+          DataPage(),
+          BottomNavigationBarItem(
+            label: 'Data',
+            icon: Icon(Icons.archive_rounded),
+          ),
+          1
+      ),
+      Page(
+          InventoryLocalPage(),
+          BottomNavigationBarItem(
+            label: 'Local',
+            icon: Icon(Icons.sd_card_rounded),
+          ),
+          1
+      ),
+      Page(
+          InventoryGlobalPage(),
+          BottomNavigationBarItem(
+            label: 'Global',
+            icon: Icon(Icons.storage_rounded),
+          ),
+          2
+      ),
+      Page(
+          AccountPage(),
+          BottomNavigationBarItem(
+            label: 'Accounts',
+            icon: Icon(Icons.group_rounded),
+          ),
+          3
+      ),
+      Page(
+          widget.account.isAnon ? GuessProfilePage() : ProfilePage(),
+          BottomNavigationBarItem(
+            label: 'Profile',
+            icon: Icon(Icons.account_circle_rounded),
+          ),
+          1
+      ),
+    ];
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final account = Provider.of<Account>(context);
+    final account = widget.account.isAnon ? null : Provider.of<AccountData>(context);
+
     final theme = Theme.of(context);
-    final pages = getPages(getAccountType(account, 'ADMIN'));
-    final tabs = getTabs(getAccountType(account, 'ADMIN'));
+    final pages = getPages(widget.account.isAnon ? 'GUESS' : account.accountType);
+    final tabs = getTabs(widget.account.isAnon ? 'GUESS' : account.accountType);
 
     return GestureDetector(
       onTap: () => FocusScope.of(context).requestFocus(new FocusNode()),

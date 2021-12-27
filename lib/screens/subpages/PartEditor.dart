@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mech_track/BLoCs/LocalDatabaseBloc.dart';
+import 'package:mech_track/models/AccountData.dart';
 import 'package:mech_track/models/Part.dart';
 import 'package:mech_track/services/DatabaseService.dart';
 import 'package:mech_track/shared/decorations.dart';
@@ -12,8 +13,9 @@ class PartEditor extends StatefulWidget {
   final bool isLocal;
   final Part oldPart;
   final PartsBloc bloc;
+  final AccountData account;
 
-  PartEditor({this.isNew, this.isLocal, this.oldPart, this.bloc});
+  PartEditor({this.isNew, this.isLocal, this.oldPart, this.bloc, this.account});
 
   @override
   _PartEditorState createState() => _PartEditorState();
@@ -262,10 +264,7 @@ class _PartEditorState extends State<PartEditor> {
         title: Text(widget.isNew ? 'Create Part' : 'Edit Part'),
         actions: (widget.isNew ? <Widget>[] : <Widget>[
           IconButton(icon: Icon(Icons.delete), onPressed: deleteHandler),
-        ]) +
-        <Widget>[
-          IconButton(icon: Icon(Icons.save), onPressed: saveHandler),
-        ],
+        ]) + [IconButton(icon: Icon(Icons.save), onPressed: saveHandler)],
       ),
       body: Container(
         child: Form(

@@ -5,6 +5,8 @@ import 'package:mech_track/components/NoPart.dart';
 
 import 'package:mech_track/components/PartListTile.dart';
 import 'package:mech_track/components/PartSearchBar.dart';
+import 'package:mech_track/models/Account.dart';
+import 'package:mech_track/models/AccountData.dart';
 import 'package:mech_track/models/Part.dart';
 import 'package:mech_track/screens/subpages/PartEditor.dart';
 import 'package:mech_track/screens/subpages/PartViewer.dart';
@@ -129,6 +131,8 @@ class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final authUser = Provider.of<Account>(context);
+    final account = authUser.isAnon ? null : Provider.of<AccountData>(context);
     List<Part> parts = Provider.of<List<Part>>(context);
 
     void searchHandler(String val) {
@@ -154,7 +158,7 @@ class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) =>
-                    PartViewer(part: part, isLocal: false))
+                    PartViewer(part: part, isLocal: false, account: account))
                 );
               } else {
                 Navigator.push(
@@ -176,7 +180,7 @@ class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
         onPressed: () =>
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => PartEditor(isNew: true, isLocal: false,)),
+            MaterialPageRoute(builder: (context) => PartEditor(isNew: true, isLocal: false, account: account)),
           ),
       ),
       body: Container(
@@ -192,7 +196,7 @@ class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
                     onTap: () =>
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => PartViewer(part: parts[index], isLocal: false)),
+                          MaterialPageRoute(builder: (context) => PartViewer(part: parts[index], isLocal: false, account: account)),
                         ),
                     child: PartListTile(
                       key: Key(index.toString()),

@@ -25,16 +25,10 @@ class _AuthWrapperState extends State<AuthWrapper> {
             StreamProvider<List<Part>>.value(value: DatabaseService.db.parts, initialData: null),
             StreamProvider<List<AccountData>>.value(value: DatabaseService.db.users, initialData: null),
           ],
-        child: MainWrapper()
+        child: MainWrapper(account: authUser)
       );
     } else if (authUser != null && authUser.isAnon) {
-      return MultiProvider(
-          providers: [
-            StreamProvider<AccountData>.value(value: DatabaseService.db.getUser(authUser.uid), initialData: null),
-            StreamProvider<List<Part>>.value(value: DatabaseService.db.parts, initialData: null),
-          ],
-          child: MainWrapper()
-      );
+      return MainWrapper(account: authUser);
     } else {
       return FrontPage();
     }

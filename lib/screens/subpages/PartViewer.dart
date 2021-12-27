@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mech_track/BLoCs/LocalDatabaseBloc.dart';
 import 'package:mech_track/components/QRDisplay.dart';
+import 'package:mech_track/models/AccountData.dart';
 import 'package:mech_track/models/Part.dart';
 import 'package:mech_track/screens/subpages/PartEditor.dart';
 
@@ -8,8 +9,9 @@ class PartViewer extends StatefulWidget {
   final Part part;
   final bool isLocal;
   final PartsBloc bloc;
+  final AccountData account;
 
-  PartViewer({this.part, this.isLocal, this.bloc});
+  PartViewer({this.part, this.isLocal, this.bloc, this.account});
 
   @override
   _PartViewerState createState() => _PartViewerState();
@@ -24,17 +26,19 @@ class _PartViewerState extends State<PartViewer> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Part Viewer'),
-        actions: [
-          IconButton(icon: Icon(Icons.edit), onPressed: () =>
+        actions: (!widget.isLocal && widget.account.accountType == 'EMPLOYEE' ? <Widget>[] :
+        <Widget>[IconButton(icon: Icon(Icons.edit), onPressed: () =>
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => PartEditor(
                 isNew: false,
                 isLocal: widget.isLocal,
                 oldPart: widget.part,
-                bloc: widget.bloc)),
+                bloc: widget.bloc,
+                account: widget.account
+              )),
             ),
-          ),
+          )]) + <Widget>[
           IconButton(icon: Icon(Icons.qr_code), onPressed: () =>
             Navigator.push(
               context,

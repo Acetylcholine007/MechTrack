@@ -4,6 +4,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:csv/csv.dart';
+import 'package:mech_track/models/Account.dart';
+import 'package:mech_track/models/AccountData.dart';
 import 'package:mech_track/services/DatabaseService.dart';
 import 'package:provider/provider.dart';
 
@@ -154,7 +156,82 @@ class _DataPageState extends State<DataPage> {
 
   @override
   Widget build(BuildContext context) {
-    List<Part> parts = Provider.of<List<Part>>(context);
+    final authUser = Provider.of<Account>(context);
+    List<Part> parts = authUser.isAnon ? null : Provider.of<List<Part>>(context);
+    final account = authUser.isAnon ? null : Provider.of<AccountData>(context);
+
+    List<OperatorWidget> operatorWidgets = [
+      OperatorWidget(
+        ElevatedButton(
+          onPressed: localCSVImport,
+          child: Text('Import CSV for Local Database'),
+          style: buttonDecoration,
+        ), 1
+      ),
+      OperatorWidget(
+          ElevatedButton(
+            onPressed: globalCSVImport,
+            child: Text('Import CSV for Global Database'),
+            style: buttonDecoration,
+          ), 3
+      ),
+      OperatorWidget(
+          ElevatedButton(
+            onPressed: () async {
+              setState(() => isSyncing = true);
+              String result = await LocalDatabaseService.db.importParts(parts);
+              setState(() => isSyncing = false);
+
+              if(result == 'SUCCESS') {
+                final snackBar = SnackBar(
+                  duration: Duration(seconds: 3),
+                  behavior: SnackBarBehavior.floating,
+                  content: Text('Local Database synced to Firebase'),
+                  action: SnackBarAction(label: 'OK', onPressed: () => ScaffoldMessenger.of(context).hideCurrentSnackBar()),
+                );
+                ScaffoldMessenger.of(context).showSnackBar(snackBar);
+              } else {
+                showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: Text('Local Database Sync'),
+                      content: Text(result),
+                      actions: [
+                        TextButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                            child: Text('OK')
+                        )
+                      ],
+                    )
+                );
+              }
+            },
+            child: Text('Sync Local Database from Firebase'),
+            style: buttonDecoration,
+          ), 2
+      ),
+    ];
+
+    List<Widget> getOperators(String accountType) {
+      if(accountType == 'GUESS')
+        return operatorWidgets
+            .where((operator) => operator.accessLevel <= 1)
+            .map((operator) => operator.operator)
+            .toList();
+      if(accountType == 'EMPLOYEE')
+        return operatorWidgets
+            .where((operator) => operator.accessLevel <= 2)
+            .map((operator) => operator.operator)
+            .toList();
+      if(accountType == 'ADMIN')
+        return operatorWidgets
+            .where((operator) => operator.accessLevel <= 3)
+            .map((operator) => operator.operator)
+            .toList();
+      return [];
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -178,53 +255,10 @@ class _DataPageState extends State<DataPage> {
               ),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: <Widget>[
-                  ElevatedButton(
-                    onPressed: localCSVImport,
-                    child: Text('Import CSV for Local Database'),
-                    style: buttonDecoration,
-                  ),
-                  ElevatedButton(
-                    onPressed: globalCSVImport,
-                    child: Text('Import CSV for Global Database'),
-                    style: buttonDecoration,
-                  ),
-                  ElevatedButton(
-                    onPressed: () async {
-                      setState(() => isSyncing = true);
-                      String result = await LocalDatabaseService.db.importParts(parts);
-                      setState(() => isSyncing = false);
-
-                      if(result == 'SUCCESS') {
-                        final snackBar = SnackBar(
-                          duration: Duration(seconds: 3),
-                          behavior: SnackBarBehavior.floating,
-                          content: Text('Local Database synced to Firebase'),
-                          action: SnackBarAction(label: 'OK', onPressed: () => ScaffoldMessenger.of(context).hideCurrentSnackBar()),
-                        );
-                        ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                      } else {
-                        showDialog(
-                            context: context,
-                            builder: (context) => AlertDialog(
-                              title: Text('Local Database Sync'),
-                              content: Text(result),
-                              actions: [
-                                TextButton(
-                                    onPressed: () {
-                                      Navigator.pop(context);
-                                    },
-                                    child: Text('OK')
-                                )
-                              ],
-                            )
-                        );
-                      }
-                    },
-                    child: Text('Sync Local Database from Firebase'),
-                    style: buttonDecoration,
-                  ),
-                ]
+                children: getOperators(
+                  authUser.isAnon ? 'GUESS'
+                    : account != null && account.accountType == 'ADMIN' ? 'ADMIN'
+                    : 'EMPLOYEE')
               )
             ],
           ),
@@ -232,4 +266,11 @@ class _DataPageState extends State<DataPage> {
       ),
     );
   }
+}
+
+class OperatorWidget {
+  Widget operator;
+  int accessLevel;
+
+  OperatorWidget(this.operator, this.accessLevel);
 }
