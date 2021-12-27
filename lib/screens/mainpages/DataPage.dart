@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:csv/csv.dart';
@@ -25,9 +26,20 @@ class _DataPageState extends State<DataPage> {
   bool isLocalImporting = false;
   Uuid uuid = Uuid();
 
+  String calculateHash(String data) {
+    var bytes = utf8.encode(data); // data being hashed
+    var digest = sha1.convert(bytes);
+    print("Digest as hex string: $digest");
+    print(digest.toString());
+    return digest.toString();
+  }
+
   Future<List<Part>> csvReader() async {
     List<Part> newFields;
-    FilePickerResult result = await FilePicker.platform.pickFiles();
+    FilePickerResult result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['csv'],
+    );
     if (result != null) {
       PlatformFile file = result.files.first;
 
@@ -63,36 +75,59 @@ class _DataPageState extends State<DataPage> {
         headers.indexOf('criticalbypm'),
       ];
 
-      newFields = fields.map((row) => Part(
-        pid: uuid.v4().replaceAll(RegExp('-'), ''),
-        assetAccountCode: indices[1] != -1 ? row[indices[1]].toString() : '',
-        process: indices[2] != -1 ? row[indices[2]].toString() : '',
-        subProcess: indices[3] != -1 ? row[indices[3]].toString() : '',
-        description: indices[4] != -1 ? row[indices[4]].toString() : '',
-        type: indices[5] != -1 ? row[indices[5]].toString() : '',
-        criticality: indices[6] != -1 ? row[indices[6]].toString() : '',
-        status: indices[7] != -1 ? row[indices[7]].toString() : '',
-        yearInstalled: indices[8] != -1 ? row[indices[8]].toString() : '',
-        description2: indices[9] != -1 ? row[indices[9]].toString() : '',
-        brand: indices[10] != -1 ? row[indices[10]].toString() : '',
-        model: indices[11] != -1 ? row[indices[11]].toString() : '',
-        spec1: indices[12] != -1 ? row[indices[12]].toString() : '',
-        spec2: indices[13] != -1 ? row[indices[13]].toString() : '',
-        dept: indices[14] != -1 ? row[indices[14]].toString() : '',
-        facility: indices[15] != -1 ? row[indices[15]].toString() : '',
-        facilityType: indices[16] != -1 ? row[indices[16]].toString() : '',
-        sapFacility: indices[17] != -1 ? row[indices[17]].toString() : '',
-        criticalByPM: indices[18] != -1 ? row[indices[18]].toString() : '',
-      )).toList();
+      newFields = fields.map((row) {
+        Part part = Part(
+          pid: '',
+          assetAccountCode:
+              indices[1] != -1 ? row[indices[1]].toString() : '',
+          process: indices[2] != -1 ? row[indices[2]].toString() : '',
+          subProcess:
+              indices[3] != -1 ? row[indices[3]].toString() : '',
+          description:
+              indices[4] != -1 ? row[indices[4]].toString() : '',
+          type: indices[5] != -1 ? row[indices[5]].toString() : '',
+          criticality:
+              indices[6] != -1 ? row[indices[6]].toString() : '',
+          status: indices[7] != -1 ? row[indices[7]].toString() : '',
+          yearInstalled:
+              indices[8] != -1 ? row[indices[8]].toString() : '',
+          description2:
+              indices[9] != -1 ? row[indices[9]].toString() : '',
+          brand: indices[10] != -1 ? row[indices[10]].toString() : '',
+          model: indices[11] != -1 ? row[indices[11]].toString() : '',
+          spec1: indices[12] != -1 ? row[indices[12]].toString() : '',
+          spec2: indices[13] != -1 ? row[indices[13]].toString() : '',
+          dept: indices[14] != -1 ? row[indices[14]].toString() : '',
+          facility:
+              indices[15] != -1 ? row[indices[15]].toString() : '',
+          facilityType:
+              indices[16] != -1 ? row[indices[16]].toString() : '',
+          sapFacility:
+              indices[17] != -1 ? row[indices[17]].toString() : '',
+          criticalByPM:
+              indices[18] != -1 ? row[indices[18]].toString() : '',
+        );
+        part.pid = calculateHash(part.toString());
+        return part;
+      }).toList();
     }
     return newFields;
   }
 
   void localCSVImport() async {
-    setState(() => isLocalImporting = true);
-    List<Part> parts = await csvReader();
-    String result = await LocalDatabaseService.db.importParts(parts);
-    setState(() => isLocalImporting = false);
+    String result = "";
+    List<Part> parts;
+    try {
+      parts = await csvReader();
+      result = 'VALID';
+    } catch (error) {
+      result = error.toString();
+    }
+    if(result == 'VALID') {
+      setState(() => isLocalImporting = true);
+      result = await LocalDatabaseService.db.importParts(parts);
+      setState(() => isLocalImporting = false);
+    }
 
     if(result == 'SUCCESS') {
       final snackBar = SnackBar(
@@ -122,10 +157,19 @@ class _DataPageState extends State<DataPage> {
   }
 
   void globalCSVImport() async {
-    setState(() => isGlobalImporting = true);
-    List<Part> parts = await csvReader();
-    String result = await DatabaseService.db.importParts(parts);
-    setState(() => isGlobalImporting = false);
+    String result = "";
+    List<Part> parts;
+    try {
+      parts = await csvReader();
+      result = 'VALID';
+    } catch(error) {
+      result = error.toString();
+    }
+    if(result == 'VALID') {
+      setState(() => isGlobalImporting = true);
+      result = await DatabaseService.db.importParts(parts);
+      setState(() => isGlobalImporting = false);
+    }
 
     if(result == 'SUCCESS') {
       final snackBar = SnackBar(

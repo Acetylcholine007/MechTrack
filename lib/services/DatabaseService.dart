@@ -99,7 +99,7 @@ class DatabaseService {
   Future<String> addPart(Part part) async {
     String result = '';
     await partCollection
-      .add({
+      .doc(part.pid).set({
         'assetAccountCode': part.assetAccountCode,
         'process': part.process,
         'subProcess': part.subProcess,

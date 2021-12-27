@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:mech_track/BLoCs/LocalDatabaseBloc.dart';
 import 'package:mech_track/models/AccountData.dart';
@@ -26,6 +29,14 @@ class _PartEditorState extends State<PartEditor> {
   Uuid uuid = Uuid();
   Map newPart;
   Timer _debounce;
+
+  String calculateHash(String data) {
+    var bytes = utf8.encode(data); // data being hashed
+    var digest = sha1.convert(bytes);
+    print("Digest as hex string: $digest");
+    print(digest.toString());
+    return digest.toString();
+  }
 
   @override
   void initState() {
@@ -118,8 +129,8 @@ class _PartEditorState extends State<PartEditor> {
         if(widget.isNew) {
           String result = '';
           if(widget.isLocal){
-            result = await widget.bloc.addPart(Part(
-              pid: uuid.v4().replaceAll(RegExp('-'), ''),
+            Part part = Part(
+              pid: '',
               assetAccountCode: newPart['assetAccountCode'],
               process: newPart['process'],
               subProcess: newPart['subProcess'],
@@ -138,9 +149,12 @@ class _PartEditorState extends State<PartEditor> {
               facilityType: newPart['facilityType'],
               sapFacility: newPart['sapFacility'],
               criticalByPM: newPart['criticalByPM']
-            ));
+            );
+            part.pid = calculateHash(part.toString());
+            result = await widget.bloc.addPart(part);
           } else {
-            result = await DatabaseService.db.addPart(Part(
+            Part part = Part(
+              pid: '',
               assetAccountCode: newPart['assetAccountCode'],
               process: newPart['process'],
               subProcess: newPart['subProcess'],
@@ -158,7 +172,10 @@ class _PartEditorState extends State<PartEditor> {
               facility: newPart['facility'],
               facilityType: newPart['facilityType'],
               sapFacility: newPart['sapFacility'],
-              criticalByPM: newPart['criticalByPM']));
+              criticalByPM: newPart['criticalByPM']
+            );
+            part.pid = calculateHash(part.toString());
+            result = await DatabaseService.db.addPart(part);
           }
 
           if(result == 'SUCCESS') {
