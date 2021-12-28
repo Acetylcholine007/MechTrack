@@ -2,6 +2,7 @@ import 'package:barcode_scan2/platform_wrapper.dart';
 import 'package:flutter/material.dart';
 import 'package:mech_track/components/Loading.dart';
 import 'package:mech_track/components/NoPart.dart';
+import 'package:mech_track/components/NoPartGlobal.dart';
 
 import 'package:mech_track/components/PartListTile.dart';
 import 'package:mech_track/components/PartSearchBar.dart';
@@ -144,7 +145,7 @@ class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
 
     parts = filterHandler(parts);
 
-    return parts != null ? parts.isEmpty ? NoPart() : Scaffold(
+    return parts != null ? Provider.of<List<Part>>(context).isEmpty ? NoPartGlobal() : Scaffold(
       appBar: AppBar(
         title: Text('Global Database'),
         actions: [

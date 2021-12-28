@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:mech_track/BLoCs/LocalDatabaseBloc.dart';
 import 'package:mech_track/components/Loading.dart';
 import 'package:mech_track/components/NoPart.dart';
+import 'package:mech_track/components/NoPartLocal.dart';
 
 import 'package:mech_track/components/PartListTile.dart';
 import 'package:mech_track/components/PartSearchBar.dart';
+import 'package:mech_track/models/LocalDBDataPack.dart';
 import 'package:mech_track/models/Part.dart';
 import 'package:mech_track/screens/subpages/PartEditor.dart';
 import 'package:mech_track/screens/subpages/PartViewer.dart';
@@ -39,9 +41,9 @@ class _InventoryLocalPageState extends State<InventoryLocalPage> {
       setState(() => category = newCat);
     }
 
-    return StreamBuilder<List<Part>>(
+    return StreamBuilder<LocalDBDataPack>(
       stream: bloc.localParts,
-      builder: (BuildContext context, AsyncSnapshot<List<Part>> snapshot) {
+      builder: (BuildContext context, AsyncSnapshot<LocalDBDataPack> snapshot) {
         if(snapshot.hasData) {
           return Scaffold(
             appBar: AppBar(
@@ -85,28 +87,28 @@ class _InventoryLocalPageState extends State<InventoryLocalPage> {
               decoration: BoxDecoration(
                 image: DecorationImage(image: new AssetImage("assets/images/background.jpg"), fit: BoxFit.cover,),
               ),
-              child: snapshot.data != null ? snapshot.data.isEmpty ? NoPart() :Column(
+              child: snapshot.data != null ? !snapshot.data.hasRecords ? NoPartLocal() :Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   PartSearchBar(categoryHandler: categoryHandler, searchHandler: searchHandler, category: category, context: context),
                   Expanded(
                     child: ListView.builder(
-                      itemCount: snapshot.data.length,
+                      itemCount: snapshot.data.parts.length,
                       itemBuilder: (BuildContext context, int index) {
                         return GestureDetector(
                           onTap: () =>
                             Navigator.push(
                               context,
                               MaterialPageRoute(builder: (context) => PartViewer(
-                                part: snapshot.data[index],
+                                part: snapshot.data.parts[index],
                                 isLocal: true,
                                 bloc: bloc)
                               ),
                             ),
                           child: PartListTile(
                             key: Key(index.toString()),
-                            name: snapshot.data[index].pid,
-                            caption: snapshot.data[index].assetAccountCode,
+                            name: snapshot.data.parts[index].pid,
+                            caption: snapshot.data.parts[index].assetAccountCode,
                             index: index
                           ),
                         );

@@ -303,7 +303,6 @@ class _PartEditorState extends State<PartEditor> {
                           child: TextFormField(
                             initialValue: newPart['assetAccountCode'],
                             decoration: formFieldDecoration.copyWith(hintText: 'AAC'),
-                            validator: (val) => val.isEmpty ? 'Enter AAC' : null,
                             onChanged: (val) => setState(() => _onTextChanged(val, 'assetAccountCode')),
                           ),
                         ),
@@ -317,7 +316,6 @@ class _PartEditorState extends State<PartEditor> {
                           child: TextFormField(
                             initialValue: newPart['process'],
                             decoration: formFieldDecoration.copyWith(hintText: 'Process'),
-                            validator: (val) => val.isEmpty ? 'Enter Process' : null,
                             onChanged: (val) => setState(() => _onTextChanged(val, 'process')),
                           ),
                         ),
@@ -331,7 +329,6 @@ class _PartEditorState extends State<PartEditor> {
                           child: TextFormField(
                             initialValue: newPart['subProcess'],
                             decoration: formFieldDecoration.copyWith(hintText: 'Subprocess'),
-                            validator: (val) => val.isEmpty ? 'Enter Subprocess' : null,
                             onChanged: (val) => setState(() => _onTextChanged(val, 'subProcess')),
                           ),
                         ),
@@ -345,7 +342,6 @@ class _PartEditorState extends State<PartEditor> {
                           child: TextFormField(
                             initialValue: newPart['type'],
                             decoration: formFieldDecoration.copyWith(hintText: 'Type'),
-                            validator: (val) => val.isEmpty ? 'Enter Type' : null,
                             onChanged: (val) => setState(() => _onTextChanged(val, 'type')),
                           ),
                         ),
@@ -359,7 +355,6 @@ class _PartEditorState extends State<PartEditor> {
                           child: TextFormField(
                             initialValue: newPart['criticality'],
                             decoration: formFieldDecoration.copyWith(hintText: 'Criticality'),
-                            validator: (val) => val.isEmpty ? 'Enter Criticality' : null,
                             onChanged: (val) => setState(() => _onTextChanged(val, 'criticality')),
                           ),
                         ),
@@ -373,7 +368,6 @@ class _PartEditorState extends State<PartEditor> {
                           child: TextFormField(
                             initialValue: newPart['status'],
                             decoration: formFieldDecoration.copyWith(hintText: 'Status'),
-                            validator: (val) => val.isEmpty ? 'Enter Status' : null,
                             onChanged: (val) => setState(() => _onTextChanged(val, 'status')),
                           ),
                         ),
@@ -387,7 +381,6 @@ class _PartEditorState extends State<PartEditor> {
                           child: TextFormField(
                             initialValue: newPart['yearInstalled'],
                             decoration: formFieldDecoration.copyWith(hintText: 'Year Installed'),
-                            validator: (val) => val.isEmpty ? 'Enter Year Installed' : null,
                             onChanged: (val) => setState(() => _onTextChanged(val, 'yearInstalled')),
                           ),
                         ),
@@ -401,7 +394,6 @@ class _PartEditorState extends State<PartEditor> {
                           child: TextFormField(
                             initialValue: newPart['brand'],
                             decoration: formFieldDecoration.copyWith(hintText: 'Brand'),
-                            validator: (val) => val.isEmpty ? 'Enter Brand' : null,
                             onChanged: (val) => setState(() => _onTextChanged(val, 'brand')),
                           ),
                         ),
@@ -415,7 +407,6 @@ class _PartEditorState extends State<PartEditor> {
                           child: TextFormField(
                             initialValue: newPart['model'],
                             decoration: formFieldDecoration.copyWith(hintText: 'Model'),
-                            validator: (val) => val.isEmpty ? 'Enter AAC' : null,
                             onChanged: (val) => setState(() => _onTextChanged(val, 'model')),
                           ),
                         ),
@@ -429,7 +420,6 @@ class _PartEditorState extends State<PartEditor> {
                           child: TextFormField(
                             initialValue: newPart['spec1'],
                             decoration: formFieldDecoration.copyWith(hintText: 'Spec 1'),
-                            validator: (val) => val.isEmpty ? 'Enter Spec 1' : null,
                             onChanged: (val) => setState(() => _onTextChanged(val, 'spec1')),
                           ),
                         ),
@@ -443,7 +433,6 @@ class _PartEditorState extends State<PartEditor> {
                           child: TextFormField(
                             initialValue: newPart['spec2'],
                             decoration: formFieldDecoration.copyWith(hintText: 'Spec 2'),
-                            validator: (val) => val.isEmpty ? 'Enter Spec 2' : null,
                             onChanged: (val) => setState(() => _onTextChanged(val, 'spec2')),
                           ),
                         ),
@@ -457,7 +446,6 @@ class _PartEditorState extends State<PartEditor> {
                           child: TextFormField(
                             initialValue: newPart['dept'],
                             decoration: formFieldDecoration.copyWith(hintText: 'Dept'),
-                            validator: (val) => val.isEmpty ? 'Enter Dept' : null,
                             onChanged: (val) => setState(() => _onTextChanged(val, 'dept')),
                           ),
                         ),
@@ -471,7 +459,6 @@ class _PartEditorState extends State<PartEditor> {
                           child: TextFormField(
                             initialValue: newPart['facility'],
                             decoration: formFieldDecoration.copyWith(hintText: 'Facility'),
-                            validator: (val) => val.isEmpty ? 'Enter Facility' : null,
                             onChanged: (val) => setState(() => _onTextChanged(val, 'facility')),
                           ),
                         ),
@@ -485,7 +472,6 @@ class _PartEditorState extends State<PartEditor> {
                           child: TextFormField(
                             initialValue: newPart['facilityType'],
                             decoration: formFieldDecoration.copyWith(hintText: 'Facility Type'),
-                            validator: (val) => val.isEmpty ? 'Enter Facility Type' : null,
                             onChanged: (val) => setState(() => _onTextChanged(val, 'facilityType')),
                           ),
                         ),
@@ -499,7 +485,6 @@ class _PartEditorState extends State<PartEditor> {
                           child: TextFormField(
                             initialValue: newPart['sapFacility'],
                             decoration: formFieldDecoration.copyWith(hintText: 'SAP Facility'),
-                            validator: (val) => val.isEmpty ? 'SAP Facility' : null,
                             onChanged: (val) => setState(() => _onTextChanged(val, 'sapFacility')),
                           ),
                         ),
@@ -513,7 +498,6 @@ class _PartEditorState extends State<PartEditor> {
                           child: TextFormField(
                             initialValue: newPart['criticalByPM'],
                             decoration: formFieldDecoration.copyWith(hintText: 'Critical by PM'),
-                            validator: (val) => val.isEmpty ? 'Enter Critical by PM' : null,
                             onChanged: (val) => setState(() => _onTextChanged(val, 'criticalByPM')),
                           ),
                         ),
@@ -529,7 +513,6 @@ class _PartEditorState extends State<PartEditor> {
                             maxLines: 5,
                             initialValue: newPart['description'],
                             decoration: formFieldDecoration.copyWith(hintText: 'Description'),
-                            validator: (val) => val.isEmpty ? 'Enter Description' : null,
                             onChanged: (val) => setState(() => _onTextChanged(val, 'description')),
                           ),
                         ),
@@ -545,7 +528,6 @@ class _PartEditorState extends State<PartEditor> {
                             maxLines: 5,
                             initialValue: newPart['description2'],
                             decoration: formFieldDecoration.copyWith(hintText: 'Description 2'),
-                            validator: (val) => val.isEmpty ? 'Enter Description 2' : null,
                             onChanged: (val) => setState(() => _onTextChanged(val, 'description2')),
                           ),
                         ),

@@ -65,7 +65,7 @@ class QRDisplay extends StatelessWidget {
               showDialog(
                   context: context,
                   builder: (context) => AlertDialog(
-                    title: Text('Change Account Info'),
+                    title: Text('Save QR Code'),
                     content: Text('Failed to save QR image to your Gallery'),
                     actions: [
                       TextButton(

@@ -11,8 +11,9 @@ class NoPartLocal extends StatelessWidget {
       ),
       child: Center(
         child: Text(
-        'No Part data in your Local Database',
-        style: theme.textTheme.headline4),
+        'No Part data in your\nLocal Database',
+        style: theme.textTheme.headline4,
+        textAlign: TextAlign.center,),
       ),
     );
   }

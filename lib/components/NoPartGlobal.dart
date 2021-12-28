@@ -11,8 +11,9 @@ class NoPartGlobal extends StatelessWidget {
       ),
       child: Center(
         child: Text(
-        'No Part data in your Global Database',
-        style: theme.textTheme.headline4),
+        'No Part data in your\nGlobal Database',
+        style: theme.textTheme.headline4,
+          textAlign: TextAlign.center,),
       ),
     );
   }

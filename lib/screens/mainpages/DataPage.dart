@@ -113,6 +113,7 @@ class _DataPageState extends State<DataPage> {
   }
 
   void localCSVImport() async {
+    //TODO: Start loading after csv read only
     String result = "";
     List<Part> parts;
     try {

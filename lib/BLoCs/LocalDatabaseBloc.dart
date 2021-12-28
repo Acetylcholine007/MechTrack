@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:mech_track/models/LocalDBDataPack.dart';
 import 'package:mech_track/models/Part.dart';
 import 'package:mech_track/services/LocalDatabaseService.dart';
 
@@ -13,7 +14,7 @@ class PartsBloc {
     getParts(query, category);
   }
 
-  final _partController = StreamController<List<Part>>.broadcast();
+  final _partController = StreamController<LocalDBDataPack>.broadcast();
 
   get localParts => _partController.stream;
 

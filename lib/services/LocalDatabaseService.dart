@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:mech_track/models/LocalDBDataPack.dart';
 import 'package:mech_track/models/Part.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
@@ -106,7 +107,7 @@ class LocalDatabaseService {
     );
   }
 
-  Future<List<Part>> getParts(String query, String category) async {
+  Future<LocalDBDataPack> getParts(String query, String category) async {
     Database db = await database;
     List<Map<String, Object>> maps = await db.query('parts');
 
@@ -116,7 +117,7 @@ class LocalDatabaseService {
       maps = await db.query('parts');
     }
 
-    return List.generate(maps.length, (i) {
+    return LocalDBDataPack(parts: List.generate(maps.length, (i) {
       return Part(
         pid: maps[i]['pid'],
         assetAccountCode: maps[i]['assetAccountCode'],
@@ -138,7 +139,7 @@ class LocalDatabaseService {
         sapFacility: maps[i]['sapFacility'],
         criticalByPM: maps[i]['criticalByPM'],
       );
-    });
+    }), hasRecords: await hasRecords());
   }
 
   Future<String> importParts(List<Part> parts) async {
@@ -147,6 +148,13 @@ class LocalDatabaseService {
       .then((value) => result = 'SUCCESS')
       .catchError((error) => result = error.toString());
     return result;
+  }
+
+  Future<bool> hasRecords() async {
+    Database db = await database;
+    int count = Sqflite
+        .firstIntValue(await db.rawQuery('SELECT COUNT(*) FROM parts'));
+    return count != 0;
   }
 
   Future<String> deletePart(String pid) async {
