@@ -136,7 +136,9 @@ class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
     List<Part> parts = Provider.of<List<Part>>(context);
 
     void searchHandler(String val) {
-      return setState(() => query = val);
+      return setState(() {
+        query = val;
+      });
     }
 
     void categoryHandler(String newCat) {

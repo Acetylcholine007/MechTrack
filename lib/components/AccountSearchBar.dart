@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mech_track/shared/decorations.dart';
 
-class AccountSearchBar extends StatelessWidget {
+class AccountSearchBar extends StatefulWidget {
   const AccountSearchBar({Key key,
     this.categoryHandler,
     this.searchHandler,
@@ -12,6 +12,13 @@ class AccountSearchBar extends StatelessWidget {
   final String category;
   final BuildContext context;
 
+  @override
+  State<AccountSearchBar> createState() => _AccountSearchBarState();
+}
+
+class _AccountSearchBarState extends State<AccountSearchBar> {
+  TextEditingController controller = TextEditingController();
+
   final categories = const [
     'Full Name',
     'Username',
@@ -19,10 +26,10 @@ class AccountSearchBar extends StatelessWidget {
   ];
 
   void filterHandler() {
-    String newCat = category;
+    String newCat = widget.category;
 
     showDialog(
-        context: context,
+        context: widget.context,
         builder: (context) => AlertDialog(
           title: Text('Search Selector'),
           content: DropdownButtonFormField(
@@ -37,7 +44,7 @@ class AccountSearchBar extends StatelessWidget {
           actions: [
             TextButton(
                 onPressed: () {
-                  categoryHandler(newCat);
+                  widget.categoryHandler(newCat);
                   Navigator.pop(context);
                 },
                 child: Text('OK')
@@ -55,9 +62,14 @@ class AccountSearchBar extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 0),
         child: ListTile(
           title: TextFormField(
-            initialValue: "",
-            decoration: searchFieldDecoration,
-            onChanged: searchHandler,
+            controller: controller,
+            decoration: searchFieldDecoration.copyWith(
+              suffixIcon: IconButton(onPressed: () {
+                controller.text = "";
+                widget.searchHandler("");
+              }, icon: Icon(Icons.highlight_off_rounded))
+            ),
+            onChanged: widget.searchHandler,
           ),
           trailing: IconButton(
               icon: Icon(Icons.filter_list_rounded, color: Colors.white), onPressed: filterHandler
