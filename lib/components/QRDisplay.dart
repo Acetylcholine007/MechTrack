@@ -16,7 +16,7 @@ class QRDisplay extends StatelessWidget {
   Future<void> writeToFile(ByteData data, String path) async {
     final buffer = data.buffer;
     await File(path).writeAsBytes(
-        buffer.asUint8List(data.offsetInBytes, data.lengthInBytes)
+      buffer.asUint8List(data.offsetInBytes, data.lengthInBytes)
     );
   }
 
@@ -38,6 +38,7 @@ class QRDisplay extends StatelessWidget {
             final painter = QrPainter.withQr(
               qr: qrCode,
               color: const Color(0xFF000000),
+              emptyColor: Colors.white,
               gapless: true,
               embeddedImageStyle: null,
               embeddedImage: null,

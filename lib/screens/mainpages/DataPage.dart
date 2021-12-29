@@ -108,8 +108,9 @@ class _DataPageState extends State<DataPage> {
         part.pid = calculateHash(part.toString());
         return part;
       }).toList();
+      return newFields;
     }
-    return newFields;
+    return null;
   }
 
   void localCSVImport() async {
@@ -118,7 +119,7 @@ class _DataPageState extends State<DataPage> {
     List<Part> parts;
     try {
       parts = await csvReader();
-      result = 'VALID';
+      result = parts != null ? 'VALID' : 'EMPTY';
     } catch (error) {
       result = error.toString();
     }
@@ -136,7 +137,7 @@ class _DataPageState extends State<DataPage> {
         action: SnackBarAction(label: 'OK', onPressed: () => ScaffoldMessenger.of(context).hideCurrentSnackBar()),
       );
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
-    } else {
+    } else if(result == 'EMPTY') {} else {
       showDialog(
           context: context,
           builder: (context) => AlertDialog(
@@ -160,7 +161,7 @@ class _DataPageState extends State<DataPage> {
     List<Part> parts;
     try {
       parts = await csvReader();
-      result = 'VALID';
+      result = parts != null ? 'VALID' : 'EMPTY';
     } catch(error) {
       result = error.toString();
     }
@@ -178,7 +179,7 @@ class _DataPageState extends State<DataPage> {
         action: SnackBarAction(label: 'OK', onPressed: () => ScaffoldMessenger.of(context).hideCurrentSnackBar()),
       );
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
-    } else {
+    } else if(result == 'EMPTY') {} else {
       showDialog(
           context: context,
           builder: (context) => AlertDialog(

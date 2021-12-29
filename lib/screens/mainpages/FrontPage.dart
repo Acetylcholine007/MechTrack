@@ -98,7 +98,7 @@ class _FrontPageState extends State<FrontPage> {
                       // icon: Icon(Icons.android),
                       iconSize: 50,
                       color: Colors.blueAccent,
-                      onPressed: () => launch('https://www.facebook.com'),
+                      onPressed: () => launch('https://www.facebook.com/Equipment-Inventory-Mobile-Application-103079708922839'),
                     ),
                     Text('Find us on Facebook',
                         style: theme.textTheme.subtitle1,
