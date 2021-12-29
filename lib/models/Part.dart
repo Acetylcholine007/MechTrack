@@ -1,5 +1,6 @@
 class Part {
   String pid;
+  String partNo;
   String assetAccountCode;
   String process;
   String subProcess;
@@ -21,6 +22,7 @@ class Part {
 
   Part({
     this.pid = '',
+    this.partNo = "",
     this.assetAccountCode = '',
     this.process = '',
     this.subProcess = '',
@@ -43,6 +45,7 @@ class Part {
 
   Part copy() => Part(
     pid: this.pid,
+    partNo: this.partNo,
     assetAccountCode: this.assetAccountCode,
     process: this.process,
     subProcess: this.subProcess,
@@ -66,6 +69,7 @@ class Part {
   Map<String, String> toMap() {
     return {
       'pid': this.pid,
+      'partNo': this.partNo,
       'assetAccountCode': this.assetAccountCode,
       'process': this.process,
       'subProcess': this.subProcess,
@@ -91,6 +95,7 @@ class Part {
   String toString() {
     return 'Part{'
       'pid: $pid, '
+      'partNo: $partNo, '
       'assetAccountCode: $assetAccountCode,'
       'process: $process,'
       'subProcess: $subProcess,'

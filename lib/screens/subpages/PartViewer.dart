@@ -72,6 +72,12 @@ class _PartViewerState extends State<PartViewer> {
                   ]
                 ),
                 TableRow(
+                  children: [
+                    PartTableText('Part No.', 'LABEL'),
+                    PartTableText(part.partNo, 'CONTENT'),
+                  ]
+                ),
+                TableRow(
                     children: [
                       PartTableText('AAC', 'LABEL'),
                       PartTableText(part.assetAccountCode, 'CONTENT'),

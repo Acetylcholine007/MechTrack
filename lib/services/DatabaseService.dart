@@ -26,6 +26,7 @@ class DatabaseService {
   Part _partFromSnapshot(DocumentSnapshot snapshot) {
     return Part(
       pid: snapshot.id,
+      partNo: snapshot.get('partNo') ?? '',
       assetAccountCode: snapshot.get('assetAccountCode') ?? '',
       process: snapshot.get('process') ?? '',
       subProcess: snapshot.get('subProcess') ?? '',
@@ -51,6 +52,7 @@ class DatabaseService {
     return snapshot.docs.map((doc) {
       return Part(
         pid: doc.id,
+        partNo: doc.get('partNo') ?? '',
         assetAccountCode: doc.get('assetAccountCode') ?? '',
         process: doc.get('process') ?? '',
         subProcess: doc.get('subProcess') ?? '',
@@ -100,6 +102,7 @@ class DatabaseService {
     String result = '';
     await partCollection
       .doc(part.pid).set({
+        'partNo': part.partNo,
         'assetAccountCode': part.assetAccountCode,
         'process': part.process,
         'subProcess': part.subProcess,
@@ -128,6 +131,7 @@ class DatabaseService {
     String result = '';
     await partCollection.doc(part.pid)
     .update({
+      'partNo': part.partNo,
       'assetAccountCode': part.assetAccountCode,
       'process': part.process,
       'subProcess': part.subProcess,

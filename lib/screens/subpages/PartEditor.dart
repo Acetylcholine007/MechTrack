@@ -41,6 +41,7 @@ class _PartEditorState extends State<PartEditor> {
     super.initState();
     newPart = widget.isNew ?
       {
+        'partNo': '',
         'assetAccountCode': '',
         'process': '',
         'subProcess': '',
@@ -60,6 +61,7 @@ class _PartEditorState extends State<PartEditor> {
         'sapFacility': '',
         'criticalByPM': ''
       } : {
+      'partNo': widget.oldPart.partNo,
       'assetAccountCode': widget.oldPart.assetAccountCode,
       'process': widget.oldPart.process,
       'subProcess': widget.oldPart.subProcess,
@@ -127,6 +129,7 @@ class _PartEditorState extends State<PartEditor> {
           if(widget.isLocal){
             Part part = Part(
               pid: '',
+              partNo: newPart['partNo'],
               assetAccountCode: newPart['assetAccountCode'],
               process: newPart['process'],
               subProcess: newPart['subProcess'],
@@ -151,6 +154,7 @@ class _PartEditorState extends State<PartEditor> {
           } else {
             Part part = Part(
               pid: '',
+              partNo: newPart['partNo'],
               assetAccountCode: newPart['assetAccountCode'],
               process: newPart['process'],
               subProcess: newPart['subProcess'],
@@ -198,6 +202,7 @@ class _PartEditorState extends State<PartEditor> {
           if(widget.isLocal) {
             result = await widget.bloc.editPart(Part(
               pid: widget.oldPart.pid,
+              partNo: newPart['partNo'],
               assetAccountCode: newPart['assetAccountCode'],
               process: newPart['process'],
               subProcess: newPart['subProcess'],
@@ -220,6 +225,7 @@ class _PartEditorState extends State<PartEditor> {
           } else {
             result = await DatabaseService.db.editPart(Part(
               pid: widget.oldPart.pid,
+              partNo: newPart['partNo'],
               assetAccountCode: newPart['assetAccountCode'],
               process: newPart['process'],
               subProcess: newPart['subProcess'],
@@ -295,6 +301,20 @@ class _PartEditorState extends State<PartEditor> {
                   1: FlexColumnWidth(),
                 },
                 children: [
+                  TableRow(
+                      children: [
+                        PartTableText('Part No.', 'LABEL'),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(0,0,0,5),
+                          child: TextFormField(
+                            keyboardType: TextInputType.number,
+                            initialValue: newPart['partNo'],
+                            decoration: formFieldDecoration.copyWith(hintText: 'Part No.'),
+                            onChanged: (val) => setState(() => _onTextChanged(val, 'partNo')),
+                          ),
+                        ),
+                      ]
+                  ),
                   TableRow(
                       children: [
                         PartTableText('AAC', 'LABEL'),

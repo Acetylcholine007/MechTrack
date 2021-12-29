@@ -20,6 +20,7 @@ class LocalDatabaseService {
         return db.execute(
           'CREATE TABLE parts('
             'pid TEXT PRIMARY KEY,'
+            'partNo TEXT,'
             'assetAccountCode TEXT,'
             'process TEXT,'
             'subProcess TEXT,'
@@ -86,6 +87,7 @@ class LocalDatabaseService {
 
     return Part(
       pid: maps[0]['pid'],
+      partNo: maps[0]['partNo'],
       assetAccountCode: maps[0]['assetAccountCode'],
       process: maps[0]['process'],
       subProcess: maps[0]['subProcess'],
@@ -120,6 +122,7 @@ class LocalDatabaseService {
     return LocalDBDataPack(parts: List.generate(maps.length, (i) {
       return Part(
         pid: maps[i]['pid'],
+        partNo: maps[i]['partNo'],
         assetAccountCode: maps[i]['assetAccountCode'],
         process: maps[i]['process'],
         subProcess: maps[i]['subProcess'],

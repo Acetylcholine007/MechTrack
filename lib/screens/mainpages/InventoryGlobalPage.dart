@@ -31,6 +31,11 @@ class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
               .where((part) =>
                   part.pid.contains(new RegExp(query, caseSensitive: false)))
               .toList();
+        case 'partNo':
+          return parts
+              .where((part) =>
+                  part.partNo.contains(new RegExp(query, caseSensitive: false)))
+              .toList();
         case 'assetAccountCode':
           return parts
               .where((part) => part.assetAccountCode

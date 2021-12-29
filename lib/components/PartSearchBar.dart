@@ -22,6 +22,7 @@ class _PartSearchBarState extends State<PartSearchBar> {
 
   final categories = const {
     'pid': 'Part ID',
+    'partNo': 'Part Number',
     'assetAccountCode': 'Asset Account Code',
     'process': 'Process',
     'subProcess': 'Subprocess',

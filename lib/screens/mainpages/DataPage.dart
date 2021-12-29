@@ -76,6 +76,8 @@ class _DataPageState extends State<DataPage> {
       newFields = fields.map((row) {
         Part part = Part(
           pid: '',
+          partNo:
+              indices[0] != -1 ? row[indices[0]].toString() : '',
           assetAccountCode:
               indices[1] != -1 ? row[indices[1]].toString() : '',
           process: indices[2] != -1 ? row[indices[2]].toString() : '',
@@ -114,7 +116,6 @@ class _DataPageState extends State<DataPage> {
   }
 
   void localCSVImport() async {
-    //TODO: Start loading after csv read only
     String result = "";
     List<Part> parts;
     try {
@@ -133,7 +134,7 @@ class _DataPageState extends State<DataPage> {
       final snackBar = SnackBar(
         duration: Duration(seconds: 3),
         behavior: SnackBarBehavior.floating,
-        content: Text('CSV imported to Global Database'),
+        content: Text('CSV imported to Local Database'),
         action: SnackBarAction(label: 'OK', onPressed: () => ScaffoldMessenger.of(context).hideCurrentSnackBar()),
       );
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
@@ -141,7 +142,7 @@ class _DataPageState extends State<DataPage> {
       showDialog(
           context: context,
           builder: (context) => AlertDialog(
-            title: Text('Global CSV Import'),
+            title: Text('Local CSV Import'),
             content: Text(result),
             actions: [
               TextButton(
