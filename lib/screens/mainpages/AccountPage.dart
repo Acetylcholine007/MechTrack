@@ -44,7 +44,6 @@ class _AccountPageState extends State<AccountPage> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     List<AccountData> accounts = Provider.of<List<AccountData>>(context);
 
     void searchHandler(String val) {

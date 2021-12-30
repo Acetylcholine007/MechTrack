@@ -34,7 +34,7 @@ class _GuessProfilePageState extends State<GuessProfilePage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
                     Image(
-                      image: AssetImage('assets/images/newLogoHalf.gif'),
+                      image: AssetImage('assets/images/logoHalf.gif'),
                       width: 200,
                       fit: BoxFit.cover),
                   ],

@@ -30,7 +30,6 @@ class _InventoryLocalPageState extends State<InventoryLocalPage> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     bloc = PartsBloc(query, category);
 
     void searchHandler(String val) {
@@ -109,8 +108,8 @@ class _InventoryLocalPageState extends State<InventoryLocalPage> {
                             ),
                           child: PartListTile(
                             key: Key(index.toString()),
-                            name: snapshot.data.parts[index].pid,
-                            caption: snapshot.data.parts[index].assetAccountCode,
+                            name: snapshot.data.parts[index].description,
+                            caption: snapshot.data.parts[index].partNo,
                             index: index
                           ),
                         );

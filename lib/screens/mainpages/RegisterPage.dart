@@ -61,7 +61,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           children: <Widget>[
                             Image(
                                 image: AssetImage(
-                                    'assets/images/newLogoFull.gif'),
+                                    'assets/images/logoFull.gif'),
                                 width: 150,
                                 fit: BoxFit.cover),
                             Text('Create your Account',

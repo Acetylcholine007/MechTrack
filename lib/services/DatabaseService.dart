@@ -238,10 +238,10 @@ class DatabaseService {
   }
   //
   Stream<List<AccountData>> get users {
-    return userCollection.snapshots().map(_accountListFromSnapshot);
+    return userCollection.orderBy("fullName").snapshots().map(_accountListFromSnapshot);
   }
   //
   Stream<List<Part>> get parts {
-    return partCollection.snapshots().map(_partListFromSnapshot);
+    return partCollection.orderBy("partNo").snapshots().map(_partListFromSnapshot);
   }
 }

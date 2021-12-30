@@ -42,7 +42,7 @@ class _SignInPageState extends State<SignInPage> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
                         Image(
-                            image: AssetImage('assets/images/newLogoFull.gif'),
+                            image: AssetImage('assets/images/logoFull.gif'),
                             width: 150,
                             fit: BoxFit.cover),
                         Text('Welcome back, Log In!',

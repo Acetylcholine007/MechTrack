@@ -34,7 +34,7 @@ class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
         case 'partNo':
           return parts
               .where((part) =>
-                  part.partNo.contains(new RegExp(query, caseSensitive: false)))
+                  part.partNo.toString().contains(new RegExp(query, caseSensitive: false)))
               .toList();
         case 'assetAccountCode':
           return parts
@@ -214,8 +214,8 @@ class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
                         ),
                     child: PartListTile(
                       key: Key(index.toString()),
-                      name: parts[index].pid,
-                      caption: parts[index].assetAccountCode,
+                      name: parts[index].description,
+                      caption: parts[index].partNo,
                       index: index
                     ),
                   );

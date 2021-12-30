@@ -297,7 +297,7 @@ class _DataPageState extends State<DataPage> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
               Image(
-                image: AssetImage('assets/images/newLogoFull.gif'),
+                image: AssetImage('assets/images/logoFull.gif'),
                 width: 200,
                 fit: BoxFit.cover
               ),
