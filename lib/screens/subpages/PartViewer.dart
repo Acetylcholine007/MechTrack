@@ -44,7 +44,7 @@ class _PartViewerState extends State<PartViewer> {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) =>
-                QRDisplay(title: 'Part QR Code', data: part.pid + '<=MechTrack=>' + part.pid)
+                QRDisplay(title: 'Part QR Code', data: part.partNo.toString() + '<=MechTrack=>' + part.partNo.toString())
               )
             )
           ),
@@ -67,14 +67,8 @@ class _PartViewerState extends State<PartViewer> {
                 children: [
                 TableRow(
                   children: [
-                    PartTableText('Part ID', 'LABEL'),
-                    PartTableText(part.pid, 'CONTENT'),
-                  ]
-                ),
-                TableRow(
-                  children: [
                     PartTableText('Part No.', 'LABEL'),
-                    PartTableText(part.partNo, 'CONTENT'),
+                    PartTableText(part.partNo.toString(), 'CONTENT'),
                   ]
                 ),
                 TableRow(

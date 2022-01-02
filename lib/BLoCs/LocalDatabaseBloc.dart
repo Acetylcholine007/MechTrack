@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:mech_track/models/ImportResponse.dart';
 import 'package:mech_track/models/LocalDBDataPack.dart';
 import 'package:mech_track/models/Part.dart';
 import 'package:mech_track/services/LocalDatabaseService.dart';
@@ -26,9 +27,9 @@ class PartsBloc {
     return await LocalDatabaseService.db.getPart(pid);
   }
 
-  Future<String> addPart(Part part) async {
+  Future<String> addPart(Part part, String action) async {
     String result = '';
-    result = await LocalDatabaseService.db.addPart(part);
+    result = await LocalDatabaseService.db.addPart(part, action);
     getParts(query, category);
     return result;
   }
@@ -47,11 +48,11 @@ class PartsBloc {
     return result;
   }
 
-  Future<String> importParts(List<Part> parts) async {
-    String result = '';
-    result = await LocalDatabaseService.db.importParts(parts);
+  Future<ImportResponse> importParts(List<Part> parts, String action) async {
+    ImportResponse response;
+    response = await LocalDatabaseService.db.importParts(parts, action);
     getParts(query, category);
-    return result;
+    return response;
   }
 
   dispose() {

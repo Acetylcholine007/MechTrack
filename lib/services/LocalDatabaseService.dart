@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:mech_track/models/ImportResponse.dart';
 import 'package:mech_track/models/LocalDBDataPack.dart';
 import 'package:mech_track/models/Part.dart';
 import 'package:sqflite/sqflite.dart';
@@ -19,8 +20,7 @@ class LocalDatabaseService {
       onCreate: (db, version) {
         return db.execute(
           'CREATE TABLE parts('
-            'pid TEXT PRIMARY KEY,'
-            'partNo TEXT,'
+            'partNo INTEGER PRIMARY KEY,'
             'assetAccountCode TEXT,'
             'process TEXT,'
             'subProcess TEXT,'
@@ -46,16 +46,31 @@ class LocalDatabaseService {
     return _database;
   }
 
-  Future<String> addPart(Part part) async {
+  Future<String> addPart(Part part, String action) async {
     String result = '';
     Database db = await database;
+
+    List<Map<String, Object>> maps = await db.query(
+        'parts',
+        where: 'partNo = ?',
+        whereArgs: [part.partNo],
+        limit: 1
+    );
+
+    if(!(maps == null || maps.isEmpty) && action == 'SAFE')
+      return 'EXIST';
+
+    if(action == 'APPEND') {
+      part.partNo = null;
+    }
+
     await db.insert(
       'parts',
       part.toMap(),
       conflictAlgorithm: ConflictAlgorithm.replace,
     )
-      .then((value) => result = 'SUCCESS')
-      .catchError((error) => result = error.toString());
+        .then((value) => result = 'SUCCESS')
+        .catchError((error) => result = error.toString());
     return result;
   }
 
@@ -65,20 +80,20 @@ class LocalDatabaseService {
     await db.update(
       'parts',
       part.toMap(),
-      where: 'pid = ?',
-      whereArgs: [part.pid],
+      where: 'partNo = ?',
+      whereArgs: [part.partNo],
     )
       .then((value) => result = 'SUCCESS')
       .catchError((error) => result = error.toString());
     return result;
   }
 
-  Future<Part> getPart(String pid) async {
+  Future<Part> getPart(String partNo) async {
     Database db = await database;
     List<Map<String, Object>> maps = await db.query(
       'parts',
-      where: 'pid = ?',
-      whereArgs: [pid],
+      where: 'partNo = ?',
+      whereArgs: [partNo],
       limit: 1
     );
 
@@ -86,7 +101,6 @@ class LocalDatabaseService {
       return null;
 
     return Part(
-      pid: maps[0]['pid'],
       partNo: maps[0]['partNo'],
       assetAccountCode: maps[0]['assetAccountCode'],
       process: maps[0]['process'],
@@ -123,7 +137,6 @@ class LocalDatabaseService {
 
     return LocalDBDataPack(parts: List.generate(maps.length, (i) {
       return Part(
-        pid: maps[i]['pid'],
         partNo: maps[i]['partNo'],
         assetAccountCode: maps[i]['assetAccountCode'],
         process: maps[i]['process'],
@@ -147,12 +160,15 @@ class LocalDatabaseService {
     }), hasRecords: await hasRecords());
   }
 
-  Future<String> importParts(List<Part> parts) async {
+  Future<ImportResponse> importParts(List<Part> parts, String action) async {
     String result = '';
-    await Future.wait(parts.map((part) => addPart(part)))
+    List<Part> duplicateParts = [];
+    await Future.wait(parts.map((part) => addPart(part, action).then(
+        (value) => value == 'EXIST' ? duplicateParts.add(part) : null
+    )))
       .then((value) => result = 'SUCCESS')
       .catchError((error) => result = error.toString());
-    return result;
+    return ImportResponse(result: result, parts: duplicateParts);
   }
 
   Future<bool> hasRecords() async {
@@ -167,7 +183,7 @@ class LocalDatabaseService {
     Database db = await database;
     await db.delete(
       'parts',
-      where: 'pid = ?',
+      where: 'partNo = ?',
       whereArgs: [pid],
     )
       .then((value) => result = 'SUCCESS')

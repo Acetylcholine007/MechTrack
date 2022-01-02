@@ -20,17 +20,12 @@ class InventoryGlobalPage extends StatefulWidget {
 }
 
 class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
-  String category = 'pid';
+  String category = 'partNo';
   String query = '';
 
   List<Part> filterHandler (List<Part> parts) {
     if(query != "") {
       switch (category) {
-        case 'pid':
-          return parts
-              .where((part) =>
-                  part.pid.contains(new RegExp(query, caseSensitive: false)))
-              .toList();
         case 'partNo':
           return parts
               .where((part) =>
@@ -152,7 +147,7 @@ class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
 
     parts = filterHandler(parts);
 
-    return parts != null ? Provider.of<List<Part>>(context).isEmpty ? NoPartGlobal() : Scaffold(
+    return parts != null ? Scaffold(
       appBar: AppBar(
         title: Text('Global Database'),
         actions: [
@@ -194,7 +189,7 @@ class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
             MaterialPageRoute(builder: (context) => PartEditor(isNew: true, isLocal: false, account: account)),
           ),
       ) : null,
-      body: Container(
+      body: Provider.of<List<Part>>(context).isEmpty ? NoPartGlobal() : Container(
         decoration: BoxDecoration(
           image: DecorationImage(image: new AssetImage("assets/images/background.jpg"), fit: BoxFit.cover,),
         ),
@@ -215,7 +210,7 @@ class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
                     child: PartListTile(
                       key: Key(index.toString()),
                       name: parts[index].description,
-                      caption: parts[index].partNo,
+                      caption: parts[index].partNo.toString(),
                       index: index
                     ),
                   );

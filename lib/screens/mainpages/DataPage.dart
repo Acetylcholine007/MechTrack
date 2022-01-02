@@ -7,6 +7,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:csv/csv.dart';
 import 'package:mech_track/models/Account.dart';
 import 'package:mech_track/models/AccountData.dart';
+import 'package:mech_track/models/ImportResponse.dart';
 import 'package:mech_track/services/DatabaseService.dart';
 import 'package:provider/provider.dart';
 
@@ -75,9 +76,9 @@ class _DataPageState extends State<DataPage> {
 
       newFields = fields.map((row) {
         Part part = Part(
-          pid: '',
           partNo:
-              indices[0] != -1 ? row[indices[0]].toString() : '',
+              //TODO: handle missing
+              indices[0] != -1 ? row[indices[0]] : null,
           assetAccountCode:
               indices[1] != -1 ? row[indices[1]].toString() : '',
           process: indices[2] != -1 ? row[indices[2]].toString() : '',
@@ -107,7 +108,6 @@ class _DataPageState extends State<DataPage> {
           criticalByPM:
               indices[18] != -1 ? row[indices[18]].toString() : '',
         );
-        part.pid = calculateHash(part.toString());
         return part;
       }).toList();
       return newFields;
@@ -116,34 +116,111 @@ class _DataPageState extends State<DataPage> {
   }
 
   void localCSVImport() async {
-    String result = "";
+    ImportResponse result = ImportResponse();
     List<Part> parts;
+    final snackBar = SnackBar(
+      duration: Duration(seconds: 3),
+      behavior: SnackBarBehavior.floating,
+      content: Text('CSV imported to Local Database'),
+      action: SnackBarAction(label: 'OK', onPressed: () => ScaffoldMessenger.of(context).hideCurrentSnackBar()),
+    );
+
     try {
       parts = await csvReader();
-      result = parts != null ? 'VALID' : 'EMPTY';
+      result.result = parts != null ? 'VALID' : 'EMPTY';
     } catch (error) {
-      result = error.toString();
+      result.result = error.toString();
     }
-    if(result == 'VALID') {
+    if(result.result == 'VALID') {
       setState(() => isLocalImporting = true);
-      result = await LocalDatabaseService.db.importParts(parts);
-      setState(() => isLocalImporting = false);
+      result = await LocalDatabaseService.db.importParts(parts, 'SAFE');
     }
 
-    if(result == 'SUCCESS') {
-      final snackBar = SnackBar(
-        duration: Duration(seconds: 3),
-        behavior: SnackBarBehavior.floating,
-        content: Text('CSV imported to Local Database'),
-        action: SnackBarAction(label: 'OK', onPressed: () => ScaffoldMessenger.of(context).hideCurrentSnackBar()),
-      );
+    if(result.result == 'SUCCESS' && result.parts.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
-    } else if(result == 'EMPTY') {} else {
+    } else if(result.result == 'EMPTY') {
+    } else if (result.parts.isNotEmpty) {
+      showDialog(
+          context: context,
+          builder: (newContext) => AlertDialog(
+            title: Text('Local CSV Import'),
+            content: Text('Existing parts found.'),
+            actions: [
+              TextButton(
+                  onPressed: () async {
+                    setState(() => isLocalImporting = true);
+                    Navigator.pop(newContext);
+                    ImportResponse newResult =
+                    await LocalDatabaseService.db.importParts(result.parts, 'APPEND');
+
+                    setState(() => isLocalImporting = false);
+                    if(newResult.result == 'SUCCESS') {
+                      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                    } else {
+                      showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: Text('Local CSV Import'),
+                            content: Text(newResult.result),
+                            actions: [
+                              TextButton(
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                  },
+                                  child: Text('OK')
+                              )
+                            ],
+                          )
+                      );
+                    }
+                  },
+                  child: Text('APPEND')
+              ),
+              TextButton(
+                  onPressed: () async {
+                    setState(() => isLocalImporting = true);
+                    Navigator.pop(newContext);
+                    ImportResponse newResult =
+                    await LocalDatabaseService.db.importParts(result.parts, 'REPLACE');
+
+                    setState(() => isLocalImporting = false);
+                    if(newResult.result == 'SUCCESS') {
+                      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                    } else {
+                      showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: Text('Local CSV Import'),
+                            content: Text(newResult.result),
+                            actions: [
+                              TextButton(
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                  },
+                                  child: Text('OK')
+                              )
+                            ],
+                          )
+                      );
+                    }
+                  },
+                  child: Text('REPLACE')
+              ),
+              TextButton(
+                  onPressed: () {
+                    Navigator.pop(newContext);
+                  },
+                  child: Text('SKIP')
+              ),
+            ],
+          )
+      );
+    } else {
       showDialog(
           context: context,
           builder: (context) => AlertDialog(
             title: Text('Local CSV Import'),
-            content: Text(result),
+            content: Text(result.result),
             actions: [
               TextButton(
                   onPressed: () {
@@ -155,37 +232,115 @@ class _DataPageState extends State<DataPage> {
           )
       );
     }
+    setState(() => isLocalImporting = false);
   }
 
   void globalCSVImport() async {
-    String result = "";
+    ImportResponse result = ImportResponse();
     List<Part> parts;
+    final snackBar = SnackBar(
+      duration: Duration(seconds: 3),
+      behavior: SnackBarBehavior.floating,
+      content: Text('CSV imported to Global Database'),
+      action: SnackBarAction(label: 'OK', onPressed: () => ScaffoldMessenger.of(context).hideCurrentSnackBar()),
+    );
+
     try {
       parts = await csvReader();
-      result = parts != null ? 'VALID' : 'EMPTY';
+      result.result = parts != null ? 'VALID' : 'EMPTY';
     } catch(error) {
-      result = error.toString();
+      result.result = error.toString();
     }
-    if(result == 'VALID') {
+    if(result.result == 'VALID') {
       setState(() => isGlobalImporting = true);
-      result = await DatabaseService.db.importParts(parts);
-      setState(() => isGlobalImporting = false);
+      result = await DatabaseService.db.importParts(parts, 'SAFE');
     }
 
-    if(result == 'SUCCESS') {
-      final snackBar = SnackBar(
-        duration: Duration(seconds: 3),
-        behavior: SnackBarBehavior.floating,
-        content: Text('CSV imported to Global Database'),
-        action: SnackBarAction(label: 'OK', onPressed: () => ScaffoldMessenger.of(context).hideCurrentSnackBar()),
-      );
+    if(result.result == 'SUCCESS' && result.parts.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
-    } else if(result == 'EMPTY') {} else {
+    } else if(result.result == 'EMPTY') {
+    } else if (result.parts.isNotEmpty) {
+      showDialog(
+          context: context,
+          builder: (newContext) => AlertDialog(
+            title: Text('Global CSV Import'),
+            content: Text('Existing parts found.'),
+            actions: [
+              TextButton(
+                  onPressed: () async {
+                    setState(() => isGlobalImporting = true);
+                    Navigator.pop(newContext);
+                    ImportResponse newResult =
+                    await DatabaseService.db.importParts(result.parts, 'APPEND');
+
+                    setState(() => isGlobalImporting = false);
+                    if(newResult.result == 'SUCCESS') {
+                      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                    } else {
+                      showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: Text('Global CSV Import'),
+                            content: Text(newResult.result),
+                            actions: [
+                              TextButton(
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                  },
+                                  child: Text('OK')
+                              )
+                            ],
+                          )
+                      );
+                    }
+                  },
+                  child: Text('APPEND')
+              ),
+              TextButton(
+                  onPressed: () async {
+                    setState(() => isGlobalImporting = true);
+                    Navigator.pop(newContext);
+                    ImportResponse newResult =
+                    await DatabaseService.db.importParts(result.parts, 'REPLACE');
+
+                    setState(() => isGlobalImporting = false);
+                    if(newResult.result == 'SUCCESS') {
+                      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                    } else {
+                      showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: Text('Global CSV Import'),
+                            content: Text(newResult.result),
+                            actions: [
+                              TextButton(
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                  },
+                                  child: Text('OK')
+                              )
+                            ],
+                          )
+                      );
+                    }
+                  },
+                  child: Text('REPLACE')
+              ),
+              TextButton(
+                  onPressed: () {
+                    Navigator.pop(newContext);
+                  },
+                  child: Text('SKIP')
+              ),
+            ],
+          )
+      );
+    } else {
       showDialog(
           context: context,
           builder: (context) => AlertDialog(
             title: Text('Global CSV Import'),
-            content: Text(result),
+            content: Text(result.result),
             actions: [
               TextButton(
                   onPressed: () {
@@ -197,6 +352,7 @@ class _DataPageState extends State<DataPage> {
           )
       );
     }
+    setState(() => isGlobalImporting = false);
   }
 
   @override
@@ -224,10 +380,10 @@ class _DataPageState extends State<DataPage> {
           ElevatedButton(
             onPressed: () async {
               setState(() => isSyncing = true);
-              String result = await LocalDatabaseService.db.importParts(parts);
+              ImportResponse result = await LocalDatabaseService.db.importParts(parts, 'REPLACE');
               setState(() => isSyncing = false);
 
-              if(result == 'SUCCESS') {
+              if(result.result == 'SUCCESS') {
                 final snackBar = SnackBar(
                   duration: Duration(seconds: 3),
                   behavior: SnackBarBehavior.floating,
@@ -240,7 +396,7 @@ class _DataPageState extends State<DataPage> {
                     context: context,
                     builder: (context) => AlertDialog(
                       title: Text('Local Database Sync'),
-                      content: Text(result),
+                      content: Text(result.result),
                       actions: [
                         TextButton(
                             onPressed: () {

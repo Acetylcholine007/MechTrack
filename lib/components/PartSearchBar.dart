@@ -21,12 +21,11 @@ class _PartSearchBarState extends State<PartSearchBar> {
   TextEditingController controller = TextEditingController();
 
   final categories = const {
-    'pid': 'Part ID',
     'partNo': 'Part Number',
+    'description': 'Description',
     'assetAccountCode': 'Asset Account Code',
     'process': 'Process',
     'subProcess': 'Subprocess',
-    'description': 'Description',
     'type': 'Type',
     'criticality': 'Criticality',
     'status': 'Status',

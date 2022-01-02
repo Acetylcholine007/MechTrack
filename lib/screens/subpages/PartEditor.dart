@@ -41,7 +41,7 @@ class _PartEditorState extends State<PartEditor> {
     super.initState();
     newPart = widget.isNew ?
       {
-        'partNo': '',
+        'partNo': null,
         'assetAccountCode': '',
         'process': '',
         'subProcess': '',
@@ -83,7 +83,7 @@ class _PartEditorState extends State<PartEditor> {
     };
   }
 
-  _onTextChanged(String query, String selector) {
+  _onTextChanged(dynamic query, String selector) {
     if (_debounce?.isActive ?? false) _debounce.cancel();
     _debounce = Timer(const Duration(milliseconds: 0), () {
       newPart[selector] = query;
@@ -95,9 +95,9 @@ class _PartEditorState extends State<PartEditor> {
     void deleteHandler() async {
       String result = '';
       if(widget.isLocal) {
-        result = await widget.bloc.deletePart(widget.oldPart.pid);
+        result = await widget.bloc.deletePart(widget.oldPart.partNo.toString());
       } else {
-        result = await DatabaseService.db.removePart(widget.oldPart.pid);
+        result = await DatabaseService.db.removePart(widget.oldPart.partNo.toString());
       }
 
       if(result == 'SUCCESS') {
@@ -126,9 +126,7 @@ class _PartEditorState extends State<PartEditor> {
       if(_formKey.currentState.validate()) {
         if(widget.isNew) {
           String result = '';
-          if(widget.isLocal){
-            Part part = Part(
-              pid: '',
+          Part part = Part(
               partNo: newPart['partNo'],
               assetAccountCode: newPart['assetAccountCode'],
               process: newPart['process'],
@@ -148,38 +146,87 @@ class _PartEditorState extends State<PartEditor> {
               facilityType: newPart['facilityType'],
               sapFacility: newPart['sapFacility'],
               criticalByPM: newPart['criticalByPM']
-            );
-            part.pid = calculateHash(part.toString());
-            result = await widget.bloc.addPart(part);
-          } else {
-            Part part = Part(
-              pid: '',
-              partNo: newPart['partNo'],
-              assetAccountCode: newPart['assetAccountCode'],
-              process: newPart['process'],
-              subProcess: newPart['subProcess'],
-              description: newPart['description'],
-              type: newPart['type'],
-              criticality: newPart['criticality'],
-              status: newPart['status'],
-              yearInstalled: newPart['yearInstalled'],
-              description2: newPart['description2'],
-              brand: newPart['brand'],
-              model: newPart['model'],
-              spec1: newPart['spec1'],
-              spec2: newPart['spec2'],
-              dept: newPart['dept'],
-              facility: newPart['facility'],
-              facilityType: newPart['facilityType'],
-              sapFacility: newPart['sapFacility'],
-              criticalByPM: newPart['criticalByPM']
-            );
-            part.pid = calculateHash(part.toString());
-            result = await DatabaseService.db.addPart(part);
-          }
+          );
+          result = widget.isLocal ?
+          await widget.bloc.addPart(part, 'SAFE') :
+          await DatabaseService.db.addPart(part, 'SAFE');
 
           if(result == 'SUCCESS') {
             Navigator.pop(context);
+          } else if(result == 'EXIST') {
+            showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: Text('Add Part'),
+                  content: Text('Part already exist'),
+                  actions: [
+                    TextButton(
+                        onPressed: () async {
+                          Navigator.pop(context);
+                          String newResult =  widget.isLocal ?
+                          await widget.bloc.addPart(part, 'APPEND') :
+                          await DatabaseService.db.addPart(part, 'APPEND');
+
+                          if(newResult == 'SUCCESS') {
+                            Navigator.pop(context);
+                          } else {
+                            showDialog(
+                                context: context,
+                                builder: (context) => AlertDialog(
+                                  title: Text('Add Part'),
+                                  content: Text(newResult),
+                                  actions: [
+                                    TextButton(
+                                        onPressed: () {
+                                          Navigator.pop(context);
+                                        },
+                                        child: Text('OK')
+                                    )
+                                  ],
+                                )
+                            );
+                          }
+                        },
+                        child: Text('APPEND')
+                    ),
+                    TextButton(
+                        onPressed: () async {
+                          Navigator.pop(context);
+                          String newResult =  widget.isLocal ?
+                          await widget.bloc.addPart(part, 'REPLACE') :
+                          await DatabaseService.db.addPart(part, 'REPLACE');
+
+                          if(newResult == 'SUCCESS') {
+                            Navigator.pop(context);
+                          } else {
+                            showDialog(
+                                context: context,
+                                builder: (context) => AlertDialog(
+                                  title: Text('Add Part'),
+                                  content: Text(newResult),
+                                  actions: [
+                                    TextButton(
+                                        onPressed: () {
+                                          Navigator.pop(context);
+                                        },
+                                        child: Text('OK')
+                                    )
+                                  ],
+                                )
+                            );
+                          }
+                        },
+                        child: Text('REPLACE')
+                    ),
+                    TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        child: Text('SKIP')
+                    ),
+                  ],
+                )
+            );
           } else {
             showDialog(
                 context: context,
@@ -201,7 +248,6 @@ class _PartEditorState extends State<PartEditor> {
           String result = '';
           if(widget.isLocal) {
             result = await widget.bloc.editPart(Part(
-              pid: widget.oldPart.pid,
               partNo: newPart['partNo'],
               assetAccountCode: newPart['assetAccountCode'],
               process: newPart['process'],
@@ -224,7 +270,6 @@ class _PartEditorState extends State<PartEditor> {
             ));
           } else {
             result = await DatabaseService.db.editPart(Part(
-              pid: widget.oldPart.pid,
               partNo: newPart['partNo'],
               assetAccountCode: newPart['assetAccountCode'],
               process: newPart['process'],
@@ -300,7 +345,7 @@ class _PartEditorState extends State<PartEditor> {
                   0: IntrinsicColumnWidth(),
                   1: FlexColumnWidth(),
                 },
-                children: [
+                children: (widget.isNew ? <TableRow>[
                   TableRow(
                       children: [
                         PartTableText('Part No.', 'LABEL'),
@@ -308,13 +353,14 @@ class _PartEditorState extends State<PartEditor> {
                           padding: const EdgeInsets.fromLTRB(0,0,0,5),
                           child: TextFormField(
                             keyboardType: TextInputType.number,
-                            initialValue: newPart['partNo'],
+                            initialValue: null,
                             decoration: formFieldDecoration.copyWith(hintText: 'Part No.'),
-                            onChanged: (val) => setState(() => _onTextChanged(val, 'partNo')),
+                            onChanged: (val) => setState(() => _onTextChanged(int.parse(val), 'partNo')),
                           ),
                         ),
                       ]
                   ),
+                ] : <TableRow>[]) + <TableRow>[
                   TableRow(
                       children: [
                         PartTableText('AAC', 'LABEL'),

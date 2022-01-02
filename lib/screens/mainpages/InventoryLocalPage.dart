@@ -18,7 +18,7 @@ class InventoryLocalPage extends StatefulWidget {
 }
 
 class _InventoryLocalPageState extends State<InventoryLocalPage> {
-  String category = 'pid';
+  String category = 'partNo';
   String query = '';
   PartsBloc bloc;
 
@@ -109,7 +109,7 @@ class _InventoryLocalPageState extends State<InventoryLocalPage> {
                           child: PartListTile(
                             key: Key(index.toString()),
                             name: snapshot.data.parts[index].description,
-                            caption: snapshot.data.parts[index].partNo,
+                            caption: snapshot.data.parts[index].partNo.toString(),
                             index: index
                           ),
                         );

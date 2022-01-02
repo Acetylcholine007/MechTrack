@@ -1,6 +1,5 @@
 class Part {
-  String pid;
-  String partNo;
+  int partNo;
   String assetAccountCode;
   String process;
   String subProcess;
@@ -21,8 +20,7 @@ class Part {
   String criticalByPM;
 
   Part({
-    this.pid = '',
-    this.partNo = "",
+    this.partNo,
     this.assetAccountCode = '',
     this.process = '',
     this.subProcess = '',
@@ -44,7 +42,6 @@ class Part {
   });
 
   Part copy() => Part(
-    pid: this.pid,
     partNo: this.partNo,
     assetAccountCode: this.assetAccountCode,
     process: this.process,
@@ -66,9 +63,8 @@ class Part {
     criticalByPM: this.criticalByPM,
   );
 
-  Map<String, String> toMap() {
+  Map<String, dynamic> toMap() {
     return {
-      'pid': this.pid,
       'partNo': this.partNo,
       'assetAccountCode': this.assetAccountCode,
       'process': this.process,
@@ -94,7 +90,6 @@ class Part {
   @override
   String toString() {
     return 'Part{'
-      'pid: $pid, '
       'partNo: $partNo, '
       'assetAccountCode: $assetAccountCode,'
       'process: $process,'
