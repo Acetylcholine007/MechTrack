@@ -225,6 +225,7 @@ class DatabaseService {
   Future<ImportResponse> importParts(List<Part> parts, String action) async {
     String result = '';
     List<Part> duplicateParts = [];
+    List<Part> invalidParts = [];
 
     if(action == 'APPEND') {
       int lastPartNo = 0;
@@ -235,26 +236,30 @@ class DatabaseService {
       lastPartNo = snapshot.docs.length != 0 ? _partListFromSnapshot(snapshot)[0].partNo + 1 : 1)
           .catchError((error) {result = error.toString(); print('Failed to get part for append operation');});
 
-      print(lastPartNo);
       await Future.wait(parts.asMap().entries.map((entry) {
         Part part = entry.value;
         print(part.partNo);
         part.partNo = lastPartNo + entry.key;
         print(part.partNo);
+        if(part.partNo == null)
+          return Future(() => invalidParts.add(part));
         return addPart(part, 'SAFE');
       }))
           .then((value) => result = 'SUCCESS')
           .catchError((error) => result = error.toString());
-      return ImportResponse(result: result, parts: duplicateParts);
+      return ImportResponse(result: result, parts: duplicateParts, invalidIdParts: invalidParts);
     }
 
     await Future.wait(parts.map((part) {
+      if(part.partNo == null)
+        return Future(() => invalidParts.add(part));
+
       return addPart(part, action).then((value) =>
       value == 'EXIST' ? duplicateParts.add(part) : null);
     }))
       .then((value) => result = 'SUCCESS')
       .catchError((error) => result = error.toString());
-    return ImportResponse(result: result, parts: duplicateParts);
+    return ImportResponse(result: result, parts: duplicateParts, invalidIdParts: invalidParts);
   }
 
   // //GETTER FUNCTIONS

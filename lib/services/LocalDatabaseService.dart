@@ -163,12 +163,16 @@ class LocalDatabaseService {
   Future<ImportResponse> importParts(List<Part> parts, String action) async {
     String result = '';
     List<Part> duplicateParts = [];
-    await Future.wait(parts.map((part) => addPart(part, action).then(
-        (value) => value == 'EXIST' ? duplicateParts.add(part) : null
-    )))
+    List<Part> invalidParts = [];
+
+    await Future.wait(parts.map((part) {
+      if(part.partNo == null)
+        return Future(() => invalidParts.add(part));
+      return addPart(part, action).then((value) => value == 'EXIST' ? duplicateParts.add(part) : null);
+    }))
       .then((value) => result = 'SUCCESS')
       .catchError((error) => result = error.toString());
-    return ImportResponse(result: result, parts: duplicateParts);
+    return ImportResponse(result: result, parts: duplicateParts, invalidIdParts: invalidParts);
   }
 
   Future<bool> hasRecords() async {

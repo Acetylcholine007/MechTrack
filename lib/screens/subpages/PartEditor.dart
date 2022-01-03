@@ -316,7 +316,7 @@ class _PartEditorState extends State<PartEditor> {
         final snackBar = SnackBar(
           duration: Duration(seconds: 2),
           behavior: SnackBarBehavior.floating,
-          content: Text('Fill up all the fields'),
+          content: Text('Fill up Part No.'),
           action: SnackBarAction(label: 'OK', onPressed: () => ScaffoldMessenger.of(context).hideCurrentSnackBar()),
         );
         ScaffoldMessenger.of(context).showSnackBar(snackBar);
@@ -356,6 +356,7 @@ class _PartEditorState extends State<PartEditor> {
                             initialValue: null,
                             decoration: formFieldDecoration.copyWith(hintText: 'Part No.'),
                             onChanged: (val) => setState(() => _onTextChanged(int.parse(val), 'partNo')),
+                            validator: (val) => val.isEmpty ? 'Enter Part No' : null,
                           ),
                         ),
                       ]

@@ -33,6 +33,13 @@ class _DataPageState extends State<DataPage> {
     return digest.toString();
   }
 
+  bool isInteger(String s) {
+    if (s == null) {
+      return false;
+    }
+    return int.tryParse(s) != null;
+  }
+
   Future<List<Part>> csvReader() async {
     List<Part> newFields;
     FilePickerResult result = await FilePicker.platform.pickFiles(
@@ -77,8 +84,7 @@ class _DataPageState extends State<DataPage> {
       newFields = fields.map((row) {
         Part part = Part(
           partNo:
-              //TODO: handle missing
-              indices[0] != -1 ? row[indices[0]] : null,
+              indices[0] != -1 ? isInteger(row[indices[0]].toString()) ? int.parse(row[indices[0]].toString()) : null : null,
           assetAccountCode:
               indices[1] != -1 ? row[indices[1]].toString() : '',
           process: indices[2] != -1 ? row[indices[2]].toString() : '',
@@ -131,20 +137,41 @@ class _DataPageState extends State<DataPage> {
     } catch (error) {
       result.result = error.toString();
     }
+
+    print(result.result);
+    print('>>>>>>>>>>>>>');
     if(result.result == 'VALID') {
       setState(() => isLocalImporting = true);
       result = await LocalDatabaseService.db.importParts(parts, 'SAFE');
     }
 
-    if(result.result == 'SUCCESS' && result.parts.isEmpty) {
+    if(result.result == 'SUCCESS' && result.parts.isEmpty && result.invalidIdParts.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
-    } else if(result.result == 'EMPTY') {
-    } else if (result.parts.isNotEmpty) {
+    } else if (result.result == 'SUCCESS' && result.parts.isEmpty && result.invalidIdParts.isNotEmpty) {
+      showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text('Local CSV Import'),
+            content: Text('Parts with non integer or missing part number were omitted.'),
+            actions: [
+              TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: Text('OK')
+              )
+            ],
+          )
+      );
+    } else if (result.result == 'EMPTY') {
+    } else if (result.result == 'SUCCESS' && result.parts.isNotEmpty) {
       showDialog(
           context: context,
           builder: (newContext) => AlertDialog(
             title: Text('Local CSV Import'),
-            content: Text('Existing parts found.'),
+            content: Text('${result.invalidIdParts.isNotEmpty ?
+              'Parts with invalid or missing part number were omitted. ' : ''}'
+              'Existing parts found. Choose what to do with existing parts.'),
             actions: [
               TextButton(
                   onPressed: () async {
@@ -256,15 +283,33 @@ class _DataPageState extends State<DataPage> {
       result = await DatabaseService.db.importParts(parts, 'SAFE');
     }
 
-    if(result.result == 'SUCCESS' && result.parts.isEmpty) {
+    if(result.result == 'SUCCESS' && result.parts.isEmpty && result.invalidIdParts.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    } else if (result.result == 'SUCCESS' && result.parts.isEmpty && result.invalidIdParts.isNotEmpty) {
+      showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text('Global CSV Import'),
+            content: Text('Parts with non integer or missing part number were omitted.'),
+            actions: [
+              TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: Text('OK')
+              )
+            ],
+          )
+      );
     } else if(result.result == 'EMPTY') {
-    } else if (result.parts.isNotEmpty) {
+    } else if (result.result == 'SUCCESS' && result.parts.isNotEmpty) {
       showDialog(
           context: context,
           builder: (newContext) => AlertDialog(
             title: Text('Global CSV Import'),
-            content: Text('Existing parts found.'),
+            content: Text('${result.invalidIdParts.isNotEmpty ?
+              'Parts with invalid or missing part number were omitted. ' : ''}'
+              'Existing parts found. Choose what to do with existing parts.'),
             actions: [
               TextButton(
                   onPressed: () async {
