@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:mech_track/models/Field.dart';
 import 'package:mech_track/models/ImportResponse.dart';
 import 'package:mech_track/models/LocalDBDataPack.dart';
 import 'package:mech_track/models/Part.dart';
@@ -16,34 +17,29 @@ class LocalDatabaseService {
   Future<Database> get database async {
     if(_database != null) return _database;
     _database = await openDatabase(
-      join(await getDatabasesPath(), 'part_database.db'),
+      join(await getDatabasesPath(), 'mech_database.db'),
       onCreate: (db, version) {
-        return db.execute(
-          'CREATE TABLE parts('
-            'partNo INTEGER PRIMARY KEY,'
-            'assetAccountCode TEXT,'
-            'process TEXT,'
-            'subProcess TEXT,'
-            'description TEXT,'
-            'type TEXT,'
-            'criticality TEXT,'
-            'status TEXT,'
-            'yearInstalled TEXT,'
-            'description2 TEXT,'
-            'brand TEXT,'
-            'model TEXT,'
-            'spec1 TEXT,'
-            'spec2 TEXT,'
-            'dept TEXT,'
-            'facility TEXT,'
-            'facilityType TEXT,'
-            'sapFacility TEXT,'
-            'criticalByPM TEXT)'
+        Batch batch = db.batch();
+        batch.execute(
+          'CREATE TABLE parts(partNo INTEGER PRIMARY KEY)'
         );
+        batch.execute('CREATE TABLE fields(id INTEGER PRIMARY KEY, field TEXT)');
+        return batch.commit();
       },
       version: 1
     );
     return _database;
+  }
+
+  Future<Field> getFields() async {
+    Database db = await database;
+    List<Map<String, Object>> maps = await db.query('fields',
+        orderBy: 'id ASC'
+    );
+
+    return Field(fields: List.generate(maps.length, (i) {
+      return maps[i]['field'];
+    }));
   }
 
   Future<String> addPart(Part part, String action) async {
@@ -102,24 +98,7 @@ class LocalDatabaseService {
 
     return Part(
       partNo: maps[0]['partNo'],
-      assetAccountCode: maps[0]['assetAccountCode'],
-      process: maps[0]['process'],
-      subProcess: maps[0]['subProcess'],
-      description: maps[0]['description'],
-      type: maps[0]['type'],
-      criticality: maps[0]['criticality'],
-      status: maps[0]['status'],
-      yearInstalled: maps[0]['yearInstalled'],
-      description2: maps[0]['description2'],
-      brand: maps[0]['brand'],
-      model: maps[0]['model'],
-      spec1: maps[0]['spec1'],
-      spec2: maps[0]['spec2'],
-      dept: maps[0]['dept'],
-      facility: maps[0]['facility'],
-      facilityType: maps[0]['facilityType'],
-      sapFacility: maps[0]['sapFacility'],
-      criticalByPM: maps[0]['criticalByPM'],
+      fields: maps[0],
     );
   }
 
@@ -138,32 +117,54 @@ class LocalDatabaseService {
     return LocalDBDataPack(parts: List.generate(maps.length, (i) {
       return Part(
         partNo: maps[i]['partNo'],
-        assetAccountCode: maps[i]['assetAccountCode'],
-        process: maps[i]['process'],
-        subProcess: maps[i]['subProcess'],
-        description: maps[i]['description'],
-        type: maps[i]['type'],
-        criticality: maps[i]['criticality'],
-        status: maps[i]['status'],
-        yearInstalled: maps[i]['yearInstalled'],
-        description2: maps[i]['description2'],
-        brand: maps[i]['brand'],
-        model: maps[i]['model'],
-        spec1: maps[i]['spec1'],
-        spec2: maps[i]['spec2'],
-        dept: maps[i]['dept'],
-        facility: maps[i]['facility'],
-        facilityType: maps[i]['facilityType'],
-        sapFacility: maps[i]['sapFacility'],
-        criticalByPM: maps[i]['criticalByPM'],
+        fields: maps[i],
       );
-    }), hasRecords: await hasRecords());
+    }), hasRecords: await hasRecords(), fields: await getFields());
   }
 
-  Future<ImportResponse> importParts(List<Part> parts, String action) async {
+  Future<String> clearDatabase() async {
+    String result = '';
+    Database db = await database;
+
+    await db.rawDelete("DELETE * from parts")
+    .then((value) => result = "SUCCESS")
+    .catchError((error) => result = error.toString());
+
+    return result;
+  }
+
+  Future exportParts() async {
+    //TODO: get data
+    //TODO: write data
+    //TODO: save data
+  }
+
+  Future<ImportResponse> importParts(List<Part> parts, String action, List<String> headers) async {
+    Database db = await database;
     String result = '';
     List<Part> duplicateParts = [];
     List<Part> invalidParts = [];
+
+    //TODO: drop part table
+    await db.execute("DROP TABLE IF EXISTS parts");
+    await db.rawDelete("DELETE from fields");
+
+    //TODO: create part table
+    await db.execute(
+        'CREATE TABLE parts('
+            'partNo INTEGER PRIMARY KEY,'
+            '${headers.map((header) => header + ' TEXT')
+            .reduce((a, b) => a + ', ' + b)})'
+    );
+
+    //TODO: create field table
+    for(int index = 0; index < headers.length; index++) {
+      await db.insert(
+        'fields',
+        {'id': index, 'field': headers[index]},
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    }
 
     await Future.wait(parts.map((part) {
       if(part.partNo == null)

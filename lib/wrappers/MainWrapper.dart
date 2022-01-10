@@ -7,7 +7,9 @@ import 'package:mech_track/models/AccountData.dart';
 
 import 'package:mech_track/screens/mainpages/AccountPage.dart';
 import 'package:mech_track/screens/mainpages/DataPage.dart';
+import 'package:mech_track/screens/mainpages/GuessHelpPage.dart';
 import 'package:mech_track/screens/mainpages/GuessProfilePage.dart';
+import 'package:mech_track/screens/mainpages/HelpPage.dart';
 import 'package:mech_track/screens/mainpages/InventoryGlobalPage.dart';
 import 'package:mech_track/screens/mainpages/InventoryLocalPage.dart';
 import 'package:mech_track/screens/mainpages/ProfilePage.dart';
@@ -119,6 +121,14 @@ class _MainWrapperState extends State<MainWrapper> {
           BottomNavigationBarItem(
             label: 'Profile',
             icon: Icon(Icons.account_circle_rounded),
+          ),
+          1
+      ),
+      Page(
+          widget.account.isAnon ? GuessHelpPage() : HelpPage(),
+          BottomNavigationBarItem(
+            label: 'Help',
+            icon: Icon(Icons.help_rounded),
           ),
           1
       ),

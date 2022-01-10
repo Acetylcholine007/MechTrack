@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mech_track/components/Loading.dart';
+import 'package:mech_track/models/Field.dart';
 import 'package:provider/provider.dart';
 
 import 'package:mech_track/models/Part.dart';
@@ -67,9 +68,9 @@ class _AuthWrapperState extends State<AuthWrapper> {
           providers: [
             StreamProvider<AccountData>.value(value: DatabaseService.db.getUser(authUser.uid), initialData: null),
             StreamProvider<List<Part>>.value(value: DatabaseService.db.parts, initialData: null),
+            StreamProvider<Field>.value(value: DatabaseService.db.fields, initialData: null),
             StreamProvider<List<AccountData>>.value(value: DatabaseService.db.users, initialData: null),
           ],
-        // child: MainWrapper(account: authUser)
         child: Builder(
           builder: (context) {
             final account = Provider.of<AccountData>(context);
@@ -84,7 +85,6 @@ class _AuthWrapperState extends State<AuthWrapper> {
         ),
       );
     } else if (authUser != null && authUser.isAnon) {
-      // return MainWrapper(account: authUser);
       return Builder(
         builder: (context) {
           return MyMaterialApp(
@@ -94,7 +94,6 @@ class _AuthWrapperState extends State<AuthWrapper> {
         },
       );
     } else {
-      // return FrontPage();
       return Builder(
         builder: (context) {
           return MyMaterialApp(

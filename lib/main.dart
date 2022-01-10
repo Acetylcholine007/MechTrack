@@ -14,10 +14,6 @@ void main() async {
       providers: [
         StreamProvider<Account>.value(initialData: null, value: AuthService().user),
       ],
-      // child: MaterialApp(
-      //   theme: appTheme,
-      //   home: MyApp()
-      // )
       child: MyApp()
     )
   );

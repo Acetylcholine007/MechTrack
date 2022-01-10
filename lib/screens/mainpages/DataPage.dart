@@ -1,12 +1,12 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:csv/csv.dart';
 import 'package:mech_track/models/Account.dart';
 import 'package:mech_track/models/AccountData.dart';
+import 'package:mech_track/models/CSVReadResult.dart';
 import 'package:mech_track/models/ImportResponse.dart';
 import 'package:mech_track/services/DatabaseService.dart';
 import 'package:provider/provider.dart';
@@ -25,14 +25,6 @@ class _DataPageState extends State<DataPage> {
   bool isGlobalImporting = false;
   bool isLocalImporting = false;
 
-  String calculateHash(String data) {
-    var bytes = utf8.encode(data); // data being hashed
-    var digest = sha1.convert(bytes);
-    print("Digest as hex string: $digest");
-    print(digest.toString());
-    return digest.toString();
-  }
-
   bool isInteger(String s) {
     if (s == null) {
       return false;
@@ -40,7 +32,7 @@ class _DataPageState extends State<DataPage> {
     return int.tryParse(s) != null;
   }
 
-  Future<List<Part>> csvReader() async {
+  Future<CSVReadResult> csvReader() async {
     List<Part> newFields;
     FilePickerResult result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
@@ -61,68 +53,27 @@ class _DataPageState extends State<DataPage> {
 
       List<int> indices = [
         headers.indexOf('itemno'),
-        headers.indexOf('assetaccountcode'),
-        headers.indexOf('process'),
-        headers.indexOf('subprocess'),
-        headers.indexOf('description'),
-        headers.indexOf('type'),
-        headers.indexOf('criticality'),
-        headers.indexOf('status'),
-        headers.indexOf('yearinstalled'),
-        headers.indexOf('description2'),
-        headers.indexOf('brand'),
-        headers.indexOf('model'),
-        headers.indexOf('spec1'),
-        headers.indexOf('spec2'),
-        headers.indexOf('dept'),
-        headers.indexOf('facility'),
-        headers.indexOf('facilitytype'),
-        headers.indexOf('sapfacility'),
-        headers.indexOf('criticalbypm'),
       ];
 
       newFields = fields.map((row) {
         Part part = Part(
           partNo:
-              indices[0] != -1 ? isInteger(row[indices[0]].toString()) ? int.parse(row[indices[0]].toString()) : null : null,
-          assetAccountCode:
-              indices[1] != -1 ? row[indices[1]].toString() : '',
-          process: indices[2] != -1 ? row[indices[2]].toString() : '',
-          subProcess:
-              indices[3] != -1 ? row[indices[3]].toString() : '',
-          description:
-              indices[4] != -1 ? row[indices[4]].toString() : '',
-          type: indices[5] != -1 ? row[indices[5]].toString() : '',
-          criticality:
-              indices[6] != -1 ? row[indices[6]].toString() : '',
-          status: indices[7] != -1 ? row[indices[7]].toString() : '',
-          yearInstalled:
-              indices[8] != -1 ? row[indices[8]].toString() : '',
-          description2:
-              indices[9] != -1 ? row[indices[9]].toString() : '',
-          brand: indices[10] != -1 ? row[indices[10]].toString() : '',
-          model: indices[11] != -1 ? row[indices[11]].toString() : '',
-          spec1: indices[12] != -1 ? row[indices[12]].toString() : '',
-          spec2: indices[13] != -1 ? row[indices[13]].toString() : '',
-          dept: indices[14] != -1 ? row[indices[14]].toString() : '',
-          facility:
-              indices[15] != -1 ? row[indices[15]].toString() : '',
-          facilityType:
-              indices[16] != -1 ? row[indices[16]].toString() : '',
-          sapFacility:
-              indices[17] != -1 ? row[indices[17]].toString() : '',
-          criticalByPM:
-              indices[18] != -1 ? row[indices[18]].toString() : '',
+              indices[0] != -1 ?
+              isInteger(row[headers.indexOf('itemno')].toString()) ?
+              int.parse(row[headers.indexOf('itemno')].toString()) : null : null,
+          fields: { for (String header in headers) header: row[headers.indexOf(header)] }
         );
+        print(part);
         return part;
       }).toList();
-      return newFields;
+      return CSVReadResult(parts: newFields, headers: headers);
     }
     return null;
   }
 
   void localCSVImport() async {
     ImportResponse result = ImportResponse();
+    CSVReadResult readResult;
     List<Part> parts;
     final snackBar = SnackBar(
       duration: Duration(seconds: 3),
@@ -132,17 +83,16 @@ class _DataPageState extends State<DataPage> {
     );
 
     try {
-      parts = await csvReader();
+      readResult = await csvReader();
+      parts = readResult.parts;
       result.result = parts != null ? 'VALID' : 'EMPTY';
     } catch (error) {
       result.result = error.toString();
     }
 
-    print(result.result);
-    print('>>>>>>>>>>>>>');
     if(result.result == 'VALID') {
       setState(() => isLocalImporting = true);
-      result = await LocalDatabaseService.db.importParts(parts, 'SAFE');
+      result = await LocalDatabaseService.db.importParts(parts, 'SAFE', readResult.headers);
     }
 
     if(result.result == 'SUCCESS' && result.parts.isEmpty && result.invalidIdParts.isEmpty) {
@@ -178,7 +128,7 @@ class _DataPageState extends State<DataPage> {
                     setState(() => isLocalImporting = true);
                     Navigator.pop(newContext);
                     ImportResponse newResult =
-                    await LocalDatabaseService.db.importParts(result.parts, 'APPEND');
+                    await LocalDatabaseService.db.importParts(result.parts, 'APPEND', readResult.headers);
 
                     setState(() => isLocalImporting = false);
                     if(newResult.result == 'SUCCESS') {
@@ -208,7 +158,7 @@ class _DataPageState extends State<DataPage> {
                     setState(() => isLocalImporting = true);
                     Navigator.pop(newContext);
                     ImportResponse newResult =
-                    await LocalDatabaseService.db.importParts(result.parts, 'REPLACE');
+                    await LocalDatabaseService.db.importParts(result.parts, 'REPLACE', readResult.headers);
 
                     setState(() => isLocalImporting = false);
                     if(newResult.result == 'SUCCESS') {
@@ -264,6 +214,7 @@ class _DataPageState extends State<DataPage> {
 
   void globalCSVImport() async {
     ImportResponse result = ImportResponse();
+    CSVReadResult readResult;
     List<Part> parts;
     final snackBar = SnackBar(
       duration: Duration(seconds: 3),
@@ -273,7 +224,8 @@ class _DataPageState extends State<DataPage> {
     );
 
     try {
-      parts = await csvReader();
+      readResult = await csvReader();
+      parts = readResult.parts;
       result.result = parts != null ? 'VALID' : 'EMPTY';
     } catch(error) {
       result.result = error.toString();
@@ -424,8 +376,12 @@ class _DataPageState extends State<DataPage> {
       OperatorWidget(
           ElevatedButton(
             onPressed: () async {
+              ImportResponse result;
               setState(() => isSyncing = true);
-              ImportResponse result = await LocalDatabaseService.db.importParts(parts, 'REPLACE');
+              if(parts.isNotEmpty)
+                result = await LocalDatabaseService.db
+                    .importParts(parts, 'REPLACE', parts[0].fields.keys.toList());
+              else result = ImportResponse(result: 'SUCCESS');
               setState(() => isSyncing = false);
 
               if(result.result == 'SUCCESS') {

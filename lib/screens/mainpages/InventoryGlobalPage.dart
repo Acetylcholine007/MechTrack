@@ -8,8 +8,9 @@ import 'package:mech_track/components/PartListTile.dart';
 import 'package:mech_track/components/PartSearchBar.dart';
 import 'package:mech_track/models/Account.dart';
 import 'package:mech_track/models/AccountData.dart';
+import 'package:mech_track/models/Field.dart';
 import 'package:mech_track/models/Part.dart';
-import 'package:mech_track/screens/subpages/PartEditor.dart';
+import 'package:mech_track/screens/subpages/PartCreator.dart';
 import 'package:mech_track/screens/subpages/PartViewer.dart';
 import 'package:mech_track/services/DatabaseService.dart';
 import 'package:provider/provider.dart';
@@ -25,104 +26,16 @@ class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
 
   List<Part> filterHandler (List<Part> parts) {
     if(query != "") {
-      switch (category) {
-        case 'partNo':
-          return parts
-              .where((part) =>
-                  part.partNo.toString().contains(new RegExp(query, caseSensitive: false)))
-              .toList();
-        case 'assetAccountCode':
-          return parts
-              .where((part) => part.assetAccountCode
-                  .contains(new RegExp(query, caseSensitive: false)))
-              .toList();
-        case 'process':
-          return parts
-              .where((part) => part.process
-                  .contains(new RegExp(query, caseSensitive: false)))
-              .toList();
-        case 'subProcess':
-          return parts
-              .where((part) => part.subProcess
-                  .contains(new RegExp(query, caseSensitive: false)))
-              .toList();
-        case 'description':
-          return parts
-              .where((part) => part.description
-                  .contains(new RegExp(query, caseSensitive: false)))
-              .toList();
-        case 'type':
-          return parts
-              .where((part) =>
-                  part.type.contains(new RegExp(query, caseSensitive: false)))
-              .toList();
-        case 'criticality':
-          return parts
-              .where((part) => part.criticality
-                  .contains(new RegExp(query, caseSensitive: false)))
-              .toList();
-        case 'status':
-          return parts
-              .where((part) =>
-                  part.status.contains(new RegExp(query, caseSensitive: false)))
-              .toList();
-        case 'yearInstalled':
-          return parts
-              .where((part) => part.yearInstalled
-                  .contains(new RegExp(query, caseSensitive: false)))
-              .toList();
-        case 'description2':
-          return parts
-              .where((part) => part.description2
-                  .contains(new RegExp(query, caseSensitive: false)))
-              .toList();
-        case 'brand':
-          return parts
-              .where((part) =>
-                  part.brand.contains(new RegExp(query, caseSensitive: false)))
-              .toList();
-        case 'model':
-          return parts
-              .where((part) =>
-                  part.model.contains(new RegExp(query, caseSensitive: false)))
-              .toList();
-        case 'spec1':
-          return parts
-              .where((part) =>
-                  part.spec1.contains(new RegExp(query, caseSensitive: false)))
-              .toList();
-        case 'spec2':
-          return parts
-              .where((part) =>
-                  part.spec2.contains(new RegExp(query, caseSensitive: false)))
-              .toList();
-        case 'dept':
-          return parts
-              .where((part) =>
-                  part.dept.contains(new RegExp(query, caseSensitive: false)))
-              .toList();
-        case 'facility':
-          return parts
-              .where((part) => part.facility
-                  .contains(new RegExp(query, caseSensitive: false)))
-              .toList();
-        case 'facilityType':
-          return parts
-              .where((part) => part.facilityType
-                  .contains(new RegExp(query, caseSensitive: false)))
-              .toList();
-        case 'sapFacility':
-          return parts
-              .where((part) => part.sapFacility
-                  .contains(new RegExp(query, caseSensitive: false)))
-              .toList();
-        case 'criticalByPM':
-          return parts
-              .where((part) => part.criticalByPM
-                  .contains(new RegExp(query, caseSensitive: false)))
-              .toList();
-        default:
-          return parts;
+      if(category == 'partNo') {
+        return parts
+          .where((part) =>
+          part.partNo.toString().startsWith(new RegExp(query, caseSensitive: false)))
+          .toList();
+      } else {
+        return parts
+          .where((part) =>
+          part.fields[category].toString().startsWith(new RegExp(query, caseSensitive: false)))
+          .toList();
       }
     } else {
       return parts;
@@ -133,6 +46,7 @@ class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
   Widget build(BuildContext context) {
     final authUser = Provider.of<Account>(context);
     final account = authUser.isAnon ? null : Provider.of<AccountData>(context);
+    final fields = authUser.isAnon ? null : Provider.of<Field>(context);
     List<Part> parts = Provider.of<List<Part>>(context);
 
     void searchHandler(String val) {
@@ -181,12 +95,12 @@ class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
           })
         ],
       ),
-      floatingActionButton: account.accountType == 'ADMIN' ? FloatingActionButton(
+      floatingActionButton: account.accountType == 'ADMIN' && fields.fields.isNotEmpty ? FloatingActionButton(
         child: Icon(Icons.add),
         onPressed: () =>
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => PartEditor(isNew: true, isLocal: false, account: account)),
+            MaterialPageRoute(builder: (context) => PartCreator(isLocal: false, account: account, /*TODO: add fields*/)),
           ),
       ) : null,
       body: Provider.of<List<Part>>(context).isEmpty ? NoPartGlobal() : Container(
@@ -209,7 +123,7 @@ class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
                         ),
                     child: PartListTile(
                       key: Key(index.toString()),
-                      name: parts[index].description,
+                      name: parts[index].fields['description'].toString(),
                       caption: parts[index].partNo.toString(),
                       index: index
                     ),

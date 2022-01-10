@@ -32,7 +32,6 @@ class _PartViewerState extends State<PartViewer> {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => PartEditor(
-                isNew: false,
                 isLocal: widget.isLocal,
                 oldPart: widget.part,
                 bloc: widget.bloc,
@@ -64,122 +63,12 @@ class _PartViewerState extends State<PartViewer> {
                   0: IntrinsicColumnWidth(),
                   1: FlexColumnWidth(),
                 },
-                children: [
-                TableRow(
+                children: part.fields.keys.map((field) => TableRow(
                   children: [
-                    PartTableText('Part No.', 'LABEL'),
-                    PartTableText(part.partNo.toString(), 'CONTENT'),
+                    PartTableText(field, 'LABEL'),
+                    PartTableText(part.fields[field].toString(), 'CONTENT'),
                   ]
-                ),
-                TableRow(
-                    children: [
-                      PartTableText('AAC', 'LABEL'),
-                      PartTableText(part.assetAccountCode, 'CONTENT'),
-                    ]
-                ),
-                TableRow(
-                    children: [
-                      PartTableText('Process', 'LABEL'),
-                      PartTableText(part.process, 'CONTENT'),
-                    ]
-                ),
-                  TableRow(
-                      children: [
-                        PartTableText('Subprocess', 'LABEL'),
-                        PartTableText(part.subProcess, 'CONTENT'),
-                      ]
-                  ),
-                  TableRow(
-                      children: [
-                        PartTableText('Type', 'LABEL'),
-                        PartTableText(part.type, 'CONTENT'),
-                      ]
-                  ),
-                  TableRow(
-                      children: [
-                        PartTableText('Criticality', 'LABEL'),
-                        PartTableText(part.criticality, 'CONTENT'),
-                      ]
-                  ),
-                  TableRow(
-                      children: [
-                        PartTableText('Status', 'LABEL'),
-                        PartTableText(part.status, 'CONTENT'),
-                      ]
-                  ),
-                  TableRow(
-                      children: [
-                        PartTableText('Year Installed', 'LABEL'),
-                        PartTableText(part.yearInstalled, 'CONTENT'),
-                      ]
-                  ),
-                  TableRow(
-                      children: [
-                        PartTableText('Brand', 'LABEL'),
-                        PartTableText(part.brand, 'CONTENT'),
-                      ]
-                  ),
-                  TableRow(
-                      children: [
-                        PartTableText('Model', 'LABEL'),
-                        PartTableText(part.model, 'CONTENT'),
-                      ]
-                  ),
-                  TableRow(
-                      children: [
-                        PartTableText('Spec 1', 'LABEL'),
-                        PartTableText(part.spec1, 'CONTENT'),
-                      ]
-                  ),
-                  TableRow(
-                      children: [
-                        PartTableText('Spec 2', 'LABEL'),
-                        PartTableText(part.spec2, 'CONTENT'),
-                      ]
-                  ),
-                  TableRow(
-                      children: [
-                        PartTableText('Dept', 'LABEL'),
-                        PartTableText(part.dept, 'CONTENT'),
-                      ]
-                  ),
-                  TableRow(
-                      children: [
-                        PartTableText('Facility', 'LABEL'),
-                        PartTableText(part.facility, 'CONTENT'),
-                      ]
-                  ),
-                  TableRow(
-                      children: [
-                        PartTableText('Facility Type', 'LABEL'),
-                        PartTableText(part.facilityType, 'CONTENT'),
-                      ]
-                  ),
-                  TableRow(
-                      children: [
-                        PartTableText('SAP Facility', 'LABEL'),
-                        PartTableText(part.sapFacility, 'CONTENT'),
-                      ]
-                  ),
-                  TableRow(
-                      children: [
-                        PartTableText('Critical by PM', 'LABEL'),
-                        PartTableText(part.criticalByPM, 'CONTENT'),
-                      ]
-                  ),
-                  TableRow(
-                      children: [
-                        PartTableText('Description', 'LABEL'),
-                        PartTableText(part.description, 'CONTENT'),
-                      ]
-                  ),
-                  TableRow(
-                      children: [
-                        PartTableText('Description 2', 'LABEL'),
-                        PartTableText(part.description2, 'CONTENT'),
-                      ]
-                  ),
-                ],
+                )).toList()
               ),
             ),
           ],

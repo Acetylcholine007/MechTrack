@@ -48,9 +48,16 @@ class PartsBloc {
     return result;
   }
 
-  Future<ImportResponse> importParts(List<Part> parts, String action) async {
+  Future<String> clearDatabase(String pid) async {
+    String result = '';
+    result = await LocalDatabaseService.db.clearDatabase();
+    getParts(query, category);
+    return result;
+  }
+
+  Future<ImportResponse> importParts(List<Part> parts, String action, List<String> headers) async {
     ImportResponse response;
-    response = await LocalDatabaseService.db.importParts(parts, action);
+    response = await LocalDatabaseService.db.importParts(parts, action, headers);
     getParts(query, category);
     return response;
   }

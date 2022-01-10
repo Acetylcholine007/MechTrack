@@ -9,8 +9,9 @@ import 'package:mech_track/components/PartListTile.dart';
 import 'package:mech_track/components/PartSearchBar.dart';
 import 'package:mech_track/models/LocalDBDataPack.dart';
 import 'package:mech_track/models/Part.dart';
-import 'package:mech_track/screens/subpages/PartEditor.dart';
+import 'package:mech_track/screens/subpages/PartCreator.dart';
 import 'package:mech_track/screens/subpages/PartViewer.dart';
+import 'package:mech_track/services/LocalDatabaseService.dart';
 
 class InventoryLocalPage extends StatefulWidget {
   @override
@@ -76,12 +77,12 @@ class _InventoryLocalPageState extends State<InventoryLocalPage> {
                 })
               ],
             ),
-            floatingActionButton: FloatingActionButton(
+            floatingActionButton: snapshot.data.fields.fields.isEmpty ? null : FloatingActionButton(
               child: Icon(Icons.add),
               onPressed: () =>
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => PartEditor(isNew: true, isLocal: true, bloc: bloc)),
+                  MaterialPageRoute(builder: (context) => PartCreator(isLocal: true, bloc: bloc, fields: snapshot.data.fields)),
                 ),
             ),
             body: Container(
@@ -108,7 +109,7 @@ class _InventoryLocalPageState extends State<InventoryLocalPage> {
                             ),
                           child: PartListTile(
                             key: Key(index.toString()),
-                            name: snapshot.data.parts[index].description,
+                            name: snapshot.data.parts[index].fields['description'],
                             caption: snapshot.data.parts[index].partNo.toString(),
                             index: index
                           ),

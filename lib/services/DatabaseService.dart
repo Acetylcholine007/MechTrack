@@ -1,4 +1,5 @@
 import 'package:mech_track/models/AccountData.dart';
+import 'package:mech_track/models/Field.dart';
 import 'package:mech_track/models/ImportResponse.dart';
 import 'package:mech_track/models/Part.dart';
 
@@ -11,6 +12,7 @@ class DatabaseService {
 
   final CollectionReference userCollection = FirebaseFirestore.instance.collection('users');
   final CollectionReference partCollection = FirebaseFirestore.instance.collection('parts');
+  final CollectionReference fieldCollection = FirebaseFirestore.instance.collection('fields');
 
   //MAPPING FUNCTION SECTION
   AccountData _accountFromSnapshot(DocumentSnapshot snapshot) {
@@ -27,24 +29,7 @@ class DatabaseService {
   Part _partFromSnapshot(DocumentSnapshot snapshot) {
     return Part(
       partNo: int.parse(snapshot.id),
-      assetAccountCode: snapshot.get('assetAccountCode') ?? '',
-      process: snapshot.get('process') ?? '',
-      subProcess: snapshot.get('subProcess') ?? '',
-      description: snapshot.get('description') ?? '',
-      type: snapshot.get('type') ?? '',
-      criticality: snapshot.get('criticality') ?? '',
-      status: snapshot.get('status') ?? '',
-      yearInstalled: snapshot.get('yearInstalled') ?? '',
-      description2: snapshot.get('description2') ?? '',
-      brand: snapshot.get('brand') ?? '',
-      model: snapshot.get('model') ?? '',
-      spec1: snapshot.get('spec1') ?? '',
-      spec2: snapshot.get('spec2') ?? '',
-      dept: snapshot.get('dept') ?? '',
-      facility: snapshot.get('facility') ?? '',
-      facilityType: snapshot.get('facilityType') ?? '',
-      sapFacility: snapshot.get('sapFacility') ?? '',
-      criticalByPM: snapshot.get('criticalByPM') ?? '',
+      fields: snapshot.data() ?? {},
     );
   }
 
@@ -52,24 +37,7 @@ class DatabaseService {
     return snapshot.docs.map((doc) {
       return Part(
         partNo: int.parse(doc.id),
-        assetAccountCode: doc.get('assetAccountCode') ?? '',
-        process: doc.get('process') ?? '',
-        subProcess: doc.get('subProcess') ?? '',
-        description: doc.get('description') ?? '',
-        type: doc.get('type') ?? '',
-        criticality: doc.get('criticality') ?? '',
-        status: doc.get('status') ?? '',
-        yearInstalled: doc.get('yearInstalled') ?? '',
-        description2: doc.get('description2') ?? '',
-        brand: doc.get('brand') ?? '',
-        model: doc.get('model') ?? '',
-        spec1: doc.get('spec1') ?? '',
-        spec2: doc.get('spec2') ?? '',
-        dept: doc.get('dept') ?? '',
-        facility: doc.get('facility') ?? '',
-        facilityType: doc.get('facilityType') ?? '',
-        sapFacility: doc.get('sapFacility') ?? '',
-        criticalByPM: doc.get('criticalByPM') ?? '',
+        fields: doc.data() ?? {},
       );
     }).toList();
   }
@@ -87,7 +55,20 @@ class DatabaseService {
     }).toList();
   }
 
+  Field _fieldFromSnapshot(DocumentSnapshot snapshot) {
+    return Field(fields: snapshot.get('fields') ?? []);
+  }
+
   // OPERATOR FUNCTIONS SECTION
+  Future<String> setField(List<String> fields) async {
+    String result = '';
+    await fieldCollection
+        .doc('1').set({'fields': fields})
+        .then((value) => result = 'SUCCESS')
+        .catchError((error) => result = error.toString());
+    return result;
+  }
+
   Future removePart(String pid) async {
     String result = '';
     await partCollection
@@ -114,27 +95,7 @@ class DatabaseService {
     }
 
     await partCollection
-      .doc(docId).set({
-      'partNo': int.parse(docId),
-      'assetAccountCode': part.assetAccountCode,
-      'process': part.process,
-      'subProcess': part.subProcess,
-      'description': part.description,
-      'type': part.type,
-      'criticality': part.criticality,
-      'status': part.status,
-      'yearInstalled': part.yearInstalled,
-      'description2': part.description2,
-      'brand': part.brand,
-      'model': part.model,
-      'spec1': part.spec1,
-      'spec2': part.spec2,
-      'dept': part.dept,
-      'facility': part.facility,
-      'facilityType': part.facilityType,
-      'sapFacility': part.sapFacility,
-      'criticalByPM': part.criticalByPM,
-    })
+      .doc(docId).set({'partNo': int.parse(docId), ...part.fields})
         .then((value) => result = 'SUCCESS')
         .catchError((error) => result = error.toString());
     return result;
@@ -144,26 +105,7 @@ class DatabaseService {
     String result = '';
     await partCollection.doc(part.partNo.toString())
     .update({
-      'partNo': part.partNo,
-      'assetAccountCode': part.assetAccountCode,
-      'process': part.process,
-      'subProcess': part.subProcess,
-      'description': part.description,
-      'type': part.type,
-      'criticality': part.criticality,
-      'status': part.status,
-      'yearInstalled': part.yearInstalled,
-      'description2': part.description2,
-      'brand': part.brand,
-      'model': part.model,
-      'spec1': part.spec1,
-      'spec2': part.spec2,
-      'dept': part.dept,
-      'facility': part.facility,
-      'facilityType': part.facilityType,
-      'sapFacility': part.sapFacility,
-      'criticalByPM': part.criticalByPM,
-    })
+      'partNo': part.partNo, ...part.fields})
     .then((value) => result = 'SUCCESS')
     .catchError((error) => result = error.toString());
     return result;
@@ -221,11 +163,35 @@ class DatabaseService {
       .catchError((error) => result = error.toString());
     return result;
   }
+
+  Future<String> clearDatabase() async {
+    String result = '';
+    final batch = FirebaseFirestore.instance.batch();
+    final parts = await partCollection.get();
+
+    for(final part in parts.docs) {
+      batch.delete(part.reference);
+    }
+
+    await batch.commit()
+    .then((value) => result = 'SUCCESS')
+    .catchError((error) => result = error.toString());
+
+    return result;
+  }
+
+  Future exportParts() async {
+    //TODO: get data
+    //TODO: write data
+    //TODO: save data
+  }
   
   Future<ImportResponse> importParts(List<Part> parts, String action) async {
     String result = '';
     List<Part> duplicateParts = [];
     List<Part> invalidParts = [];
+
+    //TODO: delete collection
 
     if(action == 'APPEND') {
       int lastPartNo = 0;
@@ -281,12 +247,16 @@ class DatabaseService {
   Stream<AccountData> getUser(String uid) {
     return userCollection.doc(uid).snapshots().map(_accountFromSnapshot);
   }
-  //
+
   Stream<List<AccountData>> get users {
     return userCollection.orderBy("fullName").snapshots().map(_accountListFromSnapshot);
   }
-  //
+
   Stream<List<Part>> get parts {
     return partCollection.orderBy("partNo").snapshots().map(_partListFromSnapshot);
+  }
+
+  Stream<Field> get fields {
+    return fieldCollection.doc('1').snapshots().map(_fieldFromSnapshot);
   }
 }
