@@ -22,13 +22,13 @@ class PartCreator extends StatefulWidget {
 
 class _PartCreatorState extends State<PartCreator> {
   final _formKey = GlobalKey<FormState>();
-  Map newPart;
+  Map<String, dynamic> newPart;
   Timer _debounce;
 
   @override
   void initState() {
     super.initState();
-    newPart = { for (var field in widget.fields.fields) field: '' };
+    newPart = { for (var field in widget.fields.fields.keys) field: '' };
   }
 
   _onTextChanged(dynamic query, String selector) {
@@ -185,21 +185,20 @@ class _PartCreatorState extends State<PartCreator> {
                           keyboardType: TextInputType.number,
                           initialValue: null,
                           decoration: formFieldDecoration.copyWith(hintText: 'Part No.'),
-                          onChanged: (val) => setState(() => _onTextChanged(int.parse(val), 'partNo')),
+                          onChanged: (val) => setState(() => _onTextChanged(val, 'partNo')),
                           validator: (val) => val.isEmpty ? 'Enter Part No' : null,
                         ),
                       ),
                     ]
-                )] + widget.fields.fields.sublist(1).map((field) => TableRow(
+                )] + widget.fields.fields.keys.toList().sublist(1).map((field) => TableRow(
                   children: [
-                    PartTableText(field, 'LABEL'),
+                    PartTableText(widget.fields.fields[field], 'LABEL'),
                     Padding(
                       padding: const EdgeInsets.fromLTRB(0,0,0,5),
                       child: TextFormField(
-                        keyboardType: TextInputType.number,
                         initialValue: null,
-                        decoration: formFieldDecoration.copyWith(hintText: field),
-                        onChanged: (val) => setState(() => _onTextChanged(int.parse(val), field)),
+                        decoration: formFieldDecoration.copyWith(hintText: widget.fields.fields[field]),
+                        onChanged: (val) => setState(() => _onTextChanged(val, field)),
                       ),
                     ),
                   ]

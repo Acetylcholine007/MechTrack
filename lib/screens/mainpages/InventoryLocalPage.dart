@@ -7,11 +7,11 @@ import 'package:mech_track/components/NoPartLocal.dart';
 
 import 'package:mech_track/components/PartListTile.dart';
 import 'package:mech_track/components/PartSearchBar.dart';
+import 'package:mech_track/components/TwoPartSearchBar.dart';
 import 'package:mech_track/models/LocalDBDataPack.dart';
 import 'package:mech_track/models/Part.dart';
 import 'package:mech_track/screens/subpages/PartCreator.dart';
 import 'package:mech_track/screens/subpages/PartViewer.dart';
-import 'package:mech_track/services/LocalDatabaseService.dart';
 
 class InventoryLocalPage extends StatefulWidget {
   @override
@@ -19,9 +19,32 @@ class InventoryLocalPage extends StatefulWidget {
 }
 
 class _InventoryLocalPageState extends State<InventoryLocalPage> {
-  String category = 'partNo';
-  String query = '';
+  String category1 = 'partNo';
+  String category2 = 'partNo';
+  String query1 = '';
+  String query2 = '';
   PartsBloc bloc;
+  bool isSingleSearch = true;
+
+  List<Part> filterHandler (List<Part> parts) {
+    if(isSingleSearch) {
+      return parts.where((part) {
+        return query1 == "" ? true : category1 == 'partNo' ?
+        part.partNo.toString().startsWith(new RegExp(query1, caseSensitive: false)) :
+        part.fields[category1].toString().contains(new RegExp(query1, caseSensitive: false));
+      }).toList();
+    } else {
+      return parts.where((part) {
+        bool con1 = query1 == "" ? true : category1 == 'partNo' ?
+        part.partNo.toString().startsWith(new RegExp(query1, caseSensitive: false)) :
+        part.fields[category1].toString().contains(new RegExp(query1, caseSensitive: false));
+        bool con2 = query2 == "" ? true : category2 == 'partNo' ?
+        part.partNo.toString().startsWith(new RegExp(query2, caseSensitive: false)) :
+        part.fields[category2].toString().contains(new RegExp(query2, caseSensitive: false));
+        return con1 && con2;
+      }).toList();
+    }
+  }
 
   @override
   void dispose() {
@@ -31,24 +54,35 @@ class _InventoryLocalPageState extends State<InventoryLocalPage> {
 
   @override
   Widget build(BuildContext context) {
-    bloc = PartsBloc(query, category);
+    bloc = PartsBloc('', 'partNo', '', 'partNo');
 
-    void searchHandler(String val) {
-      return setState(() => query = val);
+    void searchHandler1(String val) {
+      return setState(() => query1 = val);
     }
 
-    void categoryHandler(String newCat) {
-      setState(() => category = newCat);
+    void categoryHandler1(String newCat) {
+      setState(() => category1 = newCat);
+    }
+
+    void searchHandler2(String val) {
+      return setState(() => query2 = val);
+    }
+
+    void categoryHandler2(String newCat) {
+      setState(() => category2 = newCat);
     }
 
     return StreamBuilder<LocalDBDataPack>(
       stream: bloc.localParts,
       builder: (BuildContext context, AsyncSnapshot<LocalDBDataPack> snapshot) {
         if(snapshot.hasData) {
+          List<Part> parts = filterHandler(snapshot.data.parts);
+
           return Scaffold(
             appBar: AppBar(
               title: Text('Local Database'),
               actions: [
+                IconButton(onPressed: () => setState(() => isSingleSearch = !isSingleSearch), icon: Icon(Icons.find_replace_rounded)),
                 IconButton(icon: Icon(Icons.qr_code_scanner), onPressed: () async {
                   var result = await BarcodeScanner.scan();
                   if(result.rawContent.isNotEmpty) {
@@ -59,7 +93,7 @@ class _InventoryLocalPageState extends State<InventoryLocalPage> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(builder: (context) =>
-                              PartViewer(part: part, isLocal: true, bloc: bloc))
+                              PartViewer(part: part, isLocal: true, bloc: bloc, fields: snapshot.data.fields))
                         );
                       } else {
                         Navigator.push(
@@ -91,26 +125,42 @@ class _InventoryLocalPageState extends State<InventoryLocalPage> {
               ),
               child: snapshot.data != null ? !snapshot.data.hasRecords ? NoPartLocal() :Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  PartSearchBar(categoryHandler: categoryHandler, searchHandler: searchHandler, category: category, context: context),
+                children: <Widget>[(isSingleSearch ?
+                  PartSearchBar(
+                    categoryHandler: categoryHandler1,
+                    searchHandler: searchHandler1,
+                    category: category1,
+                    context: context,
+                    fields: snapshot.data.fields,
+                  ) : TwoPartSearchBar(
+                    categoryHandler1: categoryHandler1,
+                    searchHandler1: searchHandler1,
+                    category1: category1,
+                    categoryHandler2: categoryHandler2,
+                    searchHandler2: searchHandler2,
+                    category2: category2,
+                    context: context,
+                    fields: snapshot.data.fields,
+                  ))] + <Widget>[
                   Expanded(
                     child: ListView.builder(
-                      itemCount: snapshot.data.parts.length,
+                      itemCount: parts.length,
                       itemBuilder: (BuildContext context, int index) {
                         return GestureDetector(
                           onTap: () =>
                             Navigator.push(
                               context,
                               MaterialPageRoute(builder: (context) => PartViewer(
-                                part: snapshot.data.parts[index],
+                                part: parts[index],
                                 isLocal: true,
-                                bloc: bloc)
+                                bloc: bloc,
+                                fields: snapshot.data.fields)
                               ),
                             ),
                           child: PartListTile(
                             key: Key(index.toString()),
-                            name: snapshot.data.parts[index].fields['description'],
-                            caption: snapshot.data.parts[index].partNo.toString(),
+                            name: parts[index].fields['description'],
+                            caption: parts[index].partNo.toString(),
                             index: index
                           ),
                         );

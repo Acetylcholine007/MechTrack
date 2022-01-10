@@ -1,5 +1,5 @@
 class Field {
-  List<dynamic> fields;
+  Map<String, String> fields;
 
   Field({this.fields});
 }

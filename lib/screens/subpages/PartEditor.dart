@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mech_track/BLoCs/LocalDatabaseBloc.dart';
 import 'package:mech_track/components/PartTableText.dart';
 import 'package:mech_track/models/AccountData.dart';
+import 'package:mech_track/models/Field.dart';
 import 'package:mech_track/models/Part.dart';
 import 'package:mech_track/services/DatabaseService.dart';
 import 'package:mech_track/shared/decorations.dart';
@@ -12,8 +13,9 @@ class PartEditor extends StatefulWidget {
   final Part oldPart;
   final PartsBloc bloc;
   final AccountData account;
+  final Field fields;
 
-  PartEditor({this.isLocal, this.oldPart, this.bloc, this.account});
+  PartEditor({this.isLocal, this.oldPart, this.bloc, this.account, this.fields});
 
   @override
   _PartEditorState createState() => _PartEditorState();
@@ -21,7 +23,7 @@ class PartEditor extends StatefulWidget {
 
 class _PartEditorState extends State<PartEditor> {
   final _formKey = GlobalKey<FormState>();
-  Map newPart;
+  Map<String, dynamic> newPart;
   List<String> fields;
   Timer _debounce;
 
@@ -29,7 +31,7 @@ class _PartEditorState extends State<PartEditor> {
   void initState() {
     super.initState();
     newPart = widget.oldPart.fields;
-    fields = widget.oldPart.fields.keys.toList().sublist(1);
+    fields = widget.fields.fields.keys.toList().sublist(1);
   }
 
   _onTextChanged(dynamic query, String selector) {
@@ -141,18 +143,17 @@ class _PartEditorState extends State<PartEditor> {
                   1: FlexColumnWidth(),
                 },
                 children: fields.map((field) => TableRow(
-                    children: [
-                      PartTableText(field, 'LABEL'),
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(0,0,0,5),
-                        child: TextFormField(
-                          keyboardType: TextInputType.number,
-                          initialValue: null,
-                          decoration: formFieldDecoration.copyWith(hintText: field),
-                          onChanged: (val) => setState(() => _onTextChanged(int.parse(val), field)),
-                        ),
+                  children: [
+                    PartTableText(widget.fields.fields[field], 'LABEL'),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(0,0,0,5),
+                      child: TextFormField(
+                        initialValue: newPart[field].toString(),
+                        decoration: formFieldDecoration.copyWith(hintText: widget.fields.fields[field]),
+                        onChanged: (val) => setState(() => _onTextChanged(val, field)),
                       ),
-                    ]
+                    ),
+                  ]
                 )).toList()
               ),
             ),

@@ -3,6 +3,7 @@ import 'package:mech_track/BLoCs/LocalDatabaseBloc.dart';
 import 'package:mech_track/components/PartTableText.dart';
 import 'package:mech_track/components/QRDisplay.dart';
 import 'package:mech_track/models/AccountData.dart';
+import 'package:mech_track/models/Field.dart';
 import 'package:mech_track/models/Part.dart';
 import 'package:mech_track/screens/subpages/PartEditor.dart';
 
@@ -11,8 +12,9 @@ class PartViewer extends StatefulWidget {
   final bool isLocal;
   final PartsBloc bloc;
   final AccountData account;
+  final Field fields;
 
-  PartViewer({this.part, this.isLocal, this.bloc, this.account});
+  PartViewer({this.part, this.isLocal, this.bloc, this.account, this.fields});
 
   @override
   _PartViewerState createState() => _PartViewerState();
@@ -35,11 +37,12 @@ class _PartViewerState extends State<PartViewer> {
                 isLocal: widget.isLocal,
                 oldPart: widget.part,
                 bloc: widget.bloc,
-                account: widget.account
+                account: widget.account,
+                fields: widget.fields
               )),
             ),
           )]) + <Widget>[
-          IconButton(icon: Icon(Icons.qr_code), onPressed: () =>
+          IconButton(icon: Icon(Icons.qr_code_2_rounded), onPressed: () =>
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) =>
@@ -63,12 +66,14 @@ class _PartViewerState extends State<PartViewer> {
                   0: IntrinsicColumnWidth(),
                   1: FlexColumnWidth(),
                 },
-                children: part.fields.keys.map((field) => TableRow(
-                  children: [
-                    PartTableText(field, 'LABEL'),
-                    PartTableText(part.fields[field].toString(), 'CONTENT'),
-                  ]
-                )).toList()
+                children: widget.fields.fields.keys.map((field) =>
+                  TableRow(children: [
+                    PartTableText(
+                        widget.fields.fields[field], 'LABEL'),
+                    PartTableText(
+                        part.fields[field].toString(), 'CONTENT'),
+                  ])
+                ).toList()
               ),
             ),
           ],

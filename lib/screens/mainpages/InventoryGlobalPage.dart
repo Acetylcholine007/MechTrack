@@ -6,6 +6,7 @@ import 'package:mech_track/components/NoPartGlobal.dart';
 
 import 'package:mech_track/components/PartListTile.dart';
 import 'package:mech_track/components/PartSearchBar.dart';
+import 'package:mech_track/components/TwoPartSearchBar.dart';
 import 'package:mech_track/models/Account.dart';
 import 'package:mech_track/models/AccountData.dart';
 import 'package:mech_track/models/Field.dart';
@@ -21,24 +22,29 @@ class InventoryGlobalPage extends StatefulWidget {
 }
 
 class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
-  String category = 'partNo';
-  String query = '';
+  String category1 = 'partNo';
+  String category2 = 'partNo';
+  String query1 = '';
+  String query2 = '';
+  bool isSingleSearch = true;
 
   List<Part> filterHandler (List<Part> parts) {
-    if(query != "") {
-      if(category == 'partNo') {
-        return parts
-          .where((part) =>
-          part.partNo.toString().startsWith(new RegExp(query, caseSensitive: false)))
-          .toList();
-      } else {
-        return parts
-          .where((part) =>
-          part.fields[category].toString().startsWith(new RegExp(query, caseSensitive: false)))
-          .toList();
-      }
+    if(isSingleSearch) {
+      return parts.where((part) {
+        return query1 == "" ? true : category1 == 'partNo' ?
+        part.partNo.toString().startsWith(new RegExp(query1, caseSensitive: false)) :
+        part.fields[category1].toString().contains(new RegExp(query1, caseSensitive: false));
+      }).toList();
     } else {
-      return parts;
+      return parts.where((part) {
+        bool con1 = query1 == "" ? true : category1 == 'partNo' ?
+          part.partNo.toString().startsWith(new RegExp(query1, caseSensitive: false)) :
+          part.fields[category1].toString().contains(new RegExp(query1, caseSensitive: false));
+        bool con2 = query2 == "" ? true : category2 == 'partNo' ?
+          part.partNo.toString().startsWith(new RegExp(query2, caseSensitive: false)) :
+          part.fields[category2].toString().contains(new RegExp(query2, caseSensitive: false));
+        return con1 && con2;
+      }).toList();
     }
   }
 
@@ -49,14 +55,20 @@ class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
     final fields = authUser.isAnon ? null : Provider.of<Field>(context);
     List<Part> parts = Provider.of<List<Part>>(context);
 
-    void searchHandler(String val) {
-      return setState(() {
-        query = val;
-      });
+    void searchHandler1(String val) {
+      return setState(() => query1 = val);
     }
 
-    void categoryHandler(String newCat) {
-      return setState(() => category = newCat);
+    void categoryHandler1(String newCat) {
+      setState(() => category1 = newCat);
+    }
+
+    void searchHandler2(String val) {
+      return setState(() => query2 = val);
+    }
+
+    void categoryHandler2(String newCat) {
+      setState(() => category2 = newCat);
     }
 
     parts = filterHandler(parts);
@@ -65,6 +77,7 @@ class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
       appBar: AppBar(
         title: Text('Global Database'),
         actions: [
+          IconButton(onPressed: () => setState(() => isSingleSearch = !isSingleSearch), icon: Icon(Icons.find_replace_rounded)),
           IconButton(icon: Icon(Icons.qr_code_scanner), onPressed: () async {
             var result = await BarcodeScanner.scan();
             if(result.rawContent.isNotEmpty) {
@@ -80,7 +93,8 @@ class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
                     builder: (context) => PartViewer(
                       part: part,
                       isLocal: false,
-                      account: account)));
+                      account: account,
+                      fields: fields)));
                 } else {
                   Navigator.push(context, MaterialPageRoute(
                     builder: (context) =>
@@ -100,7 +114,7 @@ class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
         onPressed: () =>
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => PartCreator(isLocal: false, account: account, /*TODO: add fields*/)),
+            MaterialPageRoute(builder: (context) => PartCreator(isLocal: false, account: account, fields: fields)),
           ),
       ) : null,
       body: Provider.of<List<Part>>(context).isEmpty ? NoPartGlobal() : Container(
@@ -109,8 +123,23 @@ class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            PartSearchBar(categoryHandler: categoryHandler, searchHandler: searchHandler, category: category, context: context),
+          children: <Widget>[(isSingleSearch ?
+          PartSearchBar(
+            categoryHandler: categoryHandler1,
+            searchHandler: searchHandler1,
+            category: category1,
+            context: context,
+            fields: fields,
+          ) : TwoPartSearchBar(
+            categoryHandler1: categoryHandler1,
+            searchHandler1: searchHandler1,
+            category1: category1,
+            categoryHandler2: categoryHandler2,
+            searchHandler2: searchHandler2,
+            category2: category2,
+            context: context,
+            fields: fields,
+          ))] + <Widget>[
             Expanded(
               child: ListView.builder(
                 itemCount: parts.length,
@@ -119,7 +148,8 @@ class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
                     onTap: () =>
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => PartViewer(part: parts[index], isLocal: false, account: account)),
+                          MaterialPageRoute(builder: (context) =>
+                              PartViewer(part: parts[index], isLocal: false, account: account, fields: fields,)),
                         ),
                     child: PartListTile(
                       key: Key(index.toString()),

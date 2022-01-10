@@ -55,17 +55,41 @@ class DatabaseService {
     }).toList();
   }
 
-  Field _fieldFromSnapshot(DocumentSnapshot snapshot) {
-    return Field(fields: snapshot.get('fields') ?? []);
+  Field _fieldFromSnapshot(QuerySnapshot snapshot) {
+    Map<String, String> fields = snapshot.docs.isNotEmpty ? {'partNo': 'Part No.'} : {};
+    snapshot.docs.forEach((doc) => fields[doc.get('fieldKey')] = doc.get('fieldValue'));
+    return Field(fields: fields);
   }
 
   // OPERATOR FUNCTIONS SECTION
-  Future<String> setField(List<String> fields) async {
+  Future<String> setField(Map<String, String> fields) async {
     String result = '';
-    await fieldCollection
-        .doc('1').set({'fields': fields})
+
+    try{
+      for(final field in fields.keys) {
+        await fieldCollection.add({'fieldKey': field, 'fieldValue': fields[field]});
+      }
+      result = 'SUCCESS';
+    } catch(e) {
+      result = e.toString();
+    }
+
+    return result;
+  }
+  
+  Future<String> clearField() async {
+    String result = '';
+    final batch = FirebaseFirestore.instance.batch();
+    final fields = await fieldCollection.get();
+
+    for(final field in fields.docs) {
+      batch.delete(field.reference);
+    }
+
+    await batch.commit()
         .then((value) => result = 'SUCCESS')
         .catchError((error) => result = error.toString());
+
     return result;
   }
 
@@ -164,7 +188,7 @@ class DatabaseService {
     return result;
   }
 
-  Future<String> clearDatabase() async {
+  Future<String> clearParts() async {
     String result = '';
     final batch = FirebaseFirestore.instance.batch();
     final parts = await partCollection.get();
@@ -186,45 +210,28 @@ class DatabaseService {
     //TODO: save data
   }
   
-  Future<ImportResponse> importParts(List<Part> parts, String action) async {
+  Future<ImportResponse> importParts(List<Part> parts, Map<String, String> headers) async {
     String result = '';
     List<Part> duplicateParts = [];
     List<Part> invalidParts = [];
 
-    //TODO: delete collection
+    String result1 = await clearField();
+    String result2 = await clearParts();
+    String result3 = await setField(headers);
 
-    if(action == 'APPEND') {
-      int lastPartNo = 0;
-
-      await partCollection
-          .orderBy('partNo').limitToLast(1).get()
-          .then((QuerySnapshot snapshot) =>
-      lastPartNo = snapshot.docs.length != 0 ? _partListFromSnapshot(snapshot)[0].partNo + 1 : 1)
-          .catchError((error) {result = error.toString(); print('Failed to get part for append operation');});
-
-      await Future.wait(parts.asMap().entries.map((entry) {
-        Part part = entry.value;
-        print(part.partNo);
-        part.partNo = lastPartNo + entry.key;
-        print(part.partNo);
+    if(result1 == 'SUCCESS' && result2 == 'SUCCESS' && result3 == 'SUCCESS') {
+      await Future.wait(parts.map((part) {
         if(part.partNo == null)
           return Future(() => invalidParts.add(part));
-        return addPart(part, 'SAFE');
+
+        return addPart(part, 'REPLACE')
+          .then((value) => value == 'EXIST' ? duplicateParts.add(part) : null);
       }))
-          .then((value) => result = 'SUCCESS')
-          .catchError((error) => result = error.toString());
-      return ImportResponse(result: result, parts: duplicateParts, invalidIdParts: invalidParts);
+        .then((value) => result = 'SUCCESS')
+        .catchError((error) => result = error.toString());
+    } else {
+      result = result1 + result2 + result3;
     }
-
-    await Future.wait(parts.map((part) {
-      if(part.partNo == null)
-        return Future(() => invalidParts.add(part));
-
-      return addPart(part, action).then((value) =>
-      value == 'EXIST' ? duplicateParts.add(part) : null);
-    }))
-      .then((value) => result = 'SUCCESS')
-      .catchError((error) => result = error.toString());
     return ImportResponse(result: result, parts: duplicateParts, invalidIdParts: invalidParts);
   }
 
@@ -257,6 +264,6 @@ class DatabaseService {
   }
 
   Stream<Field> get fields {
-    return fieldCollection.doc('1').snapshots().map(_fieldFromSnapshot);
+    return fieldCollection.snapshots().map(_fieldFromSnapshot);
   }
 }

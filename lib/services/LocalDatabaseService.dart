@@ -23,7 +23,7 @@ class LocalDatabaseService {
         batch.execute(
           'CREATE TABLE parts(partNo INTEGER PRIMARY KEY)'
         );
-        batch.execute('CREATE TABLE fields(id INTEGER PRIMARY KEY, field TEXT)');
+        batch.execute('CREATE TABLE fields(id INTEGER PRIMARY KEY, fieldKey TEXT, fieldValue TEXT)');
         return batch.commit();
       },
       version: 1
@@ -36,10 +36,11 @@ class LocalDatabaseService {
     List<Map<String, Object>> maps = await db.query('fields',
         orderBy: 'id ASC'
     );
+    Map<String, String> fields = {'partNo': 'Part No.'};
 
-    return Field(fields: List.generate(maps.length, (i) {
-      return maps[i]['field'];
-    }));
+    maps.forEach((field) => fields[field['fieldKey']] = field['fieldValue']);
+
+    return Field(fields: fields);
   }
 
   Future<String> addPart(Part part, String action) async {
@@ -102,14 +103,12 @@ class LocalDatabaseService {
     );
   }
 
-  Future<LocalDBDataPack> getParts(String query, String category) async {
+  Future<LocalDBDataPack> getParts(String query1, String category1, String query2, String category2) async {
     Database db = await database;
-    List<Map<String, Object>> maps = await db.query('parts',
-      orderBy: 'partNo ASC'
-    );
+    List<Map<String, Object>> maps;
 
-    if (query.isNotEmpty) {
-      maps = await db.query('parts', where: '$category LIKE ?', whereArgs: ["%$query%"]);
+    if (query1.isNotEmpty) {
+      maps = await db.query('parts', where: '$category1 LIKE ?', whereArgs: ["%$query1%"]);
     } else {
       maps = await db.query('parts');
     }
@@ -139,40 +138,42 @@ class LocalDatabaseService {
     //TODO: save data
   }
 
-  Future<ImportResponse> importParts(List<Part> parts, String action, List<String> headers) async {
+  Future<ImportResponse> importParts(List<Part> parts, Map<String, String> headers) async {
     Database db = await database;
     String result = '';
     List<Part> duplicateParts = [];
     List<Part> invalidParts = [];
+    List<String> headerKeys = headers.keys.toList();
+    Batch batch = db.batch();
 
-    //TODO: drop part table
-    await db.execute("DROP TABLE IF EXISTS parts");
-    await db.rawDelete("DELETE from fields");
+    headers.remove('partNo');
 
-    //TODO: create part table
-    await db.execute(
-        'CREATE TABLE parts('
-            'partNo INTEGER PRIMARY KEY,'
-            '${headers.map((header) => header + ' TEXT')
-            .reduce((a, b) => a + ', ' + b)})'
+    batch.rawDelete("DELETE from fields");
+    batch.execute("DROP TABLE IF EXISTS parts");
+    batch.execute(
+      'CREATE TABLE parts('
+        'partNo INTEGER PRIMARY KEY,'
+        '${headers.keys.map((header) => header + ' TEXT')
+        .reduce((a, b) => a + ', ' + b)})'
     );
 
-    //TODO: create field table
-    for(int index = 0; index < headers.length; index++) {
-      await db.insert(
+    for(int index = 0; index < headerKeys.length; index++) {
+      batch.insert(
         'fields',
-        {'id': index, 'field': headers[index]},
+        {'id': index, 'fieldKey': headerKeys[index], 'fieldValue': headers[headerKeys[index]]},
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
     }
 
-    await Future.wait(parts.map((part) {
-      if(part.partNo == null)
-        return Future(() => invalidParts.add(part));
-      return addPart(part, action).then((value) => value == 'EXIST' ? duplicateParts.add(part) : null);
-    }))
-      .then((value) => result = 'SUCCESS')
-      .catchError((error) => result = error.toString());
+    parts.forEach((part) => batch.insert(
+      'parts',
+      part.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace)
+    );
+    await batch.commit()
+    .then((value) => result = 'SUCCESS')
+    .catchError((error) => result = error.toString());
+
     return ImportResponse(result: result, parts: duplicateParts, invalidIdParts: invalidParts);
   }
 

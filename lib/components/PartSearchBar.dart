@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mech_track/models/Field.dart';
 import 'package:mech_track/shared/decorations.dart';
 
 class PartSearchBar extends StatefulWidget {
@@ -6,12 +7,13 @@ class PartSearchBar extends StatefulWidget {
     this.categoryHandler,
     this.searchHandler,
     this.category,
-    this.context}) : super(key: key);
+    this.context, this.fields}) : super(key: key);
 
   final Function(String) categoryHandler;
   final Function(String) searchHandler;
   final String category;
   final BuildContext context;
+  final Field fields;
 
   @override
   State<PartSearchBar> createState() => _PartSearchBarState();
@@ -19,28 +21,6 @@ class PartSearchBar extends StatefulWidget {
 
 class _PartSearchBarState extends State<PartSearchBar> {
   TextEditingController controller = TextEditingController();
-
-  final categories = const {
-    'partNo': 'Part Number',
-    'description': 'Description',
-    'assetAccountCode': 'Asset Account Code',
-    'process': 'Process',
-    'subProcess': 'Subprocess',
-    'type': 'Type',
-    'criticality': 'Criticality',
-    'status': 'Status',
-    'yearInstalled': 'Year Installed',
-    'description2': 'Description 2',
-    'brand': 'Brand',
-    'model': 'Model',
-    'spec1': 'Spec 1',
-    'spec2': 'Spec 2',
-    'dept': 'Dept',
-    'facility': 'Facility',
-    'facilityType': 'Facility Type',
-    'sapFacility': 'SAP Facility',
-    'criticalByPM': 'Critical by PM',
-  };
 
   void filterHandler() {
     String newCat = widget.category;
@@ -51,9 +31,9 @@ class _PartSearchBarState extends State<PartSearchBar> {
           title: Text('Search Selector'),
           content: DropdownButtonFormField(
             value: newCat,
-            items: categories.keys.map((String category) => DropdownMenuItem(
+            items: widget.fields.fields.keys.map((String category) => DropdownMenuItem(
                 value: category,
-                child: Text(categories[category])
+                child: Text(widget.fields.fields[category])
             )).toList(),
             onChanged: (value) => newCat = value,
             decoration: formFieldDecoration,

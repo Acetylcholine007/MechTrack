@@ -7,6 +7,7 @@ import 'package:csv/csv.dart';
 import 'package:mech_track/models/Account.dart';
 import 'package:mech_track/models/AccountData.dart';
 import 'package:mech_track/models/CSVReadResult.dart';
+import 'package:mech_track/models/Field.dart';
 import 'package:mech_track/models/ImportResponse.dart';
 import 'package:mech_track/services/DatabaseService.dart';
 import 'package:provider/provider.dart';
@@ -47,21 +48,24 @@ class _DataPageState extends State<DataPage> {
         .transform(new CsvToListConverter())
         .toList();
 
-      List<String> headers = fields.removeAt(0).map((header) =>
-          header.toString().replaceAll(new RegExp('[\\W_., ]+'), "")
-              .toLowerCase()).toList();
+      Map<String, String> headers = {};
+      fields.removeAt(0).forEach((header) =>
+        headers[header.toString()
+            .replaceAll(new RegExp('[\\W_., ]+'), "")
+            .toLowerCase()
+        ] = header
+      );
 
-      List<int> indices = [
-        headers.indexOf('itemno'),
-      ];
+      int partNoIndex = headers.keys.toList().indexOf('itemno');
+      List headerKeys = headers.keys.toList();
 
       newFields = fields.map((row) {
         Part part = Part(
           partNo:
-              indices[0] != -1 ?
-              isInteger(row[headers.indexOf('itemno')].toString()) ?
-              int.parse(row[headers.indexOf('itemno')].toString()) : null : null,
-          fields: { for (String header in headers) header: row[headers.indexOf(header)] }
+            partNoIndex != -1 ?
+              isInteger(row[partNoIndex].toString()) ?
+              int.parse(row[partNoIndex].toString()) : null : null,
+          fields: { for (String header in headerKeys) header: row[headerKeys.indexOf(header)] }
         );
         print(part);
         return part;
@@ -92,7 +96,7 @@ class _DataPageState extends State<DataPage> {
 
     if(result.result == 'VALID') {
       setState(() => isLocalImporting = true);
-      result = await LocalDatabaseService.db.importParts(parts, 'SAFE', readResult.headers);
+      result = await LocalDatabaseService.db.importParts(parts, readResult.headers);
     }
 
     if(result.result == 'SUCCESS' && result.parts.isEmpty && result.invalidIdParts.isEmpty) {
@@ -128,7 +132,7 @@ class _DataPageState extends State<DataPage> {
                     setState(() => isLocalImporting = true);
                     Navigator.pop(newContext);
                     ImportResponse newResult =
-                    await LocalDatabaseService.db.importParts(result.parts, 'APPEND', readResult.headers);
+                    await LocalDatabaseService.db.importParts(result.parts, readResult.headers);
 
                     setState(() => isLocalImporting = false);
                     if(newResult.result == 'SUCCESS') {
@@ -158,7 +162,7 @@ class _DataPageState extends State<DataPage> {
                     setState(() => isLocalImporting = true);
                     Navigator.pop(newContext);
                     ImportResponse newResult =
-                    await LocalDatabaseService.db.importParts(result.parts, 'REPLACE', readResult.headers);
+                    await LocalDatabaseService.db.importParts(result.parts, readResult.headers);
 
                     setState(() => isLocalImporting = false);
                     if(newResult.result == 'SUCCESS') {
@@ -232,7 +236,7 @@ class _DataPageState extends State<DataPage> {
     }
     if(result.result == 'VALID') {
       setState(() => isGlobalImporting = true);
-      result = await DatabaseService.db.importParts(parts, 'SAFE');
+      result = await DatabaseService.db.importParts(parts, readResult.headers);
     }
 
     if(result.result == 'SUCCESS' && result.parts.isEmpty && result.invalidIdParts.isEmpty) {
@@ -268,7 +272,7 @@ class _DataPageState extends State<DataPage> {
                     setState(() => isGlobalImporting = true);
                     Navigator.pop(newContext);
                     ImportResponse newResult =
-                    await DatabaseService.db.importParts(result.parts, 'APPEND');
+                    await DatabaseService.db.importParts(result.parts, readResult.headers);
 
                     setState(() => isGlobalImporting = false);
                     if(newResult.result == 'SUCCESS') {
@@ -298,7 +302,7 @@ class _DataPageState extends State<DataPage> {
                     setState(() => isGlobalImporting = true);
                     Navigator.pop(newContext);
                     ImportResponse newResult =
-                    await DatabaseService.db.importParts(result.parts, 'REPLACE');
+                    await DatabaseService.db.importParts(result.parts, readResult.headers);
 
                     setState(() => isGlobalImporting = false);
                     if(newResult.result == 'SUCCESS') {
@@ -356,6 +360,7 @@ class _DataPageState extends State<DataPage> {
   Widget build(BuildContext context) {
     final authUser = Provider.of<Account>(context);
     List<Part> parts = authUser.isAnon ? null : Provider.of<List<Part>>(context);
+    Field fields = authUser.isAnon ? null : Provider.of<Field>(context);
     final account = authUser.isAnon ? null : Provider.of<AccountData>(context);
 
     List<OperatorWidget> operatorWidgets = [
@@ -376,11 +381,12 @@ class _DataPageState extends State<DataPage> {
       OperatorWidget(
           ElevatedButton(
             onPressed: () async {
-              ImportResponse result;
               setState(() => isSyncing = true);
+              ImportResponse result;
+
               if(parts.isNotEmpty)
                 result = await LocalDatabaseService.db
-                    .importParts(parts, 'REPLACE', parts[0].fields.keys.toList());
+                    .importParts(parts, fields.fields);
               else result = ImportResponse(result: 'SUCCESS');
               setState(() => isSyncing = false);
 
@@ -389,7 +395,8 @@ class _DataPageState extends State<DataPage> {
                   duration: Duration(seconds: 3),
                   behavior: SnackBarBehavior.floating,
                   content: Text('Local Database synced to Firebase'),
-                  action: SnackBarAction(label: 'OK', onPressed: () => ScaffoldMessenger.of(context).hideCurrentSnackBar()),
+                  action: SnackBarAction(label: 'OK',
+                      onPressed: () => ScaffoldMessenger.of(context).hideCurrentSnackBar()),
                 );
                 ScaffoldMessenger.of(context).showSnackBar(snackBar);
               } else {
