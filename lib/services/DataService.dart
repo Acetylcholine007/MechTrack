@@ -1,54 +1,26 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:flutter/material.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:csv/csv.dart';
-import 'package:mech_track/models/Account.dart';
-import 'package:mech_track/models/AccountData.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter_file_dialog/flutter_file_dialog.dart';
+import 'package:flutter/material.dart';
 import 'package:mech_track/models/CSVReadResult.dart';
 import 'package:mech_track/models/Field.dart';
 import 'package:mech_track/models/ImportResponse.dart';
-import 'package:mech_track/services/DataService.dart';
-import 'package:mech_track/services/DatabaseService.dart';
-import 'package:provider/provider.dart';
-
 import 'package:mech_track/models/Part.dart';
-import 'package:mech_track/shared/decorations.dart';
-import 'package:mech_track/services/LocalDatabaseService.dart';
+import 'package:path_provider/path_provider.dart';
 
-class DataPage extends StatefulWidget {
-  @override
-  _DataPageState createState() => _DataPageState();
-}
 
-class _DataPageState extends State<DataPage> {
-  bool isSyncing = false;
-  bool isGlobalImporting = false;
-  bool isLocalImporting = false;
-  bool isGlobalExporting = false;
-  bool isLocalExporting = false;
+import 'DatabaseService.dart';
+import 'LocalDatabaseService.dart';
 
-  void syncLoadingHandler(bool status) {
-    setState(() => isSyncing = status);
-  }
+class DataService {
+  DataService._();
 
-  void localImportLoadingHandler(bool status) {
-    setState(() => isLocalImporting = status);
-  }
+  static final DataService ds = DataService._();
 
-  void globalImportLoadingHandler(bool status) {
-    setState(() => isGlobalImporting = status);
-  }
-
-  void localExportLoadingHandler(bool status) {
-    setState(() => isLocalExporting = status);
-  }
-
-  void globalExportLoadingHandler(bool status) {
-    setState(() => isGlobalExporting = status);
-  }
-
+  //HELPER METHODS
   bool isInteger(String s) {
     if (s == null) {
       return false;
@@ -58,53 +30,102 @@ class _DataPageState extends State<DataPage> {
 
   Future<CSVReadResult> csvReader() async {
     List<Part> newFields;
-      FilePickerResult result = await FilePicker.platform.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: ['csv'],
-      );
-      if (result != null) {
-        PlatformFile file = result.files.first;
+    FilePickerResult result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['csv'],
+    );
+    if (result != null) {
+      PlatformFile file = result.files.first;
 
-        Map<String, dynamic> removeIdentifier(Map<String, dynamic> fields) {
-          fields.remove('itemno');
-          return fields;
-        }
-
-        final input = new File(file.path).openRead();
-        var fields = await input
-            .transform(utf8.decoder)
-            .transform(new CsvToListConverter())
-            .toList();
-
-        Map<String, String> headers = {};
-        fields.removeAt(0).forEach((header) =>
-        headers[header.toString()
-            .replaceAll(new RegExp('[\\W_., ]+'), "")
-            .toLowerCase()
-        ] = header
-        );
-
-        //Item No field checker
-        if(headers['itemno'] == null) throw ('No Item No. column');
-
-        int partNoIndex = headers.keys.toList().indexOf('itemno');
-        List headerKeys = headers.keys.toList();
-
-        newFields = fields.map((row) {
-          Part part = Part(
-              partNo: isInteger(row[partNoIndex].toString()) ? int.parse(row[partNoIndex].toString()) : throw ('Invalid part no'),
-              fields: removeIdentifier({ for (String header in headerKeys) header: row[headerKeys.indexOf(header)] })
-          );
-          print(part);
-          return part;
-        }).toList();
-        return CSVReadResult(parts: newFields, headers: removeIdentifier(headers), result: 'SUCCESS');
-      } else {
-        return CSVReadResult(parts: [], headers: {}, result: 'EMPTY');
+      Map<String, dynamic> removeIdentifier(Map<String, dynamic> fields) {
+        fields.remove('itemno');
+        return fields;
       }
+
+      final input = new File(file.path).openRead();
+      var fields = await input
+          .transform(utf8.decoder)
+          .transform(new CsvToListConverter())
+          .toList();
+
+      Map<String, String> headers = {};
+      fields.removeAt(0).forEach((header) =>
+      headers[header.toString()
+          .replaceAll(new RegExp('[\\W_., ]+'), "")
+          .toLowerCase()
+      ] = header
+      );
+
+      //Item No field checker
+      if(headers['itemno'] == null) throw ('No Item No. column');
+
+      int partNoIndex = headers.keys.toList().indexOf('itemno');
+      List headerKeys = headers.keys.toList();
+
+      newFields = fields.map((row) {
+        Part part = Part(
+            partNo: isInteger(row[partNoIndex].toString()) ? int.parse(row[partNoIndex].toString()) : throw ('Invalid part no'),
+            fields: removeIdentifier({ for (String header in headerKeys) header: row[headerKeys.indexOf(header)] })
+        );
+        print(part);
+        return part;
+      }).toList();
+      return CSVReadResult(parts: newFields, headers: removeIdentifier(headers), result: 'SUCCESS');
+    } else {
+      return CSVReadResult(parts: [], headers: {}, result: 'EMPTY');
+    }
   }
 
-  void localCSVImport() async {
+  List<List<String>> partListTransform(List<Part> parts, Field header) {
+    List<List<String>> newParts = [header.fields.values.toList()];
+    parts.forEach((part) {
+      print(List<String>.from(part.fields.values.map((value) => value.toString()).toList()));
+      newParts.add(List<String>.from(part.fields.values.map((value) => value.toString()).toList()));
+    });
+    print(newParts);
+    return newParts;
+  }
+
+  //SERVICE METHODS
+  void syncDatabase(BuildContext context, Function loadingHandler, List<Part> parts, Field fields) async {
+    loadingHandler(true);
+    ImportResponse result;
+
+    if(parts.isNotEmpty)
+      result = await LocalDatabaseService.db
+          .importParts(parts, fields.fields);
+    else result = ImportResponse(result: 'SUCCESS');
+    loadingHandler(false);
+
+    if(result.result == 'SUCCESS') {
+      final snackBar = SnackBar(
+        duration: Duration(seconds: 3),
+        behavior: SnackBarBehavior.floating,
+        content: Text('Local Database synced to Firebase'),
+        action: SnackBarAction(label: 'OK',
+            onPressed: () => ScaffoldMessenger.of(context).hideCurrentSnackBar()),
+      );
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    } else {
+      showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text('Local Database Sync'),
+            content: Text(result.result),
+            actions: [
+              TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: Text('OK')
+              )
+            ],
+          )
+      );
+    }
+  }
+
+  void localCSVImport(BuildContext context, Function loadingHandler) async {
     ImportResponse result = ImportResponse();
     CSVReadResult readResult;
     List<Part> parts;
@@ -124,7 +145,7 @@ class _DataPageState extends State<DataPage> {
     }
 
     if(result.result == 'VALID') {
-      setState(() => isLocalImporting = true);
+      loadingHandler(true);
       result = await LocalDatabaseService.db.importParts(parts, readResult.headers);
     }
 
@@ -153,17 +174,17 @@ class _DataPageState extends State<DataPage> {
           builder: (newContext) => AlertDialog(
             title: Text('Local CSV Import'),
             content: Text('${result.invalidIdParts.isNotEmpty ?
-              'Parts with invalid or missing part number were omitted. ' : ''}'
-              'Existing parts found. Choose what to do with existing parts.'),
+            'Parts with invalid or missing part number were omitted. ' : ''}'
+                'Existing parts found. Choose what to do with existing parts.'),
             actions: [
               TextButton(
                   onPressed: () async {
-                    setState(() => isLocalImporting = true);
+                    loadingHandler(true);
                     Navigator.pop(newContext);
                     ImportResponse newResult =
                     await LocalDatabaseService.db.importParts(result.parts, readResult.headers);
 
-                    setState(() => isLocalImporting = false);
+                    loadingHandler(false);
                     if(newResult.result == 'SUCCESS') {
                       ScaffoldMessenger.of(context).showSnackBar(snackBar);
                     } else {
@@ -188,12 +209,12 @@ class _DataPageState extends State<DataPage> {
               ),
               TextButton(
                   onPressed: () async {
-                    setState(() => isLocalImporting = true);
+                    loadingHandler(true);
                     Navigator.pop(newContext);
                     ImportResponse newResult =
                     await LocalDatabaseService.db.importParts(result.parts, readResult.headers);
 
-                    setState(() => isLocalImporting = false);
+                    loadingHandler(false);
                     if(newResult.result == 'SUCCESS') {
                       ScaffoldMessenger.of(context).showSnackBar(snackBar);
                     } else {
@@ -242,10 +263,10 @@ class _DataPageState extends State<DataPage> {
           )
       );
     }
-    setState(() => isLocalImporting = false);
+    loadingHandler(false);
   }
 
-  void globalCSVImport() async {
+  void globalCSVImport(BuildContext context, Function loadingHandler) async {
     ImportResponse result = ImportResponse();
     CSVReadResult readResult;
     List<Part> parts;
@@ -264,7 +285,7 @@ class _DataPageState extends State<DataPage> {
       result.result = error.toString();
     }
     if(result.result == 'VALID') {
-      setState(() => isGlobalImporting = true);
+      loadingHandler(true);
       result = await DatabaseService.db.importParts(parts, readResult.headers);
     }
 
@@ -293,17 +314,17 @@ class _DataPageState extends State<DataPage> {
           builder: (newContext) => AlertDialog(
             title: Text('Global CSV Import'),
             content: Text('${result.invalidIdParts.isNotEmpty ?
-              'Parts with invalid or missing part number were omitted. ' : ''}'
-              'Existing parts found. Choose what to do with existing parts.'),
+            'Parts with invalid or missing part number were omitted. ' : ''}'
+                'Existing parts found. Choose what to do with existing parts.'),
             actions: [
               TextButton(
                   onPressed: () async {
-                    setState(() => isGlobalImporting = true);
+                    loadingHandler(true);
                     Navigator.pop(newContext);
                     ImportResponse newResult =
                     await DatabaseService.db.importParts(result.parts, readResult.headers);
 
-                    setState(() => isGlobalImporting = false);
+                    loadingHandler(false);
                     if(newResult.result == 'SUCCESS') {
                       ScaffoldMessenger.of(context).showSnackBar(snackBar);
                     } else {
@@ -328,12 +349,12 @@ class _DataPageState extends State<DataPage> {
               ),
               TextButton(
                   onPressed: () async {
-                    setState(() => isGlobalImporting = true);
+                    loadingHandler(true);
                     Navigator.pop(newContext);
                     ImportResponse newResult =
                     await DatabaseService.db.importParts(result.parts, readResult.headers);
 
-                    setState(() => isGlobalImporting = false);
+                    loadingHandler(false);
                     if(newResult.result == 'SUCCESS') {
                       ScaffoldMessenger.of(context).showSnackBar(snackBar);
                     } else {
@@ -382,122 +403,61 @@ class _DataPageState extends State<DataPage> {
           )
       );
     }
-    setState(() => isGlobalImporting = false);
+    loadingHandler(false);
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final authUser = Provider.of<Account>(context);
-    final theme = Theme.of(context);
-    List<Part> parts = authUser.isAnon ? null : Provider.of<List<Part>>(context);
-    Field fields = authUser.isAnon ? null : Provider.of<Field>(context);
-    final account = authUser.isAnon ? null : Provider.of<AccountData>(context);
+  void partCSVExport(BuildContext context, Function loadingHandler, List<Part> parts, Field fields, bool isLocal) async {
+    final snackBar = SnackBar(
+      duration: Duration(seconds: 3),
+      behavior: SnackBarBehavior.floating,
+      content: Text('${isLocal ? 'Local' : 'Global'} Database CSV saved'),
+      action: SnackBarAction(label: 'OK', onPressed: () => ScaffoldMessenger.of(context).hideCurrentSnackBar()),
+    );
 
-    List<OperatorWidget> operatorWidgets = [
-      OperatorWidget(
-        ElevatedButton(
-          onPressed: () => DataService.ds.localCSVImport(context, localImportLoadingHandler),
-          child: Text('Import CSV for Local Database'),
-          style: buttonDecoration,
-        ), 1
-      ),
-      OperatorWidget(
-          ElevatedButton(
-            onPressed: () => DataService.ds.globalCSVImport(context, globalImportLoadingHandler),
-            child: Text('Import CSV for Global Database'),
-            style: buttonDecoration,
-          ), 3
-      ),
-      OperatorWidget(
-          ElevatedButton(
-            onPressed: () => DataService.ds.syncDatabase(context, syncLoadingHandler, parts, fields),
-            child: Text('Sync Local Database from Firebase'),
-            style: buttonDecoration,
-          ), 2
-      ),
-      OperatorWidget(
-          Divider(height: 12, thickness: 1, color: theme.primaryColor), 1
-      ),
-      OperatorWidget(
-          ElevatedButton(
-            onPressed: () async {
-              DataService.ds.partCSVExport(context, syncLoadingHandler,
-                (await LocalDatabaseService.db.getParts('', 'partNo', '', 'partNo')).parts,
-                fields, true);
-            },
-            child: Text('Export Local Database to CSV'),
-            style: buttonDecoration,
-          ), 1
-      ),
-      OperatorWidget(
-          ElevatedButton(
-            onPressed: () => DataService.ds.partCSVExport(context, syncLoadingHandler, parts, fields, false),
-            child: Text('Export Global Database to CSV'),
-            style: buttonDecoration,
-          ), 3
-      ),
-    ];
+    final snackBar2 = SnackBar(
+      duration: Duration(seconds: 3),
+      behavior: SnackBarBehavior.floating,
+      content: Text('Save cancelled'),
+      action: SnackBarAction(label: 'OK', onPressed: () => ScaffoldMessenger.of(context).hideCurrentSnackBar()),
+    );
 
-    List<Widget> getOperators(String accountType) {
-      if(accountType == 'GUESS')
-        return operatorWidgets
-            .where((operator) => operator.accessLevel <= 1)
-            .map((operator) => operator.operator)
-            .toList();
-      if(accountType == 'EMPLOYEE')
-        return operatorWidgets
-            .where((operator) => operator.accessLevel <= 2)
-            .map((operator) => operator.operator)
-            .toList();
-      if(accountType == 'ADMIN')
-        return operatorWidgets
-            .where((operator) => operator.accessLevel <= 3)
-            .map((operator) => operator.operator)
-            .toList();
-      return [];
-    }
+    try {
+      loadingHandler(true);
+      String csvData = ListToCsvConverter().convert(partListTransform(parts, fields));
+      String directory  = (await getTemporaryDirectory()).path;
+      final path = "$directory/csv-${DateTime.now()}.csv";
+      final File file = File(path);
+      File csvFile = await file.writeAsString(csvData);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Data Management Page'),
-        bottom: isSyncing || isGlobalImporting || isLocalImporting ? PreferredSize(
-          preferredSize: Size(double.infinity, 1.0),
-          child: LinearProgressIndicator(backgroundColor: Colors.white)
-        ) : null,
-      ),
-      body: Container(
-        decoration: BoxDecoration(
-          image: DecorationImage(image: new AssetImage("assets/images/background.jpg"), fit: BoxFit.cover,),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: <Widget>[
-              Image(
-                image: AssetImage('assets/images/logoFull.gif'),
-                width: 200,
-                fit: BoxFit.cover
-              ),
-              Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: getOperators(
-                authUser.isAnon ? 'GUESS'
-                  : account != null && account.accountType == 'ADMIN' ? 'ADMIN'
-                  : 'EMPLOYEE')
+      if(csvFile != null) {
+        final params = SaveFileDialogParams(sourceFilePath: csvFile.path);
+        final filePath = await FlutterFileDialog.saveFile(params: params);
+        if(filePath != null)
+          ScaffoldMessenger.of(context).showSnackBar(snackBar);
+        else {
+          ScaffoldMessenger.of(context).showSnackBar(snackBar2);
+        }
+      } else {
+        throw ("Failed to write data");
+      }
+    } catch (e) {
+      showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text('${isLocal ? 'Local' : 'Global'} CSV Export'),
+            content: Text(e.toString()),
+            actions: [
+              TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: Text('OK')
               )
             ],
-          ),
-        )
-      ),
-    );
+          )
+      );
+    } finally {
+      loadingHandler(false);
+    }
   }
-}
-
-class OperatorWidget {
-  Widget operator;
-  int accessLevel;
-
-  OperatorWidget(this.operator, this.accessLevel);
 }

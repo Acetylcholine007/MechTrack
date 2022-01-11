@@ -156,12 +156,6 @@ class DatabaseService {
       .catchError((error) => result = error.toString());
     return result;
   }
-
-  Future exportParts() async {
-    //TODO: get data
-    //TODO: write data
-    //TODO: save data
-  }
   
   Future<ImportResponse> importParts(List<Part> newParts, Map<String, String> headers) async {
     String result = '';

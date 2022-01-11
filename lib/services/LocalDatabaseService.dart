@@ -132,12 +132,6 @@ class LocalDatabaseService {
     return result;
   }
 
-  Future exportParts() async {
-    //TODO: get data
-    //TODO: write data
-    //TODO: save data
-  }
-
   Future<ImportResponse> importParts(List<Part> parts, Map<String, String> headers) async {
     Database db = await database;
     String result = '';
