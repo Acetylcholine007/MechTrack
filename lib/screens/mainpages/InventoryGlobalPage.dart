@@ -14,6 +14,7 @@ import 'package:mech_track/models/Part.dart';
 import 'package:mech_track/screens/subpages/PartCreator.dart';
 import 'package:mech_track/screens/subpages/PartViewer.dart';
 import 'package:mech_track/services/DatabaseService.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
 class InventoryGlobalPage extends StatefulWidget {
@@ -79,32 +80,73 @@ class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
         actions: [
           IconButton(onPressed: () => setState(() => isSingleSearch = !isSingleSearch), icon: Icon(Icons.find_replace_rounded)),
           IconButton(icon: Icon(Icons.qr_code_scanner), onPressed: () async {
-            var result = await BarcodeScanner.scan();
-            if(result.rawContent.isNotEmpty) {
-              List<String> data =
+            var status = await Permission.camera.status;
+
+            if (status.isDenied) {
+              await showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: Text('Scan QR Code'),
+                    content: Text('Scanning QR code requires allowing the app to use the phone\'s camera.'),
+                    actions: [
+                      TextButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          child: Text('OK')
+                      )
+                    ],
+                  )
+              );
+              await Permission.camera.request();
+              status = await Permission.camera.status;
+            }
+
+            if(status.isGranted) {
+              var result = await BarcodeScanner.scan();
+              if (result.rawContent.isNotEmpty) {
+                List<String> data =
                 result.rawContent.contains('<=MechTrack=>')
-                  ? result.rawContent.split('<=MechTrack=>')
-                  : null;
-              if (data != null && data[0] == data[1]) {
-                Part part =
-                    await DatabaseService.db.getPart(data[0]);
-                if (part != null) {
-                  Navigator.push(context, MaterialPageRoute(
-                    builder: (context) => PartViewer(
-                      part: part,
-                      isLocal: false,
-                      account: account,
-                      fields: fields)));
+                    ? result.rawContent.split('<=MechTrack=>')
+                    : null;
+                if (data != null && data[0] == data[1]) {
+                  Part part =
+                  await DatabaseService.db.getPart(data[0]);
+                  if (part != null) {
+                    Navigator.push(context, MaterialPageRoute(
+                        builder: (context) =>
+                            PartViewer(
+                                part: part,
+                                isLocal: false,
+                                account: account,
+                                fields: fields)));
+                  } else {
+                    Navigator.push(context, MaterialPageRoute(
+                        builder: (context) =>
+                            NoPart(isValid: true)));
+                  }
                 } else {
                   Navigator.push(context, MaterialPageRoute(
-                    builder: (context) =>
-                      NoPart(isValid: true)));
+                      builder: (context) =>
+                          NoPart(isValid: false)));
                 }
-              } else {
-                Navigator.push(context, MaterialPageRoute(
-                  builder: (context) =>
-                    NoPart(isValid: false)));
               }
+            } else {
+              showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: Text('Scan QR Code'),
+                    content: Text('Failed to scan QR code'),
+                    actions: [
+                      TextButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          child: Text('OK')
+                      )
+                    ],
+                  )
+              );
             }
           })
         ],

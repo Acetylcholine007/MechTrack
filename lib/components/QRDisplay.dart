@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:gallery_saver/gallery_saver.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 class QRDisplay extends StatelessWidget {
@@ -27,34 +28,60 @@ class QRDisplay extends StatelessWidget {
         title: Text(title),
         actions: [
           IconButton(icon: Icon(Icons.save), onPressed: () async {
-            final qrValidationResult = QrValidator.validate(
-              data: data,
-              version: QrVersions.auto,
-              errorCorrectionLevel: QrErrorCorrectLevel.L,
-            );
+            var status = await Permission.storage.status;
+            bool success = false;
 
-            final qrCode = qrValidationResult.qrCode;
+            if (status.isDenied) {
+              await showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: Text('Save QR Code'),
+                    content: Text('Saving QR code image requires allowing the app to use the phone\'s storage.'),
+                    actions: [
+                      TextButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          child: Text('OK')
+                      )
+                    ],
+                  )
+              );
+              await Permission.storage.request();
+              status = await Permission.storage.status;
+            }
 
-            final painter = QrPainter.withQr(
-              qr: qrCode,
-              color: const Color(0xFF000000),
-              emptyColor: Colors.white,
-              gapless: true,
-              embeddedImageStyle: null,
-              embeddedImage: null,
-            );
+            if(status.isGranted){
+                final qrValidationResult = QrValidator.validate(
+                  data: data,
+                  version: QrVersions.auto,
+                  errorCorrectionLevel: QrErrorCorrectLevel.L,
+                );
 
-            Directory tempDir = await getTemporaryDirectory();
-            String tempPath = tempDir.path;
-            final ts = DateTime.now().millisecondsSinceEpoch.toString();
-            String path = '$tempPath/$ts.png';
+                final qrCode = qrValidationResult.qrCode;
 
-            final picData = await painter.toImageData(2048, format: ui.ImageByteFormat.png);
-            await writeToFile(picData, path);
+                final painter = QrPainter.withQr(
+                  qr: qrCode,
+                  color: const Color(0xFF000000),
+                  emptyColor: Colors.white,
+                  gapless: true,
+                  embeddedImageStyle: null,
+                  embeddedImage: null,
+                );
 
-            final success = await GallerySaver.saveImage(path);
+                Directory tempDir = await getTemporaryDirectory();
+                String tempPath = tempDir.path;
+                final ts = DateTime.now().millisecondsSinceEpoch.toString();
+                String path = '$tempPath/$ts.png';
 
-            if(success) {
+                final picData = await painter.toImageData(2048,
+                    format: ui.ImageByteFormat.png);
+                await writeToFile(picData, path);
+
+                success = await GallerySaver.saveImage(path);
+              }
+
+              if(success) {
               final snackBar = SnackBar(
                 duration: Duration(seconds: 3),
                 behavior: SnackBarBehavior.floating,

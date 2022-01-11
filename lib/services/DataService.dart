@@ -10,6 +10,7 @@ import 'package:mech_track/models/Field.dart';
 import 'package:mech_track/models/ImportResponse.dart';
 import 'package:mech_track/models/Part.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 
 import 'DatabaseService.dart';
@@ -86,6 +87,36 @@ class DataService {
     return newParts;
   }
 
+  Future<bool> permissionChecker(BuildContext context, String title, String content) async {
+    var status = await Permission.storage.status;
+
+    if (status.isDenied) {
+      await showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text(title),
+            content: Text(content),
+            actions: [
+              TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: Text('OK')
+              )
+            ],
+          )
+      );
+      await Permission.storage.request();
+      status = await Permission.storage.status;
+    }
+
+    if(status.isGranted) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   //SERVICE METHODS
   void syncDatabase(BuildContext context, Function loadingHandler, List<Part> parts, Field fields) async {
     loadingHandler(true);
@@ -136,12 +167,21 @@ class DataService {
       action: SnackBarAction(label: 'OK', onPressed: () => ScaffoldMessenger.of(context).hideCurrentSnackBar()),
     );
 
-    try {
-      readResult = await csvReader();
-      parts = readResult.parts;
-      result.result = parts != null ? 'VALID' : 'EMPTY';
-    } catch (error) {
-      result.result = error.toString();
+    bool permissionResult = await permissionChecker(
+        context,
+        'Local CSV Import',
+        'Importing CSV requires allowing the app to access phone\'s storage'
+    );
+    if(permissionResult) {
+      try {
+        readResult = await csvReader();
+        parts = readResult.parts;
+        result.result = parts != null ? 'VALID' : 'EMPTY';
+      } catch (error) {
+        result.result = error.toString();
+      }
+    } else {
+      result.result = 'Failed to import CSV';
     }
 
     if(result.result == 'VALID') {
@@ -277,13 +317,24 @@ class DataService {
       action: SnackBarAction(label: 'OK', onPressed: () => ScaffoldMessenger.of(context).hideCurrentSnackBar()),
     );
 
-    try {
-      readResult = await csvReader();
-      parts = readResult.parts;
-      result.result = parts != null ? 'VALID' : 'EMPTY';
-    } catch(error) {
-      result.result = error.toString();
+    bool permissionResult = await permissionChecker(
+        context,
+        'Global CSV Import',
+        'Importing CSV requires allowing the app to access phone\'s storage'
+    );
+
+    if(permissionResult) {
+      try {
+        readResult = await csvReader();
+        parts = readResult.parts;
+        result.result = parts != null ? 'VALID' : 'EMPTY';
+      } catch(error) {
+        result.result = error.toString();
+      }
+    } else {
+      result.result = 'Failed to import CSV';
     }
+
     if(result.result == 'VALID') {
       loadingHandler(true);
       result = await DatabaseService.db.importParts(parts, readResult.headers);
@@ -422,6 +473,15 @@ class DataService {
     );
 
     try {
+      bool permissionResult = await permissionChecker(
+          context,
+          '${isLocal ? 'Local' : 'Global'} CSV Export',
+          'Saving exported CSV requires allowing the app to use phone\'s storage'
+      );
+      if(!permissionResult) {
+        throw ('Failed to save exported CSV');
+      }
+
       loadingHandler(true);
       String csvData = ListToCsvConverter().convert(partListTransform(parts, fields));
       String directory  = (await getTemporaryDirectory()).path;
