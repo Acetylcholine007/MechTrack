@@ -62,37 +62,6 @@ class DatabaseService {
   }
 
   // OPERATOR FUNCTIONS SECTION
-  Future<String> setField(Map<String, String> fields) async {
-    String result = '';
-
-    try{
-      for(final field in fields.keys) {
-        await fieldCollection.add({'fieldKey': field, 'fieldValue': fields[field]});
-      }
-      result = 'SUCCESS';
-    } catch(e) {
-      result = e.toString();
-    }
-
-    return result;
-  }
-  
-  Future<String> clearField() async {
-    String result = '';
-    final batch = FirebaseFirestore.instance.batch();
-    final fields = await fieldCollection.get();
-
-    for(final field in fields.docs) {
-      batch.delete(field.reference);
-    }
-
-    await batch.commit()
-        .then((value) => result = 'SUCCESS')
-        .catchError((error) => result = error.toString());
-
-    return result;
-  }
-
   Future removePart(String pid) async {
     String result = '';
     await partCollection
@@ -188,50 +157,37 @@ class DatabaseService {
     return result;
   }
 
-  Future<String> clearParts() async {
-    String result = '';
-    final batch = FirebaseFirestore.instance.batch();
-    final parts = await partCollection.get();
-
-    for(final part in parts.docs) {
-      batch.delete(part.reference);
-    }
-
-    await batch.commit()
-    .then((value) => result = 'SUCCESS')
-    .catchError((error) => result = error.toString());
-
-    return result;
-  }
-
   Future exportParts() async {
     //TODO: get data
     //TODO: write data
     //TODO: save data
   }
   
-  Future<ImportResponse> importParts(List<Part> parts, Map<String, String> headers) async {
+  Future<ImportResponse> importParts(List<Part> newParts, Map<String, String> headers) async {
     String result = '';
+    final batch = FirebaseFirestore.instance.batch();
+    final parts = await partCollection.get();
+    final fields = await fieldCollection.get();
+    
     List<Part> duplicateParts = [];
     List<Part> invalidParts = [];
 
-    String result1 = await clearField();
-    String result2 = await clearParts();
-    String result3 = await setField(headers);
-
-    if(result1 == 'SUCCESS' && result2 == 'SUCCESS' && result3 == 'SUCCESS') {
-      await Future.wait(parts.map((part) {
-        if(part.partNo == null)
-          return Future(() => invalidParts.add(part));
-
-        return addPart(part, 'REPLACE')
-          .then((value) => value == 'EXIST' ? duplicateParts.add(part) : null);
-      }))
-        .then((value) => result = 'SUCCESS')
-        .catchError((error) => result = error.toString());
-    } else {
-      result = result1 + result2 + result3;
+    for(final part in parts.docs) {
+      batch.delete(part.reference);
     }
+    for(final field in fields.docs) {
+      batch.delete(field.reference);
+    }
+    for(final field in headers.keys) {
+      batch.set(fieldCollection.doc(field), {'fieldKey': field, 'fieldValue': headers[field]});
+    }
+    for(final part in newParts) {
+      batch.set(partCollection.doc(part.partNo.toString()), part.toMap());
+    }
+
+    await batch.commit()
+    .then((value) => result = 'SUCCESS')
+    .catchError((error) => result = error.toString());
     return ImportResponse(result: result, parts: duplicateParts, invalidIdParts: invalidParts);
   }
 

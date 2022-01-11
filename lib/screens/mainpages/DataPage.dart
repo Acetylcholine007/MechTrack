@@ -35,44 +35,50 @@ class _DataPageState extends State<DataPage> {
 
   Future<CSVReadResult> csvReader() async {
     List<Part> newFields;
-    FilePickerResult result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['csv'],
-    );
-    if (result != null) {
-      PlatformFile file = result.files.first;
+      FilePickerResult result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['csv'],
+      );
+      if (result != null) {
+        PlatformFile file = result.files.first;
 
-      final input = new File(file.path).openRead();
-      var fields = await input
-        .transform(utf8.decoder)
-        .transform(new CsvToListConverter())
-        .toList();
+        Map<String, dynamic> removeIdentifier(Map<String, dynamic> fields) {
+          fields.remove('itemno');
+          return fields;
+        }
 
-      Map<String, String> headers = {};
-      fields.removeAt(0).forEach((header) =>
+        final input = new File(file.path).openRead();
+        var fields = await input
+            .transform(utf8.decoder)
+            .transform(new CsvToListConverter())
+            .toList();
+
+        Map<String, String> headers = {};
+        fields.removeAt(0).forEach((header) =>
         headers[header.toString()
             .replaceAll(new RegExp('[\\W_., ]+'), "")
             .toLowerCase()
         ] = header
-      );
-
-      int partNoIndex = headers.keys.toList().indexOf('itemno');
-      List headerKeys = headers.keys.toList();
-
-      newFields = fields.map((row) {
-        Part part = Part(
-          partNo:
-            partNoIndex != -1 ?
-              isInteger(row[partNoIndex].toString()) ?
-              int.parse(row[partNoIndex].toString()) : null : null,
-          fields: { for (String header in headerKeys) header: row[headerKeys.indexOf(header)] }
         );
-        print(part);
-        return part;
-      }).toList();
-      return CSVReadResult(parts: newFields, headers: headers);
-    }
-    return null;
+
+        //Item No field checker
+        if(headers['itemno'] == null) throw ('No Item No. column');
+
+        int partNoIndex = headers.keys.toList().indexOf('itemno');
+        List headerKeys = headers.keys.toList();
+
+        newFields = fields.map((row) {
+          Part part = Part(
+              partNo: isInteger(row[partNoIndex].toString()) ? int.parse(row[partNoIndex].toString()) : throw ('Invalid part no'),
+              fields: removeIdentifier({ for (String header in headerKeys) header: row[headerKeys.indexOf(header)] })
+          );
+          print(part);
+          return part;
+        }).toList();
+        return CSVReadResult(parts: newFields, headers: removeIdentifier(headers), result: 'SUCCESS');
+      } else {
+        return CSVReadResult(parts: [], headers: {}, result: 'EMPTY');
+      }
   }
 
   void localCSVImport() async {
