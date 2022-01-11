@@ -11,8 +11,14 @@ class PartTableText extends StatelessWidget {
     final theme = Theme.of(context);
 
     if(colType == 'LABEL')
-      return Text(text, style: theme.textTheme.headline5);
+      return Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Text(text, style: theme.textTheme.headline6),
+      );
     else
-      return Text(text, style: theme.textTheme.headline6);
+      return Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Text(text, style: theme.textTheme.headline6.copyWith(fontWeight: FontWeight.normal)),
+      );
   }
 }

@@ -51,6 +51,7 @@ class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final authUser = Provider.of<Account>(context);
     final account = authUser.isAnon ? null : Provider.of<AccountData>(context);
     final fields = authUser.isAnon ? null : Provider.of<Field>(context);
@@ -193,11 +194,17 @@ class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
                           MaterialPageRoute(builder: (context) =>
                               PartViewer(part: parts[index], isLocal: false, account: account, fields: fields,)),
                         ),
-                    child: PartListTile(
-                      key: Key(index.toString()),
-                      name: parts[index].fields['description'].toString(),
-                      caption: parts[index].partNo.toString(),
-                      index: index
+                    child: Card(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10.0),
+                      ),
+                      color: theme.backgroundColor.withOpacity(0.15),
+                      child: PartListTile(
+                        key: Key(index.toString()),
+                        name: parts[index].fields['description'].toString(),
+                        caption: parts[index].partNo.toString(),
+                        index: index
+                      ),
                     ),
                   );
                 }

@@ -411,7 +411,7 @@ class _DataPageState extends State<DataPage> {
       OperatorWidget(
           ElevatedButton(
             onPressed: () => DataService.ds.syncDatabase(context, syncLoadingHandler, parts, fields),
-            child: Text('Sync Local Database from Firebase'),
+            child: Text('Sync Local DB from Global DB'),
             style: buttonDecoration,
           ), 2
       ),

@@ -172,7 +172,7 @@ class _PartCreatorState extends State<PartCreator> {
               child: Table(
                 defaultVerticalAlignment: TableCellVerticalAlignment.middle,
                 columnWidths: const <int, TableColumnWidth>{
-                  0: IntrinsicColumnWidth(),
+                  0: FlexColumnWidth(),
                   1: FlexColumnWidth(),
                 },
                 children: <TableRow>[

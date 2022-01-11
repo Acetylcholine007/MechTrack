@@ -131,6 +131,7 @@ class _PartEditorState extends State<PartEditor> {
         decoration: BoxDecoration(
           image: DecorationImage(image: new AssetImage("assets/images/background.jpg"), fit: BoxFit.cover,),
         ),
+        constraints: BoxConstraints.expand(),
         child: Form(
           key: _formKey,
           child: SingleChildScrollView(
@@ -139,7 +140,7 @@ class _PartEditorState extends State<PartEditor> {
               child: Table(
                 defaultVerticalAlignment: TableCellVerticalAlignment.middle,
                 columnWidths: const <int, TableColumnWidth>{
-                  0: IntrinsicColumnWidth(),
+                  0: FlexColumnWidth(),
                   1: FlexColumnWidth(),
                 },
                 children: fields.map((field) => TableRow(

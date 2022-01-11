@@ -7,6 +7,27 @@ import 'package:mech_track/models/Field.dart';
 import 'package:mech_track/models/Part.dart';
 import 'package:mech_track/screens/subpages/PartEditor.dart';
 
+extension ColorBrightness on Color {
+  Color darken([double amount = .1]) {
+    assert(amount >= 0 && amount <= 1);
+
+    final hsl = HSLColor.fromColor(this);
+    final hslDark = hsl.withLightness((hsl.lightness - amount).clamp(0.0, 1.0));
+
+    return hslDark.toColor();
+  }
+
+  Color lighten([double amount = .1]) {
+    assert(amount >= 0 && amount <= 1);
+
+    final hsl = HSLColor.fromColor(this);
+    final hslLight =
+    hsl.withLightness((hsl.lightness + amount).clamp(0.0, 1.0));
+
+    return hslLight.toColor();
+  }
+}
+
 class PartViewer extends StatefulWidget {
   final Part part;
   final bool isLocal;
@@ -56,27 +77,31 @@ class _PartViewerState extends State<PartViewer> {
         decoration: BoxDecoration(
           image: DecorationImage(image: new AssetImage("assets/images/background.jpg"), fit: BoxFit.cover,),
         ),
-        child: Column(
-          children: [
-            Expanded(
-              child: Table(
-                defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-                border: TableBorder.all(color: theme.primaryColor, width: 1),
-                columnWidths: const <int, TableColumnWidth>{
-                  0: IntrinsicColumnWidth(),
-                  1: FlexColumnWidth(),
-                },
-                children: widget.fields.fields.keys.map((field) =>
-                  TableRow(children: [
-                    PartTableText(
-                        widget.fields.fields[field], 'LABEL'),
-                    PartTableText(
-                        part.fields[field].toString(), 'CONTENT'),
-                  ])
-                ).toList()
-              ),
-            ),
-          ],
+        constraints: BoxConstraints.expand(),
+        child: SingleChildScrollView(
+          child: Table(
+            defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+            border: TableBorder.all(color: theme.backgroundColor, width: 1),
+            columnWidths: const <int, TableColumnWidth>{
+              0: FlexColumnWidth(),
+              1: FlexColumnWidth(),
+            },
+            children: widget.fields.fields.keys.toList().asMap().entries.map((field) {
+              double shifter = field.key % 2 == 0 ? .2 : .3;
+              return TableRow(
+                decoration: BoxDecoration(
+                    color: theme.backgroundColor.lighten(shifter)
+                ),
+                children: [
+                  PartTableText(
+                      widget.fields.fields[field.value], 'LABEL'),
+                  PartTableText(
+                      part.fields[field.value].toString(), 'CONTENT'),
+                ]
+              );
+            }
+            ).toList()
+          ),
         ),
       ),
     );

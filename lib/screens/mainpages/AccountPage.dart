@@ -44,6 +44,7 @@ class _AccountPageState extends State<AccountPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     List<AccountData> accounts = Provider.of<List<AccountData>>(context);
 
     void searchHandler(String val) {
@@ -185,11 +186,17 @@ class _AccountPageState extends State<AccountPage> {
                             ],
                           )
                         ),
-                        child: PartListTile(
-                          key: Key(index.toString()),
-                          name: accounts[index].fullName,
-                          caption: accounts[index].email,
-                          index: index
+                        child: Card(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10.0),
+                          ),
+                          color: theme.backgroundColor.withOpacity(0.15),
+                          child: PartListTile(
+                            key: Key(index.toString()),
+                            name: accounts[index].fullName,
+                            caption: accounts[index].email,
+                            index: index
+                          ),
                         ),
                       );
                     }
