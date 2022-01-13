@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:crypto/crypto.dart';
 import 'package:csv/csv.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_file_dialog/flutter_file_dialog.dart';
@@ -11,7 +12,6 @@ import 'package:mech_track/models/ImportResponse.dart';
 import 'package:mech_track/models/Part.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
-
 
 import 'DatabaseService.dart';
 import 'LocalDatabaseService.dart';
@@ -29,19 +29,22 @@ class DataService {
     return int.tryParse(s) != null;
   }
 
+  String calculateHash(String data) {
+    var bytes = utf8.encode(data); // data being hashed
+    var digest = sha1.convert(bytes);
+    return digest.toString();
+  }
+
   Future<CSVReadResult> csvReader() async {
     List<Part> newFields;
     FilePickerResult result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['csv'],
+      // type: FileType.custom,
+      type: FileType.any,
+      // allowedExtensions: ['csv'],
+      // allowedExtensions: FileType.,
     );
     if (result != null) {
       PlatformFile file = result.files.first;
-
-      Map<String, dynamic> removeIdentifier(Map<String, dynamic> fields) {
-        fields.remove('itemno');
-        return fields;
-      }
 
       final input = new File(file.path).openRead();
       var fields = await input
@@ -51,39 +54,37 @@ class DataService {
 
       Map<String, String> headers = {};
       fields.removeAt(0).forEach((header) =>
-      headers[header.toString()
-          .replaceAll(new RegExp('[\\W_., ]+'), "")
-          .toLowerCase()
-      ] = header
+        headers[header.toString()
+            .replaceAll(new RegExp('[\\W_., ]+'), "")
+            .toLowerCase()
+        ] = header
       );
 
-      //Item No field checker
-      if(headers['itemno'] == null) throw ('No Item No. column');
-
-      int partNoIndex = headers.keys.toList().indexOf('itemno');
       List headerKeys = headers.keys.toList();
 
       newFields = fields.map((row) {
-        Part part = Part(
-            partNo: isInteger(row[partNoIndex].toString()) ? int.parse(row[partNoIndex].toString()) : throw ('Invalid part no'),
-            fields: removeIdentifier({ for (String header in headerKeys) header: row[headerKeys.indexOf(header)] })
-        );
-        print(part);
+        Part part = Part.withHash({ for (String header in headerKeys) header: row[headerKeys.indexOf(header)] });
         return part;
       }).toList();
-      return CSVReadResult(parts: newFields, headers: removeIdentifier(headers), result: 'SUCCESS');
+      print('>>>>>>>>>');
+      newFields.forEach((element) {print(element);});
+      return CSVReadResult(parts: newFields, headers: headers, result: 'SUCCESS');
     } else {
       return CSVReadResult(parts: [], headers: {}, result: 'EMPTY');
     }
   }
 
-  List<List<String>> partListTransform(List<Part> parts, Field header) {
+  List<List<String>> partListTransform(List<Part> parts, Field header, bool isLocal) {
     List<List<String>> newParts = [header.fields.values.toList()];
-    parts.forEach((part) {
-      print(List<String>.from(part.fields.values.map((value) => value.toString()).toList()));
-      newParts.add(List<String>.from(part.fields.values.map((value) => value.toString()).toList()));
-    });
-    print(newParts);
+    if(isLocal) {
+      parts.forEach((part) {
+        newParts.add(List<String>.from(part.fields.values.map((value) => value.toString()).toList().sublist(1)));
+      });
+    } else {
+      parts.forEach((part) {
+        newParts.add(List<String>.from(header.fields.keys.map((key) => part.fields[key].toString()).toList()));
+      });
+    }
     return newParts;
   }
 
@@ -176,7 +177,7 @@ class DataService {
       try {
         readResult = await csvReader();
         parts = readResult.parts;
-        result.result = parts != null ? 'VALID' : 'EMPTY';
+        result.result = parts.isNotEmpty ? 'VALID' : 'EMPTY';
       } catch (error) {
         result.result = error.toString();
       }
@@ -327,7 +328,7 @@ class DataService {
       try {
         readResult = await csvReader();
         parts = readResult.parts;
-        result.result = parts != null ? 'VALID' : 'EMPTY';
+        result.result = parts.isNotEmpty ? 'VALID' : 'EMPTY';
       } catch(error) {
         result.result = error.toString();
       }
@@ -483,7 +484,7 @@ class DataService {
       }
 
       loadingHandler(true);
-      String csvData = ListToCsvConverter().convert(partListTransform(parts, fields));
+      String csvData = ListToCsvConverter().convert(partListTransform(parts, fields, isLocal));
       String directory  = (await getTemporaryDirectory()).path;
       final path = "$directory/csv-${DateTime.now()}.csv";
       final File file = File(path);

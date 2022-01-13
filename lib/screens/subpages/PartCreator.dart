@@ -40,13 +40,11 @@ class _PartCreatorState extends State<PartCreator> {
 
   @override
   Widget build(BuildContext context) {
+
     void saveHandler() async {
       if(_formKey.currentState.validate()) {
           String result = '';
-          Part part = Part(
-              partNo: int.parse(newPart['partNo']),
-              fields: newPart,
-          );
+          Part part = Part.withHash(newPart);
           result = widget.isLocal ?
           await widget.bloc.addPart(part, 'SAFE') :
           await DatabaseService.db.addPart(part, 'SAFE');
@@ -155,54 +153,42 @@ class _PartCreatorState extends State<PartCreator> {
       }
     }
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Create Part'),
-        actions:[IconButton(icon: Icon(Icons.save), onPressed: saveHandler)],
-      ),
-      body: Container(
-        decoration: BoxDecoration(
-          image: DecorationImage(image: new AssetImage("assets/images/background.jpg"), fit: BoxFit.cover,),
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).requestFocus(new FocusNode()),
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text('Create Part'),
+          actions:[IconButton(icon: Icon(Icons.save), onPressed: saveHandler)],
         ),
-        child: Form(
-          key: _formKey,
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(10),
-              child: Table(
-                defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-                columnWidths: const <int, TableColumnWidth>{
-                  0: FlexColumnWidth(),
-                  1: FlexColumnWidth(),
-                },
-                children: <TableRow>[
-                  TableRow(
+        body: Container(
+          decoration: BoxDecoration(
+            image: DecorationImage(image: new AssetImage("assets/images/background.jpg"), fit: BoxFit.cover,),
+          ),
+          child: Form(
+            key: _formKey,
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(10),
+                child: Table(
+                  defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+                  columnWidths: const <int, TableColumnWidth>{
+                    0: FlexColumnWidth(),
+                    1: FlexColumnWidth(),
+                  },
+                  children: widget.fields.fields.keys.toList().map((field) => TableRow(
                     children: [
-                      PartTableText('Part No.', 'LABEL'),
+                      PartTableText(widget.fields.fields[field], 'LABEL'),
                       Padding(
                         padding: const EdgeInsets.fromLTRB(0,0,0,5),
                         child: TextFormField(
-                          keyboardType: TextInputType.number,
                           initialValue: null,
-                          decoration: formFieldDecoration.copyWith(hintText: 'Part No.'),
-                          onChanged: (val) => setState(() => _onTextChanged(val, 'partNo')),
-                          validator: (val) => val.isEmpty ? 'Enter Part No' : null,
+                          decoration: formFieldDecoration.copyWith(hintText: widget.fields.fields[field]),
+                          onChanged: (val) => setState(() => _onTextChanged(val, field)),
                         ),
                       ),
                     ]
-                )] + widget.fields.fields.keys.toList().sublist(1).map((field) => TableRow(
-                  children: [
-                    PartTableText(widget.fields.fields[field], 'LABEL'),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(0,0,0,5),
-                      child: TextFormField(
-                        initialValue: null,
-                        decoration: formFieldDecoration.copyWith(hintText: widget.fields.fields[field]),
-                        onChanged: (val) => setState(() => _onTextChanged(val, field)),
-                      ),
-                    ),
-                  ]
-                )).toList()
+                  )).toList()
+                ),
               ),
             ),
           ),

@@ -33,16 +33,16 @@ class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
     if(isSingleSearch) {
       return parts.where((part) {
         return query1 == "" ? true : category1 == 'partNo' ?
-        part.partNo.toString().startsWith(new RegExp(query1, caseSensitive: false)) :
+        part.partId.toString().startsWith(new RegExp(query1, caseSensitive: false)) :
         part.fields[category1].toString().contains(new RegExp(query1, caseSensitive: false));
       }).toList();
     } else {
       return parts.where((part) {
         bool con1 = query1 == "" ? true : category1 == 'partNo' ?
-          part.partNo.toString().startsWith(new RegExp(query1, caseSensitive: false)) :
+          part.partId.toString().startsWith(new RegExp(query1, caseSensitive: false)) :
           part.fields[category1].toString().contains(new RegExp(query1, caseSensitive: false));
         bool con2 = query2 == "" ? true : category2 == 'partNo' ?
-          part.partNo.toString().startsWith(new RegExp(query2, caseSensitive: false)) :
+          part.partId.toString().startsWith(new RegExp(query2, caseSensitive: false)) :
           part.fields[category2].toString().contains(new RegExp(query2, caseSensitive: false));
         return con1 && con2;
       }).toList();
@@ -56,6 +56,9 @@ class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
     final account = authUser.isAnon ? null : Provider.of<AccountData>(context);
     final fields = authUser.isAnon ? null : Provider.of<Field>(context);
     List<Part> parts = Provider.of<List<Part>>(context);
+    final fieldKeys = fields.fields.keys.toList();
+    final titleKey = fieldKeys[fieldKeys.length >= 1 ? 1 : 0];
+    final captionKey = fieldKeys[0];
 
     void searchHandler1(String val) {
       return setState(() => query1 = val);
@@ -201,8 +204,8 @@ class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
                       color: theme.backgroundColor.withOpacity(0.15),
                       child: PartListTile(
                         key: Key(index.toString()),
-                        name: parts[index].fields['description'].toString(),
-                        caption: parts[index].partNo.toString(),
+                        name: parts[index].fields[titleKey].toString(),
+                        caption: parts[index].fields[captionKey].toString(),
                         index: index
                       ),
                     ),

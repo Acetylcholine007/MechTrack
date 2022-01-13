@@ -27,17 +27,21 @@ class DatabaseService {
   }
 
   Part _partFromSnapshot(DocumentSnapshot snapshot) {
+    Map<String, dynamic> fields = snapshot.data() ?? {};
+    fields.remove('createdOn');
     return Part(
-      partNo: int.parse(snapshot.id),
-      fields: snapshot.data() ?? {},
+      partId: snapshot.id,
+      fields: fields,
     );
   }
 
   List<Part> _partListFromSnapshot(QuerySnapshot snapshot) {
     return snapshot.docs.map((doc) {
+      Map<String, dynamic> fields = doc.data() ?? {};
+      fields.remove('createdOn');
       return Part(
-        partNo: int.parse(doc.id),
-        fields: doc.data() ?? {},
+        partId: doc.id,
+        fields: fields,
       );
     }).toList();
   }
@@ -56,7 +60,7 @@ class DatabaseService {
   }
 
   Field _fieldFromSnapshot(QuerySnapshot snapshot) {
-    Map<String, String> fields = snapshot.docs.isNotEmpty ? {'partNo': 'Part No.'} : {};
+    Map<String, String> fields = {};
     snapshot.docs.forEach((doc) => fields[doc.get('fieldKey')] = doc.get('fieldValue'));
     return Field(fields: fields);
   }
@@ -72,23 +76,15 @@ class DatabaseService {
   }
 
   Future<String> addPart(Part part, String action) async {
-    var doc = await partCollection.doc(part.partNo.toString()).get();
-    String docId = part.partNo.toString();
+    var doc = await partCollection.doc(part.partId.toString()).get();
+    String docId = part.partId;
     String result = '';
 
     if(doc.exists && action == 'SAFE')
       return 'EXIST';
 
-    if(action == 'APPEND') {
-      await partCollection
-        .orderBy('partNo').limitToLast(1).get()
-        .then((QuerySnapshot snapshot) =>
-          docId = snapshot.docs.length != 0 ? (_partListFromSnapshot(snapshot)[0].partNo + 1).toString() : 1)
-        .catchError((error) {result = error.toString(); print('Failed to get part for append operation');});
-    }
-
     await partCollection
-      .doc(docId).set({'partNo': int.parse(docId), ...part.fields})
+      .doc(docId).set({...part.fields, 'createdOn': FieldValue.serverTimestamp()})
         .then((value) => result = 'SUCCESS')
         .catchError((error) => result = error.toString());
     return result;
@@ -96,9 +92,8 @@ class DatabaseService {
 
   Future<String> editPart(Part part) async {
     String result = '';
-    await partCollection.doc(part.partNo.toString())
-    .update({
-      'partNo': part.partNo, ...part.fields})
+    await partCollection.doc(part.partId)
+    .update(part.fields)
     .then((value) => result = 'SUCCESS')
     .catchError((error) => result = error.toString());
     return result;
@@ -172,11 +167,11 @@ class DatabaseService {
     for(final field in fields.docs) {
       batch.delete(field.reference);
     }
-    for(final field in headers.keys) {
-      batch.set(fieldCollection.doc(field), {'fieldKey': field, 'fieldValue': headers[field]});
-    }
+    headers.keys.toList().asMap().forEach((index, field) {
+      batch.set(fieldCollection.doc(field), {'index': index, 'fieldKey': field, 'fieldValue': headers[field]});
+    });
     for(final part in newParts) {
-      batch.set(partCollection.doc(part.partNo.toString()), part.toMap());
+      batch.set(partCollection.doc(part.partId), {...part.toMap(), 'createdOn': FieldValue.serverTimestamp()});
     }
 
     await batch.commit()
@@ -210,10 +205,10 @@ class DatabaseService {
   }
 
   Stream<List<Part>> get parts {
-    return partCollection.orderBy("partNo").snapshots().map(_partListFromSnapshot);
+    return partCollection.orderBy("createdOn").snapshots().map(_partListFromSnapshot);
   }
 
   Stream<Field> get fields {
-    return fieldCollection.snapshots().map(_fieldFromSnapshot);
+    return fieldCollection.orderBy("index").snapshots().map(_fieldFromSnapshot);
   }
 }

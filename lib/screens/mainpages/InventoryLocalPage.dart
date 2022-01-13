@@ -33,16 +33,16 @@ class _InventoryLocalPageState extends State<InventoryLocalPage> {
     if(isSingleSearch) {
       return parts.where((part) {
         return query1 == "" ? true : category1 == 'partNo' ?
-        part.partNo.toString().startsWith(new RegExp(query1, caseSensitive: false)) :
+        part.partId.toString().startsWith(new RegExp(query1, caseSensitive: false)) :
         part.fields[category1].toString().contains(new RegExp(query1, caseSensitive: false));
       }).toList();
     } else {
       return parts.where((part) {
         bool con1 = query1 == "" ? true : category1 == 'partNo' ?
-        part.partNo.toString().startsWith(new RegExp(query1, caseSensitive: false)) :
+        part.partId.toString().startsWith(new RegExp(query1, caseSensitive: false)) :
         part.fields[category1].toString().contains(new RegExp(query1, caseSensitive: false));
         bool con2 = query2 == "" ? true : category2 == 'partNo' ?
-        part.partNo.toString().startsWith(new RegExp(query2, caseSensitive: false)) :
+        part.partId.toString().startsWith(new RegExp(query2, caseSensitive: false)) :
         part.fields[category2].toString().contains(new RegExp(query2, caseSensitive: false));
         return con1 && con2;
       }).toList();
@@ -81,6 +81,12 @@ class _InventoryLocalPageState extends State<InventoryLocalPage> {
       builder: (BuildContext context, AsyncSnapshot<LocalDBDataPack> snapshot) {
         if(snapshot.hasData) {
           List<Part> parts = filterHandler(snapshot.data.parts);
+          final fieldKeys = snapshot.data.fields.fields.keys.toList();
+          final titleKey = fieldKeys[fieldKeys.length >= 1 ? 1 : 0];
+          final captionKey = fieldKeys[0];
+
+          print('>>>>>>>>>');
+          snapshot.data.parts.forEach((element) {print(element);});
 
           return Scaffold(
             appBar: AppBar(
@@ -212,8 +218,8 @@ class _InventoryLocalPageState extends State<InventoryLocalPage> {
                             color: theme.backgroundColor.withOpacity(0.15),
                             child: PartListTile(
                               key: Key(index.toString()),
-                              name: parts[index].fields['description'],
-                              caption: parts[index].partNo.toString(),
+                              name: parts[index].fields[titleKey].toString(),
+                              caption: parts[index].fields[captionKey].toString(),
                               index: index
                             ),
                           ),

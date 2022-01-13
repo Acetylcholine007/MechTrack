@@ -21,7 +21,7 @@ class LocalDatabaseService {
       onCreate: (db, version) {
         Batch batch = db.batch();
         batch.execute(
-          'CREATE TABLE parts(partNo INTEGER PRIMARY KEY)'
+          'CREATE TABLE parts(partId TEXT PRIMARY KEY)'
         );
         batch.execute('CREATE TABLE fields(id INTEGER PRIMARY KEY, fieldKey TEXT, fieldValue TEXT)');
         return batch.commit();
@@ -36,7 +36,7 @@ class LocalDatabaseService {
     List<Map<String, Object>> maps = await db.query('fields',
         orderBy: 'id ASC'
     );
-    Map<String, String> fields = {'partNo': 'Part No.'};
+    Map<String, String> fields = {};
 
     maps.forEach((field) => fields[field['fieldKey']] = field['fieldValue']);
 
@@ -49,21 +49,17 @@ class LocalDatabaseService {
 
     List<Map<String, Object>> maps = await db.query(
         'parts',
-        where: 'partNo = ?',
-        whereArgs: [part.partNo],
+        where: 'partId = ?',
+        whereArgs: [part.partId],
         limit: 1
     );
 
     if(!(maps == null || maps.isEmpty) && action == 'SAFE')
       return 'EXIST';
 
-    if(action == 'APPEND') {
-      part.partNo = null;
-    }
-
     await db.insert(
       'parts',
-      part.toMap(),
+      part.toMapLocalImport(),
       conflictAlgorithm: ConflictAlgorithm.replace,
     )
         .then((value) => result = 'SUCCESS')
@@ -77,8 +73,8 @@ class LocalDatabaseService {
     await db.update(
       'parts',
       part.toMap(),
-      where: 'partNo = ?',
-      whereArgs: [part.partNo],
+      where: 'partId = ?',
+      whereArgs: [part.partId],
     )
       .then((value) => result = 'SUCCESS')
       .catchError((error) => result = error.toString());
@@ -89,7 +85,7 @@ class LocalDatabaseService {
     Database db = await database;
     List<Map<String, Object>> maps = await db.query(
       'parts',
-      where: 'partNo = ?',
+      where: 'partId = ?',
       whereArgs: [partNo],
       limit: 1
     );
@@ -97,8 +93,10 @@ class LocalDatabaseService {
     if(maps == null || maps.isEmpty)
       return null;
 
+    String partId = maps[0]['partId'];
+    maps[0].remove('partId');
     return Part(
-      partNo: maps[0]['partNo'],
+      partId: partId,
       fields: maps[0],
     );
   }
@@ -114,10 +112,7 @@ class LocalDatabaseService {
     }
 
     return LocalDBDataPack(parts: List.generate(maps.length, (i) {
-      return Part(
-        partNo: maps[i]['partNo'],
-        fields: maps[i],
-      );
+      return Part.fromLocalDB(maps[i]);
     }), hasRecords: await hasRecords(), fields: await getFields());
   }
 
@@ -140,13 +135,11 @@ class LocalDatabaseService {
     List<String> headerKeys = headers.keys.toList();
     Batch batch = db.batch();
 
-    headers.remove('partNo');
-
     batch.rawDelete("DELETE from fields");
     batch.execute("DROP TABLE IF EXISTS parts");
     batch.execute(
       'CREATE TABLE parts('
-        'partNo INTEGER PRIMARY KEY,'
+        'partId TEXT PRIMARY KEY,'
         '${headers.keys.map((header) => header + ' TEXT')
         .reduce((a, b) => a + ', ' + b)})'
     );
@@ -159,15 +152,18 @@ class LocalDatabaseService {
       );
     }
 
+    parts.forEach((part) => print(part.toMapLocalImport()));
+
     parts.forEach((part) => batch.insert(
       'parts',
-      part.toMap(),
+      part.toMapLocalImport(),
       conflictAlgorithm: ConflictAlgorithm.replace)
     );
     await batch.commit()
     .then((value) => result = 'SUCCESS')
     .catchError((error) => result = error.toString());
 
+    // getParts('', 'partId', '', 'partId');
     return ImportResponse(result: result, parts: duplicateParts, invalidIdParts: invalidParts);
   }
 
@@ -183,7 +179,7 @@ class LocalDatabaseService {
     Database db = await database;
     await db.delete(
       'parts',
-      where: 'partNo = ?',
+      where: 'partId = ?',
       whereArgs: [pid],
     )
       .then((value) => result = 'SUCCESS')

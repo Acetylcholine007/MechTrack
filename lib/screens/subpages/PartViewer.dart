@@ -67,7 +67,7 @@ class _PartViewerState extends State<PartViewer> {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) =>
-                QRDisplay(title: 'Part QR Code', data: part.partNo.toString() + '<=MechTrack=>' + part.partNo.toString())
+                QRDisplay(title: 'Part QR Code', data: part.partId.toString() + '<=MechTrack=>' + part.partId.toString())
               )
             )
           ),
