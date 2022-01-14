@@ -78,7 +78,7 @@ class _DataPageState extends State<DataPage> {
           ElevatedButton(
             onPressed: () async {
               DataService.ds.partCSVExport(context, syncLoadingHandler,
-                (await LocalDatabaseService.db.getParts('', 'partNo', '', 'partNo')).parts,
+                (await LocalDatabaseService.db.getParts()).parts,
                 fields, true);
             },
             child: Text('Export Local Database to CSV'),

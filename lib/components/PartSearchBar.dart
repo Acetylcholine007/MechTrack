@@ -6,12 +6,12 @@ class PartSearchBar extends StatefulWidget {
   const PartSearchBar({Key key,
     this.categoryHandler,
     this.searchHandler,
-    this.category,
+    this.catIndex,
     this.context, this.fields}) : super(key: key);
 
-  final Function(String) categoryHandler;
+  final Function(int) categoryHandler;
   final Function(String) searchHandler;
-  final String category;
+  final int catIndex;
   final BuildContext context;
   final Field fields;
 
@@ -23,25 +23,25 @@ class _PartSearchBarState extends State<PartSearchBar> {
   TextEditingController controller = TextEditingController();
 
   void filterHandler() {
-    String newCat = widget.category;
+    int newCatIndex = widget.catIndex;
 
     showDialog(
         context: widget.context,
         builder: (context) => AlertDialog(
           title: Text('Search Selector'),
           content: DropdownButtonFormField(
-            value: newCat,
-            items: widget.fields.fields.keys.map((String category) => DropdownMenuItem(
-                value: category,
-                child: Text(widget.fields.fields[category])
+            value: newCatIndex,
+            items: widget.fields.fields.values.toList().asMap().entries.map((category) => DropdownMenuItem(
+                value: category.key,
+                child: Text(category.value)
             )).toList(),
-            onChanged: (value) => newCat = value,
+            onChanged: (value) => newCatIndex = value,
             decoration: formFieldDecoration,
           ),
           actions: [
             TextButton(
                 onPressed: () {
-                  widget.categoryHandler(newCat);
+                  widget.categoryHandler(newCatIndex);
                   Navigator.pop(context);
                 },
                 child: Text('OK')

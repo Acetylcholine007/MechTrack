@@ -38,10 +38,9 @@ class DataService {
   Future<CSVReadResult> csvReader() async {
     List<Part> newFields;
     FilePickerResult result = await FilePicker.platform.pickFiles(
-      // type: FileType.custom,
-      type: FileType.any,
-      // allowedExtensions: ['csv'],
-      // allowedExtensions: FileType.,
+      type: FileType.custom,
+      // type: FileType.any,
+      allowedExtensions: ['csv'],
     );
     if (result != null) {
       PlatformFile file = result.files.first;
@@ -66,8 +65,6 @@ class DataService {
         Part part = Part.withHash({ for (String header in headerKeys) header: row[headerKeys.indexOf(header)] });
         return part;
       }).toList();
-      print('>>>>>>>>>');
-      newFields.forEach((element) {print(element);});
       return CSVReadResult(parts: newFields, headers: headers, result: 'SUCCESS');
     } else {
       return CSVReadResult(parts: [], headers: {}, result: 'EMPTY');
@@ -137,6 +134,7 @@ class DataService {
         action: SnackBarAction(label: 'OK',
             onPressed: () => ScaffoldMessenger.of(context).hideCurrentSnackBar()),
       );
+      LocalDatabaseService.db.getParts();
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     } else {
       showDialog(
@@ -191,6 +189,7 @@ class DataService {
     }
 
     if(result.result == 'SUCCESS' && result.parts.isEmpty && result.invalidIdParts.isEmpty) {
+      LocalDatabaseService.db.getParts();
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     } else if (result.result == 'SUCCESS' && result.parts.isEmpty && result.invalidIdParts.isNotEmpty) {
       showDialog(

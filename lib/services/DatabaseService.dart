@@ -28,7 +28,7 @@ class DatabaseService {
 
   Part _partFromSnapshot(DocumentSnapshot snapshot) {
     Map<String, dynamic> fields = snapshot.data() ?? {};
-    fields.remove('createdOn');
+    fields.remove('_sortingIndex');
     return Part(
       partId: snapshot.id,
       fields: fields,
@@ -38,7 +38,7 @@ class DatabaseService {
   List<Part> _partListFromSnapshot(QuerySnapshot snapshot) {
     return snapshot.docs.map((doc) {
       Map<String, dynamic> fields = doc.data() ?? {};
-      fields.remove('createdOn');
+      var index = fields.remove('_sortingIndex');
       return Part(
         partId: doc.id,
         fields: fields,
@@ -83,8 +83,10 @@ class DatabaseService {
     if(doc.exists && action == 'SAFE')
       return 'EXIST';
 
+    int lastPartIndex = (await partCollection.orderBy('_sortingIndex').get()).docs.last.get('_sortingIndex');
+
     await partCollection
-      .doc(docId).set({...part.fields, 'createdOn': FieldValue.serverTimestamp()})
+      .doc(docId).set({...part.fields, '_sortingIndex': lastPartIndex + 1})
         .then((value) => result = 'SUCCESS')
         .catchError((error) => result = error.toString());
     return result;
@@ -170,8 +172,8 @@ class DatabaseService {
     headers.keys.toList().asMap().forEach((index, field) {
       batch.set(fieldCollection.doc(field), {'index': index, 'fieldKey': field, 'fieldValue': headers[field]});
     });
-    for(final part in newParts) {
-      batch.set(partCollection.doc(part.partId), {...part.toMap(), 'createdOn': FieldValue.serverTimestamp()});
+    for(final part in newParts.asMap().entries) {
+      batch.set(partCollection.doc(part.value.partId), {...part.value.toMap(), '_sortingIndex': part.key});
     }
 
     await batch.commit()
@@ -205,7 +207,7 @@ class DatabaseService {
   }
 
   Stream<List<Part>> get parts {
-    return partCollection.orderBy("createdOn").snapshots().map(_partListFromSnapshot);
+    return partCollection.orderBy("_sortingIndex").snapshots().map(_partListFromSnapshot);
   }
 
   Stream<Field> get fields {

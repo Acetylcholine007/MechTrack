@@ -101,15 +101,11 @@ class LocalDatabaseService {
     );
   }
 
-  Future<LocalDBDataPack> getParts(String query1, String category1, String query2, String category2) async {
+  Future<LocalDBDataPack> getParts() async {
     Database db = await database;
     List<Map<String, Object>> maps;
 
-    if (query1.isNotEmpty) {
-      maps = await db.query('parts', where: '$category1 LIKE ?', whereArgs: ["%$query1%"]);
-    } else {
-      maps = await db.query('parts');
-    }
+    maps = await db.query('parts');
 
     return LocalDBDataPack(parts: List.generate(maps.length, (i) {
       return Part.fromLocalDB(maps[i]);
@@ -152,8 +148,6 @@ class LocalDatabaseService {
       );
     }
 
-    parts.forEach((part) => print(part.toMapLocalImport()));
-
     parts.forEach((part) => batch.insert(
       'parts',
       part.toMapLocalImport(),
@@ -163,7 +157,7 @@ class LocalDatabaseService {
     .then((value) => result = 'SUCCESS')
     .catchError((error) => result = error.toString());
 
-    // getParts('', 'partId', '', 'partId');
+    // getParts();
     return ImportResponse(result: result, parts: duplicateParts, invalidIdParts: invalidParts);
   }
 

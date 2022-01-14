@@ -23,27 +23,24 @@ class InventoryGlobalPage extends StatefulWidget {
 }
 
 class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
-  String category1 = 'partNo';
-  String category2 = 'partNo';
+  int catIndex1 = 0;
+  int catIndex2 = 0;
   String query1 = '';
   String query2 = '';
   bool isSingleSearch = true;
 
-  List<Part> filterHandler (List<Part> parts) {
+  List<Part> filterHandler (List<Part> parts, List fieldKeys) {
     if(isSingleSearch) {
       return parts.where((part) {
-        return query1 == "" ? true : category1 == 'partNo' ?
-        part.partId.toString().startsWith(new RegExp(query1, caseSensitive: false)) :
-        part.fields[category1].toString().contains(new RegExp(query1, caseSensitive: false));
+        return query1 == "" ? true :
+        part.fields[fieldKeys[catIndex1]].toString().startsWith(new RegExp(query1, caseSensitive: false));
       }).toList();
     } else {
       return parts.where((part) {
-        bool con1 = query1 == "" ? true : category1 == 'partNo' ?
-          part.partId.toString().startsWith(new RegExp(query1, caseSensitive: false)) :
-          part.fields[category1].toString().contains(new RegExp(query1, caseSensitive: false));
-        bool con2 = query2 == "" ? true : category2 == 'partNo' ?
-          part.partId.toString().startsWith(new RegExp(query2, caseSensitive: false)) :
-          part.fields[category2].toString().contains(new RegExp(query2, caseSensitive: false));
+        bool con1 = query1 == "" ? true :
+        part.fields[fieldKeys[catIndex1]].toString().startsWith(new RegExp(query1, caseSensitive: false));
+        bool con2 = query2 == "" ? true :
+        part.fields[fieldKeys[catIndex2]].toString().startsWith(new RegExp(query2, caseSensitive: false));
         return con1 && con2;
       }).toList();
     }
@@ -64,19 +61,19 @@ class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
       return setState(() => query1 = val);
     }
 
-    void categoryHandler1(String newCat) {
-      setState(() => category1 = newCat);
+    void categoryHandler1(int newCat) {
+      setState(() => catIndex1 = newCat);
     }
 
     void searchHandler2(String val) {
       return setState(() => query2 = val);
     }
 
-    void categoryHandler2(String newCat) {
-      setState(() => category2 = newCat);
+    void categoryHandler2(int newCat) {
+      setState(() => catIndex2 = newCat);
     }
 
-    parts = filterHandler(parts);
+    parts = filterHandler(parts, fields.fields.keys.toList());
 
     return parts != null ? Scaffold(
       appBar: AppBar(
@@ -118,12 +115,12 @@ class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
                   await DatabaseService.db.getPart(data[0]);
                   if (part != null) {
                     Navigator.push(context, MaterialPageRoute(
-                        builder: (context) =>
-                            PartViewer(
-                                part: part,
-                                isLocal: false,
-                                account: account,
-                                fields: fields)));
+                      builder: (context) =>
+                        PartViewer(
+                          part: part,
+                          isLocal: false,
+                          account: account,
+                          fields: fields)));
                   } else {
                     Navigator.push(context, MaterialPageRoute(
                         builder: (context) =>
@@ -173,16 +170,16 @@ class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
           PartSearchBar(
             categoryHandler: categoryHandler1,
             searchHandler: searchHandler1,
-            category: category1,
+            catIndex: catIndex1,
             context: context,
             fields: fields,
           ) : TwoPartSearchBar(
             categoryHandler1: categoryHandler1,
             searchHandler1: searchHandler1,
-            category1: category1,
+            catIndex1: catIndex1,
             categoryHandler2: categoryHandler2,
             searchHandler2: searchHandler2,
-            category2: category2,
+            catIndex2: catIndex2,
             context: context,
             fields: fields,
           ))] + <Widget>[

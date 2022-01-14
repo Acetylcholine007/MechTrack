@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:barcode_scan2/platform_wrapper.dart';
 import 'package:flutter/material.dart';
 import 'package:mech_track/BLoCs/LocalDatabaseBloc.dart';
@@ -22,28 +20,25 @@ class InventoryLocalPage extends StatefulWidget {
 }
 
 class _InventoryLocalPageState extends State<InventoryLocalPage> {
-  String category1 = 'partNo';
-  String category2 = 'partNo';
+  int catIndex1 = 0;
+  int catIndex2 = 0;
   String query1 = '';
   String query2 = '';
   PartsBloc bloc;
   bool isSingleSearch = true;
 
-  List<Part> filterHandler (List<Part> parts) {
+  List<Part> filterHandler (List<Part> parts, List fieldKeys) {
     if(isSingleSearch) {
       return parts.where((part) {
-        return query1 == "" ? true : category1 == 'partNo' ?
-        part.partId.toString().startsWith(new RegExp(query1, caseSensitive: false)) :
-        part.fields[category1].toString().contains(new RegExp(query1, caseSensitive: false));
+        return query1 == "" ? true :
+        part.fields[fieldKeys[catIndex1]].toString().startsWith(new RegExp(query1, caseSensitive: false));
       }).toList();
     } else {
       return parts.where((part) {
-        bool con1 = query1 == "" ? true : category1 == 'partNo' ?
-        part.partId.toString().startsWith(new RegExp(query1, caseSensitive: false)) :
-        part.fields[category1].toString().contains(new RegExp(query1, caseSensitive: false));
-        bool con2 = query2 == "" ? true : category2 == 'partNo' ?
-        part.partId.toString().startsWith(new RegExp(query2, caseSensitive: false)) :
-        part.fields[category2].toString().contains(new RegExp(query2, caseSensitive: false));
+        bool con1 = query1 == "" ? true :
+        part.fields[fieldKeys[catIndex1]].toString().startsWith(new RegExp(query1, caseSensitive: false));
+        bool con2 = query2 == "" ? true :
+        part.fields[fieldKeys[catIndex2]].toString().startsWith(new RegExp(query2, caseSensitive: false));
         return con1 && con2;
       }).toList();
     }
@@ -64,29 +59,26 @@ class _InventoryLocalPageState extends State<InventoryLocalPage> {
       return setState(() => query1 = val);
     }
 
-    void categoryHandler1(String newCat) {
-      setState(() => category1 = newCat);
+    void categoryHandler1(int newCat) {
+      setState(() => catIndex1 = newCat);
     }
 
     void searchHandler2(String val) {
       return setState(() => query2 = val);
     }
 
-    void categoryHandler2(String newCat) {
-      setState(() => category2 = newCat);
+    void categoryHandler2(int newCat) {
+      setState(() => catIndex2 = newCat);
     }
 
     return StreamBuilder<LocalDBDataPack>(
       stream: bloc.localParts,
       builder: (BuildContext context, AsyncSnapshot<LocalDBDataPack> snapshot) {
         if(snapshot.hasData) {
-          List<Part> parts = filterHandler(snapshot.data.parts);
+          List<Part> parts = filterHandler(snapshot.data.parts, snapshot.data.fields.fields.keys.toList());
           final fieldKeys = snapshot.data.fields.fields.keys.toList();
           final titleKey = fieldKeys[fieldKeys.length >= 1 ? 1 : 0];
           final captionKey = fieldKeys[0];
-
-          print('>>>>>>>>>');
-          snapshot.data.parts.forEach((element) {print(element);});
 
           return Scaffold(
             appBar: AppBar(
@@ -183,16 +175,16 @@ class _InventoryLocalPageState extends State<InventoryLocalPage> {
                   PartSearchBar(
                     categoryHandler: categoryHandler1,
                     searchHandler: searchHandler1,
-                    category: category1,
+                    catIndex: catIndex1,
                     context: context,
                     fields: snapshot.data.fields,
                   ) : TwoPartSearchBar(
                     categoryHandler1: categoryHandler1,
                     searchHandler1: searchHandler1,
-                    category1: category1,
+                    catIndex1: catIndex1,
                     categoryHandler2: categoryHandler2,
                     searchHandler2: searchHandler2,
-                    category2: category2,
+                    catIndex2: catIndex2,
                     context: context,
                     fields: snapshot.data.fields,
                   ))] + <Widget>[

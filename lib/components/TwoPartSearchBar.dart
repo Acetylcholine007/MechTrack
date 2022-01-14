@@ -6,19 +6,19 @@ class TwoPartSearchBar extends StatefulWidget {
   const TwoPartSearchBar({Key key,
     this.categoryHandler1,
     this.searchHandler1,
-    this.category1,
+    this.catIndex1,
     this.categoryHandler2,
     this.searchHandler2,
-    this.category2,
+    this.catIndex2,
     this.context,
   this.fields}) : super(key: key);
 
-  final Function(String) categoryHandler1;
+  final Function(int) categoryHandler1;
   final Function(String) searchHandler1;
-  final String category1;
-  final Function(String) categoryHandler2;
+  final int catIndex1;
+  final Function(int) categoryHandler2;
   final Function(String) searchHandler2;
-  final String category2;
+  final int catIndex2;
   final BuildContext context;
   final Field fields;
 
@@ -31,25 +31,25 @@ class _TwoPartSearchBarState extends State<TwoPartSearchBar> {
   TextEditingController controller2 = TextEditingController();
 
   void filterHandler1() {
-    String newCat = widget.category1;
+    int newCatIndex = widget.catIndex1;
 
     showDialog(
         context: widget.context,
         builder: (context) => AlertDialog(
           title: Text('Search Selector'),
           content: DropdownButtonFormField(
-            value: newCat,
-            items: widget.fields.fields.keys.map((String category) => DropdownMenuItem(
-                value: category,
-                child: Text(widget.fields.fields[category])
+            value: newCatIndex,
+            items: widget.fields.fields.values.toList().asMap().entries.map((category) => DropdownMenuItem(
+                value: category.key,
+                child: Text(category.value)
             )).toList(),
-            onChanged: (value) => newCat = value,
+            onChanged: (value) => newCatIndex = value,
             decoration: formFieldDecoration,
           ),
           actions: [
             TextButton(
                 onPressed: () {
-                  widget.categoryHandler1(newCat);
+                  widget.categoryHandler1(newCatIndex);
                   Navigator.pop(context);
                 },
                 child: Text('OK')
@@ -60,25 +60,25 @@ class _TwoPartSearchBarState extends State<TwoPartSearchBar> {
   }
 
   void filterHandler2() {
-    String newCat = widget.category2;
+    int newCatIndex = widget.catIndex2;
 
     showDialog(
         context: widget.context,
         builder: (context) => AlertDialog(
           title: Text('Search Selector'),
           content: DropdownButtonFormField(
-            value: newCat,
-            items: widget.fields.fields.keys.map((String category) => DropdownMenuItem(
-                value: category,
-                child: Text(widget.fields.fields[category])
+            value: newCatIndex,
+            items: widget.fields.fields.values.toList().asMap().entries.map((category) => DropdownMenuItem(
+                value: category.key,
+                child: Text(category.value)
             )).toList(),
-            onChanged: (value) => newCat = value,
+            onChanged: (value) => newCatIndex = value,
             decoration: formFieldDecoration,
           ),
           actions: [
             TextButton(
                 onPressed: () {
-                  widget.categoryHandler2(newCat);
+                  widget.categoryHandler2(newCatIndex);
                   Navigator.pop(context);
                 },
                 child: Text('OK')
