@@ -36,6 +36,9 @@ class DatabaseService {
   }
 
   List<Part> _partListFromSnapshot(QuerySnapshot snapshot) {
+    snapshot.docs.map((doc) {
+      print(doc.data());
+    });
     return snapshot.docs.map((doc) {
       Map<String, dynamic> fields = doc.data() ?? {};
       var index = fields.remove('_sortingIndex');

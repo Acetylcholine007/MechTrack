@@ -53,21 +53,21 @@ class _DataPageState extends State<DataPage> {
       OperatorWidget(
         ElevatedButton(
           onPressed: () => DataService.ds.localCSVImport(context, localImportLoadingHandler),
-          child: Text('Import CSV for Local Database'),
+          child: Text('Import CSV for Local'),
           style: buttonDecoration,
         ), 1
       ),
       OperatorWidget(
           ElevatedButton(
             onPressed: () => DataService.ds.globalCSVImport(context, globalImportLoadingHandler),
-            child: Text('Import CSV for Global Database'),
+            child: Text('Import CSV for Global'),
             style: buttonDecoration,
           ), 3
       ),
       OperatorWidget(
           ElevatedButton(
             onPressed: () => DataService.ds.syncDatabase(context, syncLoadingHandler, parts, fields),
-            child: Text('Sync Local DB from Global DB'),
+            child: Text('Sync Local from Global'),
             style: buttonDecoration,
           ), 2
       ),
@@ -79,16 +79,16 @@ class _DataPageState extends State<DataPage> {
             onPressed: () async {
               DataService.ds.partCSVExport(context, syncLoadingHandler,
                 (await LocalDatabaseService.db.getParts()).parts,
-                fields, true);
+                  (await LocalDatabaseService.db.getParts()).fields, true);
             },
-            child: Text('Export Local Database to CSV'),
+            child: Text('Export Local to CSV'),
             style: buttonDecoration,
           ), 1
       ),
       OperatorWidget(
           ElevatedButton(
             onPressed: () => DataService.ds.partCSVExport(context, syncLoadingHandler, parts, fields, false),
-            child: Text('Export Global Database to CSV'),
+            child: Text('Export Global to CSV'),
             style: buttonDecoration,
           ), 3
       ),

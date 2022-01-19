@@ -6,6 +6,7 @@ import 'package:mech_track/components/NoPartGlobal.dart';
 
 import 'package:mech_track/components/PartListTile.dart';
 import 'package:mech_track/components/PartSearchBar.dart';
+import 'package:mech_track/components/TabulatedPartList.dart';
 import 'package:mech_track/components/TwoPartSearchBar.dart';
 import 'package:mech_track/models/Account.dart';
 import 'package:mech_track/models/AccountData.dart';
@@ -53,9 +54,15 @@ class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
     final account = authUser.isAnon ? null : Provider.of<AccountData>(context);
     final fields = authUser.isAnon ? null : Provider.of<Field>(context);
     List<Part> parts = Provider.of<List<Part>>(context);
-    final fieldKeys = fields.fields.keys.toList();
-    final titleKey = fieldKeys[fieldKeys.length >= 1 ? 1 : 0];
-    final captionKey = fieldKeys[0];
+
+    List<String> fieldKeys = [];
+    String titleKey = '';
+    String captionKey = '';
+    if(fields.fields.isNotEmpty) {
+      fieldKeys = fields.fields.keys.toList();
+      titleKey = fieldKeys[fieldKeys.length >= 1 ? 1 : 0];
+      captionKey = fieldKeys[0];
+    }
 
     void searchHandler1(String val) {
       return setState(() => query1 = val);
@@ -152,19 +159,32 @@ class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
           })
         ],
       ),
-      floatingActionButton: account.accountType == 'ADMIN' && fields.fields.isNotEmpty ? FloatingActionButton(
-        child: Icon(Icons.add),
-        onPressed: () =>
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => PartCreator(isLocal: false, account: account, fields: fields)),
+      floatingActionButton: account.accountType == 'ADMIN' && fields.fields.isNotEmpty ? Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: (isSingleSearch ? <Widget>[] : <Widget>[
+          FloatingActionButton(
+            heroTag: null,
+            child: Icon(Icons.search_rounded),
+            onPressed: () {},
           ),
+          SizedBox(height: 10),
+        ]) + <Widget>[
+          FloatingActionButton(
+            heroTag: null,
+            child: Icon(Icons.add),
+            onPressed: () =>
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => PartCreator(isLocal: false, account: account, fields: fields)),
+              ),
+          ),
+        ],
       ) : null,
       body: Provider.of<List<Part>>(context).isEmpty ? NoPartGlobal() : Container(
         decoration: BoxDecoration(
           image: DecorationImage(image: new AssetImage("assets/images/background.jpg"), fit: BoxFit.cover,),
         ),
-        child: Column(
+        child: isSingleSearch ? Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[(isSingleSearch ?
           PartSearchBar(
@@ -211,7 +231,7 @@ class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
               )
             )
           ],
-        ),
+        ) : TabulatedPartList(parts: parts, fields: fields),
       ),
     ) : Loading('Loading Parts');
   }

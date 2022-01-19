@@ -7,6 +7,7 @@ import 'package:mech_track/components/NoPartLocal.dart';
 
 import 'package:mech_track/components/PartListTile.dart';
 import 'package:mech_track/components/PartSearchBar.dart';
+import 'package:mech_track/components/TabulatedPartList.dart';
 import 'package:mech_track/components/TwoPartSearchBar.dart';
 import 'package:mech_track/models/LocalDBDataPack.dart';
 import 'package:mech_track/models/Part.dart';
@@ -76,9 +77,15 @@ class _InventoryLocalPageState extends State<InventoryLocalPage> {
       builder: (BuildContext context, AsyncSnapshot<LocalDBDataPack> snapshot) {
         if(snapshot.hasData) {
           List<Part> parts = filterHandler(snapshot.data.parts, snapshot.data.fields.fields.keys.toList());
-          final fieldKeys = snapshot.data.fields.fields.keys.toList();
-          final titleKey = fieldKeys[fieldKeys.length >= 1 ? 1 : 0];
-          final captionKey = fieldKeys[0];
+
+          List<String> fieldKeys = [];
+          String titleKey = '';
+          String captionKey = '';
+          if(snapshot.data.fields.fields.isNotEmpty) {
+            fieldKeys = snapshot.data.fields.fields.keys.toList();
+            titleKey = fieldKeys[fieldKeys.length >= 1 ? 1 : 0];
+            captionKey = fieldKeys[0];
+          }
 
           return Scaffold(
             appBar: AppBar(
@@ -157,19 +164,32 @@ class _InventoryLocalPageState extends State<InventoryLocalPage> {
                 })
               ],
             ),
-            floatingActionButton: snapshot.data.fields.fields.isEmpty ? null : FloatingActionButton(
-              child: Icon(Icons.add),
-              onPressed: () =>
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => PartCreator(isLocal: true, bloc: bloc, fields: snapshot.data.fields)),
+            floatingActionButton: snapshot.data.fields.fields.isEmpty ? null : Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: (isSingleSearch ? <Widget>[] : <Widget>[
+                FloatingActionButton(
+                  heroTag: null,
+                  child: Icon(Icons.search_rounded),
+                  onPressed: () {},
                 ),
+                SizedBox(height: 10),]) + <Widget>[
+                FloatingActionButton(
+                  heroTag: null,
+                  child: Icon(Icons.add),
+                  onPressed: () =>
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => PartCreator(isLocal: true, bloc: bloc, fields: snapshot.data.fields)),
+                      ),
+                ),
+              ],
             ),
             body: Container(
               decoration: BoxDecoration(
                 image: DecorationImage(image: new AssetImage("assets/images/background.jpg"), fit: BoxFit.cover,),
               ),
-              child: snapshot.data != null ? !snapshot.data.hasRecords ? NoPartLocal() :Column(
+              child: snapshot.data != null ? !snapshot.data.hasRecords ? NoPartLocal() :
+              isSingleSearch ? Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[(isSingleSearch ?
                   PartSearchBar(
@@ -220,7 +240,8 @@ class _InventoryLocalPageState extends State<InventoryLocalPage> {
                     )
                   )
                 ],
-              ) : Center(child: Text('No Parts')),
+              ) : TabulatedPartList(parts: parts, fields: snapshot.data.fields)
+                  : Center(child: Text('No Parts')),
             ),
           );
         } else {
