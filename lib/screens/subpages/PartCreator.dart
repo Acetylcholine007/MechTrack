@@ -164,6 +164,7 @@ class _PartCreatorState extends State<PartCreator> {
           decoration: BoxDecoration(
             image: DecorationImage(image: new AssetImage("assets/images/background.jpg"), fit: BoxFit.cover,),
           ),
+          constraints: BoxConstraints.expand(),
           child: Form(
             key: _formKey,
             child: SingleChildScrollView(

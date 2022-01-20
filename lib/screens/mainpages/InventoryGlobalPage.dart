@@ -1,6 +1,7 @@
 import 'package:barcode_scan2/platform_wrapper.dart';
 import 'package:flutter/material.dart';
 import 'package:mech_track/components/Loading.dart';
+import 'package:mech_track/components/MultiSearchOverlay.dart';
 import 'package:mech_track/components/NoPart.dart';
 import 'package:mech_track/components/NoPartGlobal.dart';
 
@@ -29,6 +30,8 @@ class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
   String query1 = '';
   String query2 = '';
   bool isSingleSearch = true;
+  bool isOverlayOpen = false;
+  Map<String, String> queries = {};
 
   List<Part> filterHandler (List<Part> parts, List fieldKeys) {
     if(isSingleSearch) {
@@ -80,6 +83,21 @@ class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
       setState(() => catIndex2 = newCat);
     }
 
+    void multiQueryHandler(Map<String, String> queries) {
+      setState(() {
+        this.queries = queries;
+        isOverlayOpen = false;
+      });
+    }
+
+    void viewPart(Part part) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) =>
+            PartViewer(part: part, isLocal: false, account: account, fields: fields,)),
+      );
+    }
+
     parts = filterHandler(parts, fields.fields.keys.toList());
 
     return parts != null ? Scaffold(
@@ -121,13 +139,14 @@ class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
                   Part part =
                   await DatabaseService.db.getPart(data[0]);
                   if (part != null) {
-                    Navigator.push(context, MaterialPageRoute(
-                      builder: (context) =>
-                        PartViewer(
-                          part: part,
-                          isLocal: false,
-                          account: account,
-                          fields: fields)));
+                    viewPart(part);
+                    // Navigator.push(context, MaterialPageRoute(
+                    //   builder: (context) =>
+                    //     PartViewer(
+                    //       part: part,
+                    //       isLocal: false,
+                    //       account: account,
+                    //       fields: fields)));
                   } else {
                     Navigator.push(context, MaterialPageRoute(
                         builder: (context) =>
@@ -161,14 +180,14 @@ class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
       ),
       floatingActionButton: account.accountType == 'ADMIN' && fields.fields.isNotEmpty ? Column(
         mainAxisAlignment: MainAxisAlignment.end,
-        children: (isSingleSearch ? <Widget>[] : <Widget>[
+        children: (!(isSingleSearch || isOverlayOpen) ? <Widget>[
           FloatingActionButton(
             heroTag: null,
             child: Icon(Icons.search_rounded),
-            onPressed: () {},
+            onPressed: () => setState(() => isOverlayOpen = true),
           ),
           SizedBox(height: 10),
-        ]) + <Widget>[
+        ] : <Widget>[]) + (isOverlayOpen ? [] : [
           FloatingActionButton(
             heroTag: null,
             child: Icon(Icons.add),
@@ -178,7 +197,7 @@ class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
                 MaterialPageRoute(builder: (context) => PartCreator(isLocal: false, account: account, fields: fields)),
               ),
           ),
-        ],
+        ]),
       ) : null,
       body: Provider.of<List<Part>>(context).isEmpty ? NoPartGlobal() : Container(
         decoration: BoxDecoration(
@@ -208,12 +227,12 @@ class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
                 itemCount: parts.length,
                 itemBuilder: (BuildContext context, int index) {
                   return GestureDetector(
-                    onTap: () =>
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) =>
-                              PartViewer(part: parts[index], isLocal: false, account: account, fields: fields,)),
-                        ),
+                    onTap: () => viewPart(parts[index]),
+                        // Navigator.push(
+                        //   context,
+                        //   MaterialPageRoute(builder: (context) =>
+                        //       PartViewer(part: parts[index], isLocal: false, account: account, fields: fields,)),
+                        // ),
                     child: Card(
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10.0),
@@ -231,7 +250,18 @@ class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
               )
             )
           ],
-        ) : TabulatedPartList(parts: parts, fields: fields),
+        ) : Stack(
+          children: <Widget>[
+            TabulatedPartList(
+              parts: parts,
+              fields: fields,
+              columns: [fieldKeys[0], fieldKeys[1], ...queries.keys.toList()],
+              viewPart: viewPart,
+            ),
+          ] + (isOverlayOpen ? [
+            MultiSearchOverlay(fields: fields, queries: queries, multiQueryHandler: multiQueryHandler)
+          ] : []),
+        ),
       ),
     ) : Loading('Loading Parts');
   }

@@ -24,64 +24,56 @@ extension ColorBrightness on Color {
   }
 }
 
-class TabulatedPartList extends StatefulWidget {
+class TabulatedPartList extends StatelessWidget {
+  final List<String> columns;
   final List<Part> parts;
   final Field fields;
+  final Function(Part) viewPart;
 
-  const TabulatedPartList({Key key, this.parts, this.fields}) : super(key: key);
-
-  @override
-  _TabulatedPartListState createState() => _TabulatedPartListState();
-}
-
-class _TabulatedPartListState extends State<TabulatedPartList> {
-  List<String> fieldKeys;
-  List<String> onTrackFields;
-
-  @override
-  void initState() {
-    super.initState();
-    fieldKeys = widget.fields.fields.keys.toList();
-  }
-
+  const TabulatedPartList({
+    Key key,
+    this.parts,
+    this.fields,
+    this.columns,
+    this.viewPart
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final uniqueColumns = [...{...columns}];
+    // final uniqueColumns = columns;
 
     return Container(
       constraints: BoxConstraints.expand(),
       child: SingleChildScrollView(
-        child: Table(
-          border: TableBorder.all(color: theme.backgroundColor, width: 1),
-          columnWidths: const <int, TableColumnWidth>{
-            0: FlexColumnWidth(),
-            1: FlexColumnWidth(),
-          },
-          children: <TableRow>[
-            TableRow(
-              children: [
-              PartTableText(widget.fields.fields[fieldKeys[0]], 'LABEL'),
-              PartTableText(widget.fields.fields[fieldKeys[1]], 'LABEL'),
-              ]
-            )
-          ] + widget.parts.asMap().entries.map((partEntry) {
-            double shifter = partEntry.key % 2 == 0 ? .2 : .3;
-            return TableRow(
-                decoration: BoxDecoration(
-                    color: theme.backgroundColor.lighten(shifter)
-                ),
-                children: [
-                  PartTableText(
-                      partEntry.value.fields[fieldKeys[0]].toString(), 'LABEL'),
-                  PartTableText(
-                      partEntry.value.fields[fieldKeys[1]].toString(), 'CONTENT'),
-                ]
-            );
-          }
-          ).toList()
-        )
+          child: Table(
+              border: TableBorder.all(color: theme.backgroundColor, width: 1),
+              columnWidths: const <int, TableColumnWidth>{
+                0: FlexColumnWidth(),
+                1: FlexColumnWidth(),
+              },
+              children: <TableRow>[
+                TableRow(
+                    children: uniqueColumns.map((col) => PartTableText(fields.fields[col], 'LABEL')).toList()
+                )
+              ] + parts.asMap().entries.map((partEntry) {
+                double shifter = partEntry.key % 2 == 0 ? .2 : .3;
+                return TableRow(
+                    decoration: BoxDecoration(
+                        color: theme.backgroundColor.lighten(shifter)
+                    ),
+                    children: uniqueColumns.map((col) => GestureDetector(
+                      onTap: () => viewPart(partEntry.value),
+                      child: PartTableText(
+                          partEntry.value.fields[col].toString(), 'CONTENT'),
+                    )).toList()
+                );
+              }
+              ).toList()
+          )
       ),
     );
   }
 }
+

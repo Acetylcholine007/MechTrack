@@ -2,6 +2,7 @@ import 'package:barcode_scan2/platform_wrapper.dart';
 import 'package:flutter/material.dart';
 import 'package:mech_track/BLoCs/LocalDatabaseBloc.dart';
 import 'package:mech_track/components/Loading.dart';
+import 'package:mech_track/components/MultiSearchOverlay.dart';
 import 'package:mech_track/components/NoPart.dart';
 import 'package:mech_track/components/NoPartLocal.dart';
 
@@ -27,6 +28,8 @@ class _InventoryLocalPageState extends State<InventoryLocalPage> {
   String query2 = '';
   PartsBloc bloc;
   bool isSingleSearch = true;
+  bool isOverlayOpen = false;
+  Map<String, String> queries = {};
 
   List<Part> filterHandler (List<Part> parts, List fieldKeys) {
     if(isSingleSearch) {
@@ -72,6 +75,13 @@ class _InventoryLocalPageState extends State<InventoryLocalPage> {
       setState(() => catIndex2 = newCat);
     }
 
+    void multiQueryHandler(Map<String, String> queries) {
+      setState(() {
+        this.queries = queries;
+        isOverlayOpen = false;
+      });
+    }
+
     return StreamBuilder<LocalDBDataPack>(
       stream: bloc.localParts,
       builder: (BuildContext context, AsyncSnapshot<LocalDBDataPack> snapshot) {
@@ -85,6 +95,18 @@ class _InventoryLocalPageState extends State<InventoryLocalPage> {
             fieldKeys = snapshot.data.fields.fields.keys.toList();
             titleKey = fieldKeys[fieldKeys.length >= 1 ? 1 : 0];
             captionKey = fieldKeys[0];
+          }
+
+          void viewPart(Part part) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => PartViewer(
+                  part: part,
+                  isLocal: true,
+                  bloc: bloc,
+                  fields: snapshot.data.fields)
+              ),
+            );
           }
 
           return Scaffold(
@@ -123,14 +145,15 @@ class _InventoryLocalPageState extends State<InventoryLocalPage> {
                       if (data != null && data[0] == data[1]) {
                         Part part = await bloc.getPart(data[0]);
                         if (part != null) {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) =>
-                                  PartViewer(part: part,
-                                      isLocal: true,
-                                      bloc: bloc,
-                                      fields: snapshot.data.fields))
-                          );
+                          // Navigator.push(
+                          //     context,
+                          //     MaterialPageRoute(builder: (context) =>
+                          //         PartViewer(part: part,
+                          //             isLocal: true,
+                          //             bloc: bloc,
+                          //             fields: snapshot.data.fields))
+                          // );
+                          viewPart(part);
                         } else {
                           Navigator.push(
                               context,
@@ -166,13 +189,13 @@ class _InventoryLocalPageState extends State<InventoryLocalPage> {
             ),
             floatingActionButton: snapshot.data.fields.fields.isEmpty ? null : Column(
               mainAxisAlignment: MainAxisAlignment.end,
-              children: (isSingleSearch ? <Widget>[] : <Widget>[
+              children: (!(isSingleSearch || isOverlayOpen) ? <Widget>[
                 FloatingActionButton(
                   heroTag: null,
                   child: Icon(Icons.search_rounded),
-                  onPressed: () {},
+                  onPressed: () => setState(() => isOverlayOpen = true),
                 ),
-                SizedBox(height: 10),]) + <Widget>[
+                SizedBox(height: 10)] : <Widget>[]) + (isOverlayOpen ? [] : [
                 FloatingActionButton(
                   heroTag: null,
                   child: Icon(Icons.add),
@@ -182,7 +205,7 @@ class _InventoryLocalPageState extends State<InventoryLocalPage> {
                         MaterialPageRoute(builder: (context) => PartCreator(isLocal: true, bloc: bloc, fields: snapshot.data.fields)),
                       ),
                 ),
-              ],
+              ]),
             ),
             body: Container(
               decoration: BoxDecoration(
@@ -213,16 +236,16 @@ class _InventoryLocalPageState extends State<InventoryLocalPage> {
                       itemCount: parts.length,
                       itemBuilder: (BuildContext context, int index) {
                         return GestureDetector(
-                          onTap: () =>
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => PartViewer(
-                                part: parts[index],
-                                isLocal: true,
-                                bloc: bloc,
-                                fields: snapshot.data.fields)
-                              ),
-                            ),
+                          onTap: () => viewPart(parts[index]),
+                            // Navigator.push(
+                            //   context,
+                            //   MaterialPageRoute(builder: (context) => PartViewer(
+                            //     part: parts[index],
+                            //     isLocal: true,
+                            //     bloc: bloc,
+                            //     fields: snapshot.data.fields)
+                            //   ),
+                            // ),
                           child: Card(
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10.0),
@@ -240,7 +263,18 @@ class _InventoryLocalPageState extends State<InventoryLocalPage> {
                     )
                   )
                 ],
-              ) : TabulatedPartList(parts: parts, fields: snapshot.data.fields)
+              ) : Stack(
+                children: <Widget>[
+                  TabulatedPartList(
+                    parts: parts,
+                    fields: snapshot.data.fields,
+                    columns: [fieldKeys[0], fieldKeys[1], ...queries.keys.toList()],
+                    viewPart: viewPart
+                  ),
+                ] + (isOverlayOpen ? [
+                  MultiSearchOverlay(fields: snapshot.data.fields, queries: queries, multiQueryHandler: multiQueryHandler)
+                ] : []),
+              )
                   : Center(child: Text('No Parts')),
             ),
           );
