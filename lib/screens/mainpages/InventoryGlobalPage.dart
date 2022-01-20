@@ -16,6 +16,7 @@ import 'package:mech_track/models/Part.dart';
 import 'package:mech_track/screens/subpages/PartCreator.dart';
 import 'package:mech_track/screens/subpages/PartViewer.dart';
 import 'package:mech_track/services/DatabaseService.dart';
+import 'package:mech_track/shared/decorations.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
@@ -48,6 +49,22 @@ class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
         return con1 && con2;
       }).toList();
     }
+  }
+
+  List<Part> multiFilterHandler (List<Part> parts, Map<String, String> queries) {
+    List<String> queryIndex = queries.keys.toList();
+
+    return parts.where((part) {
+      if(queryIndex.isNotEmpty) {
+        bool isMatch = queryIndex.map((key) =>
+            part.fields[key].toString().
+            startsWith(queries[key])
+        ).reduce((a, b) => a && b);
+        return isMatch;
+      } else {
+        return true;
+      }
+    }).toList();
   }
 
   @override
@@ -98,13 +115,21 @@ class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
       );
     }
 
-    parts = filterHandler(parts, fields.fields.keys.toList());
+    parts = isSingleSearch ? filterHandler(parts, fields.fields.keys.toList()) :
+    multiFilterHandler(parts, queries);
 
     return parts != null ? Scaffold(
       appBar: AppBar(
         title: Text('Global Database'),
         actions: [
-          IconButton(onPressed: () => setState(() => isSingleSearch = !isSingleSearch), icon: Icon(Icons.find_replace_rounded)),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 0),
+            child: TextButton(
+              onPressed: () => setState(() => isSingleSearch = !isSingleSearch),
+              child: Text(isSingleSearch ? 'TILE MODE' : 'TABLE MODE'),
+              style: outlineButtonDecoration,
+            ),
+          ),
           IconButton(icon: Icon(Icons.qr_code_scanner), onPressed: () async {
             var status = await Permission.camera.status;
 

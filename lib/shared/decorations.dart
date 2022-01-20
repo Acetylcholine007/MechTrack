@@ -29,3 +29,23 @@ ButtonStyle buttonDecoration = ButtonStyle(
     )
   )
 );
+
+ButtonStyle barButtonDecoration = ButtonStyle(
+    shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+        RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(100),
+        )
+    )
+);
+
+ButtonStyle outlineButtonDecoration = ButtonStyle(
+  foregroundColor: MaterialStateProperty.all(Colors.white),
+    shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+        RoundedRectangleBorder(
+          side: BorderSide(
+            color: Colors.white
+          ),
+          borderRadius: BorderRadius.circular(100),
+        )
+    )
+);

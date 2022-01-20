@@ -51,6 +51,8 @@ class _MultiSearchOverlayState extends State<MultiSearchOverlay> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return GestureDetector(
       onTap: () => FocusScope.of(context).requestFocus(new FocusNode()),
       child: Container(
@@ -58,59 +60,39 @@ class _MultiSearchOverlayState extends State<MultiSearchOverlay> {
           image: DecorationImage(image: new AssetImage("assets/images/background.jpg"), fit: BoxFit.cover,),
         ),
         constraints: BoxConstraints.expand(),
-        child: SingleChildScrollView(
-          child: Table(
-            defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-            columnWidths: const <int, TableColumnWidth>{
-              0: FlexColumnWidth(),
-              1: FlexColumnWidth(),
-              2: IntrinsicColumnWidth(),
-            },
-            children: queries.keys.map((field) =>
-                TableRow(
-                  children: [
-                    PartTableText(widget.fields.fields[field], 'LABEL'),
-                    TableCell(
-                      child: TextFormField(
-                        initialValue: queries[field],
-                        decoration: formFieldDecoration.copyWith(hintText: 'Query'),
-                        onChanged: (val) => setState(() {
-                          queries[field] = val;
-                        }),
-                      ),
-                    ),
-                    TableCell(
-                      child: IconButton(
-                        icon: Icon(Icons.remove),
-                        onPressed: () => setState(() {
-                          queries.remove(field);
-                          setRemainingKeys(field: field, isAdd: true);
-                        }),
-                      ),
-                    ),
-                  ]
-                )
-            ).toList() + <TableRow>[
-              TableRow(
+        child: Column(
+          children: [
+            Container(
+              color: Theme.of(context).primaryColor,
+              child: Row(
                 children: [
-                  TableCell(
-                    child: DropdownButtonFormField(
-                      menuMaxHeight: 500,
-                      isExpanded: true,
-                      value: dropdownValue,
-                      decoration: formFieldDecoration,
-                      items: remainingKeys.map((key) => DropdownMenuItem(
-                        child: Text(widget.fields.fields[key], overflow: TextOverflow.ellipsis),
-                        value: key,
-                      )).toList(),
-                      onChanged: (val) => setState(() {
-                        dropdownValue = val;
-                      }),
+                  Expanded(
+                    flex: 3, child: Padding(
+                      padding: EdgeInsets.fromLTRB(8, 8, 4, 8),
+                      child: DropdownButtonFormField(
+                        menuMaxHeight: 500,
+                        isExpanded: true,
+                        value: dropdownValue,
+                        decoration: searchFieldDecoration,
+                        items: remainingKeys.map((key) => DropdownMenuItem(
+                          child: Text(widget.fields.fields[key], overflow: TextOverflow.ellipsis),
+                          value: key,
+                        )).toList(),
+                        onChanged: (val) => setState(() {
+                          dropdownValue = val;
+                        }),
+                      ),
                     ),
                   ),
-                  TableCell(
-                    child: ElevatedButton(
-                      child: Text('ADD NEW FIELD'),
+                  Padding(
+                  padding: EdgeInsets.fromLTRB(4, 8, 4, 8),
+                    child: TextButton.icon(
+                      icon: Icon(Icons.add_circle_outlined),
+                      style: barButtonDecoration.copyWith(
+                        backgroundColor: MaterialStateProperty.all(theme.backgroundColor),
+                        alignment: Alignment.centerLeft
+                      ),
+                      label: Text('ADD FIELD'),
                       onPressed: remainingKeys.isNotEmpty ? () {
                         setState(() {
                           queries[dropdownValue] = '';
@@ -119,19 +101,74 @@ class _MultiSearchOverlayState extends State<MultiSearchOverlay> {
                       } : null,
                     ),
                   ),
-                  TableCell(
-                    child: ElevatedButton(
-                      child: Text('EXECUTE'),
+                  Padding(
+                  padding: EdgeInsets.fromLTRB(4, 8, 8, 8),
+                    child: TextButton.icon(
+                    icon: Icon(Icons.search_rounded),
+                    style: barButtonDecoration.copyWith(
+                      backgroundColor: MaterialStateProperty.all(theme.backgroundColor),
+                        alignment: Alignment.centerLeft
+                    ),
+                    label: Text('SEARCH'),
                       onPressed: () {
                         widget.multiQueryHandler(queries);
-                        //TODO: execute query
                       },
                     ),
+                  )
+                ],
+              ),
+            ),
+            Expanded(
+              flex: 1,
+              child: queries.isNotEmpty ? SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Table(
+                      defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+                      columnWidths: const <int, TableColumnWidth>{
+                        0: FlexColumnWidth(),
+                        1: FlexColumnWidth(),
+                        2: IntrinsicColumnWidth(),
+                      },
+                      children: queries.keys.map((field) =>
+                          TableRow(
+                              children: [
+                                PartTableText(widget.fields.fields[field], 'LABEL'),
+                                TableCell(
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 4.0),
+                                    child: TextFormField(
+                                      initialValue: queries[field],
+                                      decoration: formFieldDecoration.copyWith(hintText: 'Query'),
+                                      onChanged: (val) => setState(() {
+                                        queries[field] = val;
+                                      }),
+                                    ),
+                                  ),
+                                ),
+                                TableCell(
+                                  child: IconButton(
+                                    icon: Icon(Icons.remove_circle_rounded),
+                                    onPressed: () => setState(() {
+                                      queries.remove(field);
+                                      setRemainingKeys(field: field, isAdd: true);
+                                    }),
+                                  ),
+                                ),
+                              ]
+                          )
+                      ).toList()
                   ),
-                ]
-              )
-            ],
-          ),
+                ),
+              ) : Center(
+                child: Text(
+                  'Add fields to perform multi-search',
+                  style: theme.textTheme.headline4,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            )
+          ],
         ),
       ),
     );

@@ -14,6 +14,7 @@ import 'package:mech_track/models/LocalDBDataPack.dart';
 import 'package:mech_track/models/Part.dart';
 import 'package:mech_track/screens/subpages/PartCreator.dart';
 import 'package:mech_track/screens/subpages/PartViewer.dart';
+import 'package:mech_track/shared/decorations.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class InventoryLocalPage extends StatefulWidget {
@@ -46,6 +47,22 @@ class _InventoryLocalPageState extends State<InventoryLocalPage> {
         return con1 && con2;
       }).toList();
     }
+  }
+
+  List<Part> multiFilterHandler (List<Part> parts, Map<String, String> queries) {
+    List<String> queryIndex = queries.keys.toList();
+
+    return parts.where((part) {
+      if(queryIndex.isNotEmpty) {
+        bool isMatch = queryIndex.map((key) =>
+            part.fields[key].toString().
+            startsWith(queries[key])
+        ).reduce((a, b) => a && b);
+        return isMatch;
+      } else {
+        return true;
+      }
+    }).toList();
   }
 
   @override
@@ -86,7 +103,9 @@ class _InventoryLocalPageState extends State<InventoryLocalPage> {
       stream: bloc.localParts,
       builder: (BuildContext context, AsyncSnapshot<LocalDBDataPack> snapshot) {
         if(snapshot.hasData) {
-          List<Part> parts = filterHandler(snapshot.data.parts, snapshot.data.fields.fields.keys.toList());
+          List<Part> parts = isSingleSearch ?
+          filterHandler(snapshot.data.parts, snapshot.data.fields.fields.keys.toList()) :
+          multiFilterHandler(snapshot.data.parts, queries);
 
           List<String> fieldKeys = [];
           String titleKey = '';
@@ -113,7 +132,14 @@ class _InventoryLocalPageState extends State<InventoryLocalPage> {
             appBar: AppBar(
               title: Text('Local Database'),
               actions: [
-                IconButton(onPressed: () => setState(() => isSingleSearch = !isSingleSearch), icon: Icon(Icons.find_replace_rounded)),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 0),
+                  child: TextButton(
+                    onPressed: () => setState(() => isSingleSearch = !isSingleSearch),
+                    child: Text(isSingleSearch ? 'TILE MODE' : 'TABLE MODE'),
+                    style: outlineButtonDecoration,
+                  ),
+                ),
                 IconButton(icon: Icon(Icons.qr_code_scanner), onPressed: () async {
                   var status = await Permission.camera.status;
 
@@ -145,14 +171,6 @@ class _InventoryLocalPageState extends State<InventoryLocalPage> {
                       if (data != null && data[0] == data[1]) {
                         Part part = await bloc.getPart(data[0]);
                         if (part != null) {
-                          // Navigator.push(
-                          //     context,
-                          //     MaterialPageRoute(builder: (context) =>
-                          //         PartViewer(part: part,
-                          //             isLocal: true,
-                          //             bloc: bloc,
-                          //             fields: snapshot.data.fields))
-                          // );
                           viewPart(part);
                         } else {
                           Navigator.push(
@@ -237,15 +255,6 @@ class _InventoryLocalPageState extends State<InventoryLocalPage> {
                       itemBuilder: (BuildContext context, int index) {
                         return GestureDetector(
                           onTap: () => viewPart(parts[index]),
-                            // Navigator.push(
-                            //   context,
-                            //   MaterialPageRoute(builder: (context) => PartViewer(
-                            //     part: parts[index],
-                            //     isLocal: true,
-                            //     bloc: bloc,
-                            //     fields: snapshot.data.fields)
-                            //   ),
-                            // ),
                           child: Card(
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10.0),

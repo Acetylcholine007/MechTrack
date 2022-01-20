@@ -54,6 +54,10 @@ class _GuessProfilePageState extends State<GuessProfilePage> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: <Widget>[
                     ElevatedButton(
+                      onPressed: () {},
+                      style: buttonDecoration,
+                      child: Text('SET EXPORT LOCATION')),
+                    ElevatedButton(
                       onPressed: () => _auth.signOut(),
                       child: Text('SIGN OUT'),
                       style: buttonDecoration

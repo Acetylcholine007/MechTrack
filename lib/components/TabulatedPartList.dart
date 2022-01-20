@@ -69,8 +69,7 @@ class TabulatedPartList extends StatelessWidget {
                           partEntry.value.fields[col].toString(), 'CONTENT'),
                     )).toList()
                 );
-              }
-              ).toList()
+              }).toList()
           )
       ),
     );

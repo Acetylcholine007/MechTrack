@@ -22,56 +22,40 @@ class PartSearchBar extends StatefulWidget {
 class _PartSearchBarState extends State<PartSearchBar> {
   TextEditingController controller = TextEditingController();
 
-  void filterHandler() {
-    int newCatIndex = widget.catIndex;
-
-    showDialog(
-        context: widget.context,
-        builder: (context) => AlertDialog(
-          title: Text('Search Selector'),
-          content: DropdownButtonFormField(
-            value: newCatIndex,
-            items: widget.fields.fields.values.toList().asMap().entries.map((category) => DropdownMenuItem(
-                value: category.key,
-                child: Text(category.value)
-            )).toList(),
-            onChanged: (value) => newCatIndex = value,
-            decoration: formFieldDecoration,
-          ),
-          actions: [
-            TextButton(
-                onPressed: () {
-                  widget.categoryHandler(newCatIndex);
-                  Navigator.pop(context);
-                },
-                child: Text('OK')
-            )
-          ],
-        )
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Container(
       color: Theme.of(context).primaryColor,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 0),
-        child: ListTile(
-          title: TextFormField(
-            controller: controller,
-            decoration: searchFieldDecoration.copyWith(
-              suffixIcon: IconButton(onPressed: () {
-                controller.text = "";
-                widget.searchHandler("");
-              }, icon: Icon(Icons.highlight_off_rounded))
+      child: Row(
+        children: [
+          Expanded(flex: 2, child: Padding(
+            padding: EdgeInsets.fromLTRB(8, 8, 4, 8),
+            child: TextFormField(
+              controller: controller,
+              decoration: searchFieldDecoration.copyWith(
+                suffixIcon: IconButton(onPressed: () {
+                  controller.text = "";
+                  widget.searchHandler("");
+                }, icon: Icon(Icons.highlight_off_rounded))
+              ),
+              onChanged: widget.searchHandler,
             ),
-            onChanged: widget.searchHandler,
-          ),
-          trailing: IconButton(
-            icon: Icon(Icons.filter_list_rounded, color: Colors.white), onPressed: filterHandler
-          ),
-        ),
+          )),
+          Expanded(flex: 1, child: Padding(
+            padding: EdgeInsets.fromLTRB(4, 8, 8, 8),
+            child: DropdownButtonFormField(
+              menuMaxHeight: 500,
+              isExpanded: true,
+              value: widget.catIndex,
+              decoration: searchFieldDecoration,
+              items: widget.fields.fields.values.toList().asMap().entries.map((category) => DropdownMenuItem(
+                  value: category.key,
+                  child: Text(category.value, overflow: TextOverflow.ellipsis)
+              )).toList(),
+              onChanged: (value) => widget.categoryHandler(value),
+            ),
+          )),
+        ],
       ),
     );
   }

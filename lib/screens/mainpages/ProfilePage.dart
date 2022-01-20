@@ -70,6 +70,10 @@ class _ProfilePageState extends State<ProfilePage> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: <Widget>[
                       ElevatedButton(
+                          onPressed: () {},
+                          style: buttonDecoration,
+                          child: Text('SET EXPORT LOCATION')),
+                      ElevatedButton(
                         onPressed: () =>
                           Navigator.push(
                           context,
