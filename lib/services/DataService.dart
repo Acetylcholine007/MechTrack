@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:path/path.dart';
 
 import 'package:crypto/crypto.dart';
 import 'package:csv/csv.dart';
@@ -12,6 +13,7 @@ import 'package:mech_track/models/ImportResponse.dart';
 import 'package:mech_track/models/Part.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'DatabaseService.dart';
 import 'LocalDatabaseService.dart';
@@ -90,8 +92,9 @@ class DataService {
 
     if (status.isDenied) {
       await showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
+        context: context,
+        builder: (context) =>
+          AlertDialog(
             title: Text(title),
             content: Text(content),
             actions: [
@@ -484,15 +487,35 @@ class DataService {
 
       loadingHandler(true);
       String csvData = ListToCsvConverter().convert(partListTransform(parts, fields, isLocal));
-      String directory  = (await getTemporaryDirectory()).path;
+      String directory  = (await getApplicationDocumentsDirectory()).path;
       final path = "$directory/csv-${DateTime.now()}.csv";
       final File file = File(path);
       File csvFile = await file.writeAsString(csvData);
 
       if(csvFile != null) {
+        final prefs = await SharedPreferences.getInstance();
+        String exportPath = prefs.getString('exportLocation') ?? '';
+
+        if(exportPath == '') {
+          bool result = await prefs.setString('exportLocation', path);
+          if(!result) throw "Failed to set export location";
+          exportPath = prefs.getString('exportLocation') ?? '';
+        }
+
         final params = SaveFileDialogParams(sourceFilePath: csvFile.path);
-        final filePath = await FlutterFileDialog.saveFile(params: params);
-        if(filePath != null)
+        print('>>>>>>');
+        print(exportPath);
+        print('???????');
+        print(csvFile.path);
+        print('********');
+        print(params.sourceFilePath);
+        // final filePath = await FlutterFileDialog.saveFile(params: params);
+        File copiedFile = csvFile.copySync(join(exportPath, basename(csvFile.path)));
+        // File copiedFile = File('$exportPath${basename(csvFile.path)}');
+        // copiedFile.writeAsStringSync(csvFile.readAsStringSync());
+        print('////////');
+        print(copiedFile.path);
+        if(copiedFile != null)
           ScaffoldMessenger.of(context).showSnackBar(snackBar);
         else {
           ScaffoldMessenger.of(context).showSnackBar(snackBar2);

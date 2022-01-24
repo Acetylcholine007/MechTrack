@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mech_track/models/Field.dart';
 import 'package:mech_track/models/Part.dart';
-import 'package:mech_track/components/PartTableText.dart';
 
 extension ColorBrightness on Color {
   Color darken([double amount = .1]) {
@@ -42,36 +41,45 @@ class TabulatedPartList extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final uniqueColumns = [...{...columns}];
-    // final uniqueColumns = columns;
 
     return Container(
       constraints: BoxConstraints.expand(),
-      child: SingleChildScrollView(
-          child: Table(
-              border: TableBorder.all(color: theme.backgroundColor, width: 1),
-              columnWidths: const <int, TableColumnWidth>{
-                0: FlexColumnWidth(),
-                1: FlexColumnWidth(),
-              },
-              children: <TableRow>[
-                TableRow(
-                    children: uniqueColumns.map((col) => PartTableText(fields.fields[col], 'LABEL')).toList()
-                )
-              ] + parts.asMap().entries.map((partEntry) {
-                double shifter = partEntry.key % 2 == 0 ? .2 : .3;
-                return TableRow(
-                    decoration: BoxDecoration(
-                        color: theme.backgroundColor.lighten(shifter)
-                    ),
-                    children: uniqueColumns.map((col) => GestureDetector(
-                      onTap: () => viewPart(partEntry.value),
-                      child: PartTableText(
-                          partEntry.value.fields[col].toString(), 'CONTENT'),
-                    )).toList()
-                );
-              }).toList()
+      child: InteractiveViewer(
+        panEnabled: false,
+        constrained: true,
+        scaleEnabled: true,
+        child: SingleChildScrollView(
+          child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: DataTable(
+                  headingRowColor: MaterialStateProperty.all(theme.primaryColor),
+                  headingTextStyle: theme.textTheme.headline6.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
+                  showCheckboxColumn: false,
+                  columns: uniqueColumns.map((col) => DataColumn(
+                      label: Container(
+                          constraints: BoxConstraints(maxWidth: 200),
+                          child: Text(
+                            fields.fields[col],
+                          )
+                      )
+                  )).toList(),
+                  rows: List<DataRow>.generate(parts.length, (partIndex) => DataRow(
+                      color: MaterialStateProperty.all(theme.backgroundColor.lighten(partIndex % 2 == 0 ? 0.2 : 0.3)),
+                      onSelectChanged: (bool selected) {
+                        viewPart(parts[partIndex]);
+                      },
+                      cells: List.generate(uniqueColumns.length, (colIndex) => DataCell(Container(
+                          constraints: BoxConstraints(maxWidth: 250),
+                          child: Text(parts[partIndex].fields[uniqueColumns[colIndex]].toString(),
+                            style: theme.textTheme.headline6.copyWith(fontWeight: FontWeight.normal),
+                          ),
+                        ),
+                      ))
+                  ))
+              )
           )
-      ),
+        ),
+      )
     );
   }
 }

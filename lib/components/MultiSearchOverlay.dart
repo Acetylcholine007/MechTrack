@@ -86,13 +86,13 @@ class _MultiSearchOverlayState extends State<MultiSearchOverlay> {
                   ),
                   Padding(
                   padding: EdgeInsets.fromLTRB(4, 8, 4, 8),
-                    child: TextButton.icon(
-                      icon: Icon(Icons.add_circle_outlined),
+                    child: ElevatedButton.icon(
+                      icon: Icon(Icons.add_circle_outlined, color: theme.primaryColor,),
                       style: barButtonDecoration.copyWith(
-                        backgroundColor: MaterialStateProperty.all(theme.backgroundColor),
+                        backgroundColor: MaterialStateProperty.all(theme.cardColor),
                         alignment: Alignment.centerLeft
                       ),
-                      label: Text('ADD FIELD'),
+                      label: Text('ADD FIELD', style: theme.textTheme.button.copyWith(color: theme.primaryColor)),
                       onPressed: remainingKeys.isNotEmpty ? () {
                         setState(() {
                           queries[dropdownValue] = '';
@@ -103,13 +103,13 @@ class _MultiSearchOverlayState extends State<MultiSearchOverlay> {
                   ),
                   Padding(
                   padding: EdgeInsets.fromLTRB(4, 8, 8, 8),
-                    child: TextButton.icon(
-                    icon: Icon(Icons.search_rounded),
+                    child: ElevatedButton.icon(
+                    icon: Icon(Icons.search_rounded, color: theme.primaryColor,),
                     style: barButtonDecoration.copyWith(
-                      backgroundColor: MaterialStateProperty.all(theme.backgroundColor),
+                      backgroundColor: MaterialStateProperty.all(theme.cardColor),
                         alignment: Alignment.centerLeft
                     ),
-                    label: Text('SEARCH'),
+                    label: Text('SEARCH', style: theme.textTheme.button.copyWith(color: theme.primaryColor)),
                       onPressed: () {
                         widget.multiQueryHandler(queries);
                       },

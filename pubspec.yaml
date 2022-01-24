@@ -41,6 +41,7 @@ dependencies:
   flutter_file_dialog: ^2.3.0
   permission_handler: ^8.3.0
   crypto: ^3.0.1
+  shared_preferences: ^2.0.12
 
 
   # The following adds the Cupertino Icons font to your application.

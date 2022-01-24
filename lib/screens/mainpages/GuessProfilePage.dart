@@ -1,6 +1,8 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:mech_track/services/AuthService.dart';
 import 'package:mech_track/shared/decorations.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class GuessProfilePage extends StatefulWidget {
   const GuessProfilePage({Key key}) : super(key: key);
@@ -11,6 +13,42 @@ class GuessProfilePage extends StatefulWidget {
 
 class _GuessProfilePageState extends State<GuessProfilePage> {
   final AuthService _auth = AuthService();
+
+  void setExportPath() async {
+    final snackBar = SnackBar(
+      duration: Duration(seconds: 2),
+      behavior: SnackBarBehavior.floating,
+      content: Text('Export location saved'),
+      action: SnackBarAction(label: 'OK', onPressed: () => ScaffoldMessenger.of(context).hideCurrentSnackBar()),
+    );
+
+    try {
+      String path = await FilePicker.platform.getDirectoryPath();
+      final prefs = await SharedPreferences.getInstance();
+      bool result = await prefs.setString('exportLocation', path);
+      if(result) {
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      } else {
+        throw "Failed to save selected export location";
+      }
+    } catch(e) {
+      showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text('Export Location'),
+            content: Text(e.toString()),
+            actions: [
+              TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: Text('OK')
+              )
+            ],
+          )
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -54,7 +92,7 @@ class _GuessProfilePageState extends State<GuessProfilePage> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: <Widget>[
                     ElevatedButton(
-                      onPressed: () {},
+                      onPressed: setExportPath,
                       style: buttonDecoration,
                       child: Text('SET EXPORT LOCATION')),
                     ElevatedButton(
