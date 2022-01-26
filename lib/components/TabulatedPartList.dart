@@ -41,45 +41,68 @@ class TabulatedPartList extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final uniqueColumns = [...{...columns}];
+    final DataTableSource _data = MyData(
+      parts, uniqueColumns, fields, theme, viewPart
+    );
 
     return Container(
       constraints: BoxConstraints.expand(),
-      child: InteractiveViewer(
-        panEnabled: false,
-        constrained: true,
-        scaleEnabled: true,
-        child: SingleChildScrollView(
-          child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: DataTable(
-                  headingRowColor: MaterialStateProperty.all(theme.primaryColor),
-                  headingTextStyle: theme.textTheme.headline6.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
-                  showCheckboxColumn: false,
-                  columns: uniqueColumns.map((col) => DataColumn(
-                      label: Container(
-                          constraints: BoxConstraints(maxWidth: 200),
-                          child: Text(
-                            fields.fields[col],
-                          )
-                      )
-                  )).toList(),
-                  rows: List<DataRow>.generate(parts.length, (partIndex) => DataRow(
-                      color: MaterialStateProperty.all(theme.backgroundColor.lighten(partIndex % 2 == 0 ? 0.2 : 0.3)),
-                      onSelectChanged: (bool selected) {
-                        viewPart(parts[partIndex]);
-                      },
-                      cells: List.generate(uniqueColumns.length, (colIndex) => DataCell(Container(
-                          constraints: BoxConstraints(maxWidth: 250),
-                          child: Text(parts[partIndex].fields[uniqueColumns[colIndex]].toString(),
-                            style: theme.textTheme.headline6.copyWith(fontWeight: FontWeight.normal),
-                          ),
-                        ),
-                      ))
-                  ))
-              )
-          )
+      child: SingleChildScrollView(
+        child: Column(
+          children: [
+            PaginatedDataTable(
+              source: _data,
+              rowsPerPage: parts.length < 10 ? parts.length : 10,
+              showCheckboxColumn: false,
+              showFirstLastButtons: true,
+              columns: uniqueColumns.map((col) => DataColumn(
+                label: Container(
+                  constraints: BoxConstraints(maxWidth: 200),
+                  child: Text(fields.fields[col],
+                    style: theme.textTheme.headline6.
+                    copyWith(fontWeight: FontWeight.bold),
+                  )
+                )
+              )).toList(),
+            ),
+            SizedBox(height: 70)
+          ],
         ),
       )
+    );
+  }
+}
+
+class MyData extends DataTableSource {
+  List<Part> parts;
+  List<String> columns;
+  Field fields;
+  ThemeData theme;
+  Function viewPart;
+
+  MyData(this.parts, this.columns, this.fields, this.theme, this.viewPart);
+
+  @override
+  bool get isRowCountApproximate => false;
+  @override
+  int get rowCount => parts.length;
+  @override
+  int get selectedRowCount => 0;
+  @override
+  DataRow getRow(int partIndex) {
+    return DataRow(
+      color: MaterialStateProperty.all(theme.backgroundColor.lighten(partIndex % 2 == 0 ? 0.2 : 0.3)),
+      onSelectChanged: (bool selected) {
+        viewPart(parts[partIndex]);
+      },
+      cells: List.generate(columns.length, (colIndex) => DataCell(
+        Container(
+          constraints: BoxConstraints(maxWidth: 250),
+          child: Text(parts[partIndex].fields[columns[colIndex]].toString(),
+            style: theme.textTheme.headline6.copyWith(fontWeight: FontWeight.normal),
+          ),
+        ),
+      ))
     );
   }
 }

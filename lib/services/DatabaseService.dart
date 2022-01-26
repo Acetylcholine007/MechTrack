@@ -1,4 +1,5 @@
 import 'package:mech_track/models/AccountData.dart';
+import 'package:mech_track/models/AppTask.dart';
 import 'package:mech_track/models/Field.dart';
 import 'package:mech_track/models/ImportResponse.dart';
 import 'package:mech_track/models/Part.dart';
@@ -41,7 +42,7 @@ class DatabaseService {
     });
     return snapshot.docs.map((doc) {
       Map<String, dynamic> fields = doc.data() ?? {};
-      var index = fields.remove('_sortingIndex');
+      fields.remove('_sortingIndex');
       return Part(
         partId: doc.id,
         fields: fields,
@@ -157,32 +158,66 @@ class DatabaseService {
     return result;
   }
   
-  Future<ImportResponse> importParts(List<Part> newParts, Map<String, String> headers) async {
-    String result = '';
-    final batch = FirebaseFirestore.instance.batch();
-    final parts = await partCollection.get();
+  Future<ImportResponse> importParts(List<Part> oldParts, List<Part> newParts, Map<String, String> headers, Function initializeTaskList, Function incrementLoading) async {
+    final auxBatch = FirebaseFirestore.instance.batch();
     final fields = await fieldCollection.get();
+    final List<MapEntry<int, Part>> indexedParts = newParts.asMap().entries.toList();
+    final int chunkSize = 100;
+
+    final int partsLength = oldParts.length;
+    final int newPartsLength = indexedParts.length;
+    final int deleteOpChunkCount = (partsLength / chunkSize).ceil();
+    final int addOpChunkCount = (newPartsLength / chunkSize).ceil();
     
     List<Part> duplicateParts = [];
     List<Part> invalidParts = [];
 
-    for(final part in parts.docs) {
-      batch.delete(part.reference);
-    }
-    for(final field in fields.docs) {
-      batch.delete(field.reference);
-    }
-    headers.keys.toList().asMap().forEach((index, field) {
-      batch.set(fieldCollection.doc(field), {'index': index, 'fieldKey': field, 'fieldValue': headers[field]});
-    });
-    for(final part in newParts.asMap().entries) {
-      batch.set(partCollection.doc(part.value.partId), {...part.value.toMap(), '_sortingIndex': part.key});
-    }
+    initializeTaskList(
+      List.generate(deleteOpChunkCount, (index) => AppTask(heading: "Clearing Global", content: 'Clearing data chunk ${index+1} / $deleteOpChunkCount')) +
+      [AppTask(heading: 'Setting Data Structure', content: '')] +
+      List.generate(addOpChunkCount, (index) => AppTask(heading: "Populating Global", content: 'Adding data chunk ${index+1} / $addOpChunkCount')) +
+        [AppTask(heading: 'Import Complete', content: '')]
+    );
 
-    await batch.commit()
-    .then((value) => result = 'SUCCESS')
-    .catchError((error) => result = error.toString());
-    return ImportResponse(result: result, parts: duplicateParts, invalidIdParts: invalidParts);
+    try {
+      if(partsLength != 0) {
+        for(int chunkIndex = 0; chunkIndex <= deleteOpChunkCount; chunkIndex++) {
+          final batch = FirebaseFirestore.instance.batch();
+          for(int partIndex = 0; partIndex < chunkSize && partIndex + chunkIndex * chunkSize < partsLength; partIndex++) {
+            // print(partIndex + chunkIndex * chunkSize);
+            batch.delete(partCollection.doc(oldParts[partIndex + chunkIndex * chunkSize].partId));
+          }
+          await batch.commit().then((value) => print('>>>>>>>>>>>>>>CHUNK $chunkIndex DELETED'));
+          incrementLoading();
+        }
+      }
+
+      for(final field in fields.docs) {
+        auxBatch.delete(field.reference);
+      }
+      headers.keys.toList().asMap().forEach((index, field) {
+        auxBatch.set(fieldCollection.doc(field), {'index': index, 'fieldKey': field, 'fieldValue': headers[field]});
+      });
+      await auxBatch.commit().then((value) => print(">>>>>>>>>>>>>>AUX SUCCESS")).catchError((e) => print(e));
+      incrementLoading();
+
+      for(int chunkIndex = 0; chunkIndex <= (newPartsLength / chunkSize).ceil(); chunkIndex++) {
+        final batch = FirebaseFirestore.instance.batch();
+        for(int partIndex = 0; partIndex < chunkSize && partIndex + chunkIndex * chunkSize < newPartsLength; partIndex++) {
+          // print(partIndex + chunkIndex * chunkSize);
+          batch.set(partCollection.doc(
+              indexedParts[partIndex + chunkIndex * chunkSize].value.partId),
+              {...indexedParts[partIndex + chunkIndex * chunkSize].value.toMap(),
+                '_sortingIndex': indexedParts[partIndex + chunkIndex * chunkSize].key});
+        }
+        await batch.commit().then((value) => print('>>>>>>>>>>>>>>CHUNK $chunkIndex ADDED'));
+        incrementLoading();
+      }
+
+      return ImportResponse(result: 'SUCCESS', parts: duplicateParts, invalidIdParts: invalidParts);
+    } catch (e) {
+      return ImportResponse(result: e.toString(), parts: duplicateParts, invalidIdParts: invalidParts);
+    }
   }
 
   // //GETTER FUNCTIONS

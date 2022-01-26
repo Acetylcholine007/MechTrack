@@ -9,7 +9,6 @@ import 'package:mech_track/components/NoPartLocal.dart';
 import 'package:mech_track/components/PartListTile.dart';
 import 'package:mech_track/components/PartSearchBar.dart';
 import 'package:mech_track/components/TabulatedPartList.dart';
-import 'package:mech_track/components/TwoPartSearchBar.dart';
 import 'package:mech_track/models/LocalDBDataPack.dart';
 import 'package:mech_track/models/Part.dart';
 import 'package:mech_track/screens/subpages/PartCreator.dart';
@@ -82,14 +81,6 @@ class _InventoryLocalPageState extends State<InventoryLocalPage> {
 
     void categoryHandler1(int newCat) {
       setState(() => catIndex1 = newCat);
-    }
-
-    void searchHandler2(String val) {
-      return setState(() => query2 = val);
-    }
-
-    void categoryHandler2(int newCat) {
-      setState(() => catIndex2 = newCat);
     }
 
     void multiQueryHandler(Map<String, String> queries) {
@@ -205,7 +196,7 @@ class _InventoryLocalPageState extends State<InventoryLocalPage> {
                 })
               ],
             ),
-            floatingActionButton: snapshot.data.fields.fields.isEmpty ? null : Column(
+            floatingActionButton: snapshot.data.fields.fields.isEmpty ? null : Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: (!(isSingleSearch || isOverlayOpen) ? <Widget>[
                 FloatingActionButton(
@@ -213,7 +204,7 @@ class _InventoryLocalPageState extends State<InventoryLocalPage> {
                   child: Icon(Icons.search_rounded),
                   onPressed: () => setState(() => isOverlayOpen = true),
                 ),
-                SizedBox(height: 10)] : <Widget>[]) + (isOverlayOpen ? [] : [
+                SizedBox(width: 10)] : <Widget>[]) + (isOverlayOpen ? [] : [
                 FloatingActionButton(
                   heroTag: null,
                   child: Icon(Icons.add),
@@ -232,23 +223,13 @@ class _InventoryLocalPageState extends State<InventoryLocalPage> {
               child: snapshot.data != null ? !snapshot.data.hasRecords ? NoPartLocal() :
               isSingleSearch ? Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: <Widget>[(isSingleSearch ?
-                  PartSearchBar(
-                    categoryHandler: categoryHandler1,
-                    searchHandler: searchHandler1,
-                    catIndex: catIndex1,
-                    context: context,
-                    fields: snapshot.data.fields,
-                  ) : TwoPartSearchBar(
-                    categoryHandler1: categoryHandler1,
-                    searchHandler1: searchHandler1,
-                    catIndex1: catIndex1,
-                    categoryHandler2: categoryHandler2,
-                    searchHandler2: searchHandler2,
-                    catIndex2: catIndex2,
-                    context: context,
-                    fields: snapshot.data.fields,
-                  ))] + <Widget>[
+                children: <Widget>[PartSearchBar(
+                  categoryHandler: categoryHandler1,
+                  searchHandler: searchHandler1,
+                  catIndex: catIndex1,
+                  context: context,
+                  fields: snapshot.data.fields,
+                )] + <Widget>[
                   Expanded(
                     child: ListView.builder(
                       itemCount: parts.length,

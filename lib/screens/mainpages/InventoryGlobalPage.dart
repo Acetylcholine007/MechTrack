@@ -8,7 +8,6 @@ import 'package:mech_track/components/NoPartGlobal.dart';
 import 'package:mech_track/components/PartListTile.dart';
 import 'package:mech_track/components/PartSearchBar.dart';
 import 'package:mech_track/components/TabulatedPartList.dart';
-import 'package:mech_track/components/TwoPartSearchBar.dart';
 import 'package:mech_track/models/Account.dart';
 import 'package:mech_track/models/AccountData.dart';
 import 'package:mech_track/models/Field.dart';
@@ -90,14 +89,6 @@ class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
 
     void categoryHandler1(int newCat) {
       setState(() => catIndex1 = newCat);
-    }
-
-    void searchHandler2(String val) {
-      return setState(() => query2 = val);
-    }
-
-    void categoryHandler2(int newCat) {
-      setState(() => catIndex2 = newCat);
     }
 
     void multiQueryHandler(Map<String, String> queries) {
@@ -203,7 +194,7 @@ class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
           })
         ],
       ),
-      floatingActionButton: account.accountType == 'ADMIN' && fields.fields.isNotEmpty ? Column(
+      floatingActionButton: account.accountType == 'ADMIN' && fields.fields.isNotEmpty ? Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: (!(isSingleSearch || isOverlayOpen) ? <Widget>[
           FloatingActionButton(
@@ -211,7 +202,7 @@ class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
             child: Icon(Icons.search_rounded),
             onPressed: () => setState(() => isOverlayOpen = true),
           ),
-          SizedBox(height: 10),
+          SizedBox(width: 10),
         ] : <Widget>[]) + (isOverlayOpen ? [] : [
           FloatingActionButton(
             heroTag: null,
@@ -230,23 +221,13 @@ class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
         ),
         child: isSingleSearch ? Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[(isSingleSearch ?
-          PartSearchBar(
+          children: <Widget>[PartSearchBar(
             categoryHandler: categoryHandler1,
             searchHandler: searchHandler1,
             catIndex: catIndex1,
             context: context,
             fields: fields,
-          ) : TwoPartSearchBar(
-            categoryHandler1: categoryHandler1,
-            searchHandler1: searchHandler1,
-            catIndex1: catIndex1,
-            categoryHandler2: categoryHandler2,
-            searchHandler2: searchHandler2,
-            catIndex2: catIndex2,
-            context: context,
-            fields: fields,
-          ))] + <Widget>[
+          )] + <Widget>[
             Expanded(
               child: ListView.builder(
                 itemCount: parts.length,

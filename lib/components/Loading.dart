@@ -18,7 +18,7 @@ class Loading extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             SpinKitChasingDots(
-              color: theme.accentColor,
+              color: theme.primaryColor,
               size: 50
             ),
             SizedBox(height: 50),

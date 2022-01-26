@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:mech_track/components/LoadingDeterminate.dart';
 import 'package:mech_track/models/Account.dart';
 import 'package:mech_track/models/AccountData.dart';
+import 'package:mech_track/models/AppTask.dart';
 import 'package:mech_track/models/Field.dart';
 import 'package:mech_track/services/DataService.dart';
 import 'package:provider/provider.dart';
@@ -20,6 +22,9 @@ class _DataPageState extends State<DataPage> {
   bool isLocalImporting = false;
   bool isGlobalExporting = false;
   bool isLocalExporting = false;
+  int taskLength = 0;
+  int taskIndex = 0;
+  List<AppTask> tasks = [AppTask(heading: 'Initializing', content: '')];
 
   void syncLoadingHandler(bool status) {
     setState(() => isSyncing = status);
@@ -30,7 +35,13 @@ class _DataPageState extends State<DataPage> {
   }
 
   void globalImportLoadingHandler(bool status) {
-    setState(() => isGlobalImporting = status);
+    setState(() {
+      if(!status) {
+        taskIndex = 0;
+        tasks = [AppTask(heading: 'Initializing', content: '')];
+      }
+      isGlobalImporting = status;
+    });
   }
 
   void localExportLoadingHandler(bool status) {
@@ -39,6 +50,18 @@ class _DataPageState extends State<DataPage> {
 
   void globalExportLoadingHandler(bool status) {
     setState(() => isGlobalExporting = status);
+  }
+
+  void initializeTaskList(List<AppTask> tasks) {
+    setState(() {
+      this.tasks = tasks;
+    });
+  }
+
+  void incrementLoading() {
+    setState(() {
+      taskIndex++;
+    });
   }
 
   @override
@@ -51,15 +74,15 @@ class _DataPageState extends State<DataPage> {
 
     List<OperatorWidget> operatorWidgets = [
       OperatorWidget(
-        ElevatedButton(
-          onPressed: () => DataService.ds.localCSVImport(context, localImportLoadingHandler),
-          child: Text('Import CSV for Local'),
-          style: buttonDecoration,
-        ), 1
+          ElevatedButton(
+            onPressed: () => DataService.ds.localCSVImport(context, localImportLoadingHandler),
+            child: Text('Import CSV for Local'),
+            style: buttonDecoration,
+          ), 1
       ),
       OperatorWidget(
           ElevatedButton(
-            onPressed: () => DataService.ds.globalCSVImport(context, globalImportLoadingHandler),
+            onPressed: () => DataService.ds.globalCSVImport(context, parts, globalImportLoadingHandler, initializeTaskList, incrementLoading),
             child: Text('Import CSV for Global'),
             style: buttonDecoration,
           ), 3
@@ -78,7 +101,7 @@ class _DataPageState extends State<DataPage> {
           ElevatedButton(
             onPressed: () async {
               DataService.ds.partCSVExport(context, syncLoadingHandler,
-                (await LocalDatabaseService.db.getParts()).parts,
+                  (await LocalDatabaseService.db.getParts()).parts,
                   (await LocalDatabaseService.db.getParts()).fields, true);
             },
             child: Text('Export Local to CSV'),
@@ -116,36 +139,36 @@ class _DataPageState extends State<DataPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Data Management Page'),
-        bottom: isSyncing || isGlobalImporting || isLocalImporting ? PreferredSize(
-          preferredSize: Size(double.infinity, 1.0),
-          child: LinearProgressIndicator(backgroundColor: Colors.white)
+        bottom: isSyncing || isLocalImporting ? PreferredSize(
+            preferredSize: Size(double.infinity, 1.0),
+            child: LinearProgressIndicator(backgroundColor: Colors.white)
         ) : null,
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          image: DecorationImage(image: new AssetImage("assets/images/background.jpg"), fit: BoxFit.cover,),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: <Widget>[
-              Image(
-                image: AssetImage('assets/images/logoFull.gif'),
-                width: 200,
-                fit: BoxFit.cover
-              ),
-              Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: getOperators(
-                authUser.isAnon ? 'GUESS'
-                  : account != null && account.accountType == 'ADMIN' ? 'ADMIN'
-                  : 'EMPLOYEE')
-              )
-            ],
+      body: isGlobalImporting ? LoadingDeterminate(task: tasks[taskIndex], index: taskIndex, total: tasks.length) : Container(
+          decoration: BoxDecoration(
+            image: DecorationImage(image: new AssetImage("assets/images/background.jpg"), fit: BoxFit.cover,),
           ),
-        )
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                Image(
+                    image: AssetImage('assets/images/logoFull.gif'),
+                    width: 200,
+                    fit: BoxFit.cover
+                ),
+                Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: getOperators(
+                        authUser.isAnon ? 'GUESS'
+                            : account != null && account.accountType == 'ADMIN' ? 'ADMIN'
+                            : 'EMPLOYEE')
+                )
+              ],
+            ),
+          )
       ),
     );
   }

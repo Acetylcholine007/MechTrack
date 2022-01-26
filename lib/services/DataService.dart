@@ -41,7 +41,6 @@ class DataService {
     List<Part> newFields;
     FilePickerResult result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      // type: FileType.any,
       allowedExtensions: ['csv'],
     );
     if (result != null) {
@@ -309,7 +308,7 @@ class DataService {
     loadingHandler(false);
   }
 
-  void globalCSVImport(BuildContext context, Function loadingHandler) async {
+  void globalCSVImport(BuildContext context, List<Part> oldParts, Function loadingHandler, Function initializeTaskList, Function incrementLoading) async {
     ImportResponse result = ImportResponse();
     CSVReadResult readResult;
     List<Part> parts;
@@ -340,7 +339,7 @@ class DataService {
 
     if(result.result == 'VALID') {
       loadingHandler(true);
-      result = await DatabaseService.db.importParts(parts, readResult.headers);
+      result = await DatabaseService.db.importParts(oldParts, parts, readResult.headers, initializeTaskList, incrementLoading);
     }
 
     if(result.result == 'SUCCESS' && result.parts.isEmpty && result.invalidIdParts.isEmpty) {
@@ -376,7 +375,7 @@ class DataService {
                     loadingHandler(true);
                     Navigator.pop(newContext);
                     ImportResponse newResult =
-                    await DatabaseService.db.importParts(result.parts, readResult.headers);
+                    await DatabaseService.db.importParts(oldParts, result.parts, readResult.headers, initializeTaskList, incrementLoading);
 
                     loadingHandler(false);
                     if(newResult.result == 'SUCCESS') {
@@ -406,7 +405,7 @@ class DataService {
                     loadingHandler(true);
                     Navigator.pop(newContext);
                     ImportResponse newResult =
-                    await DatabaseService.db.importParts(result.parts, readResult.headers);
+                    await DatabaseService.db.importParts(oldParts, result.parts, readResult.headers, initializeTaskList, incrementLoading);
 
                     loadingHandler(false);
                     if(newResult.result == 'SUCCESS') {
@@ -509,11 +508,7 @@ class DataService {
         print(csvFile.path);
         print('********');
         print(params.sourceFilePath);
-        // final filePath = await FlutterFileDialog.saveFile(params: params);
         File copiedFile = csvFile.copySync(join(exportPath, basename(csvFile.path)));
-        // File copiedFile = File('$exportPath${basename(csvFile.path)}');
-        // copiedFile.writeAsStringSync(csvFile.readAsStringSync());
-        print('////////');
         print(copiedFile.path);
         if(copiedFile != null)
           ScaffoldMessenger.of(context).showSnackBar(snackBar);
