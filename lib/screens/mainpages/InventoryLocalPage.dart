@@ -209,10 +209,10 @@ class _InventoryLocalPageState extends State<InventoryLocalPage> {
                   heroTag: null,
                   child: Icon(Icons.add),
                   onPressed: () =>
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => PartCreator(isLocal: true, bloc: bloc, fields: snapshot.data.fields)),
-                      ),
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => PartCreator(isLocal: true, bloc: bloc, fields: snapshot.data.fields)),
+                    ),
                 ),
               ]),
             ),
@@ -262,7 +262,12 @@ class _InventoryLocalPageState extends State<InventoryLocalPage> {
                     viewPart: viewPart
                   ),
                 ] + (isOverlayOpen ? [
-                  MultiSearchOverlay(fields: snapshot.data.fields, queries: queries, multiQueryHandler: multiQueryHandler)
+                  MultiSearchOverlay(
+                      fields: snapshot.data.fields,
+                      queries: queries,
+                      multiQueryHandler: multiQueryHandler,
+                      parts: snapshot.data.parts
+                  )
                 ] : []),
               )
                   : Center(child: Text('No Parts')),

@@ -42,6 +42,8 @@ dependencies:
   permission_handler: ^8.3.0
   crypto: ^3.0.1
   shared_preferences: ^2.0.12
+  autocomplete_textfield: ^1.6.4
+  flutter_typeahead: ^3.2.4
 
 
   # The following adds the Cupertino Icons font to your application.

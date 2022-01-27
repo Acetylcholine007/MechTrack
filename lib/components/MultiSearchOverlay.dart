@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:mech_track/models/Field.dart';
+import 'package:mech_track/models/Part.dart';
+import 'package:mech_track/services/PartService.dart';
 import 'package:mech_track/shared/decorations.dart';
 import 'package:mech_track/components/PartTableText.dart';
 
@@ -7,11 +10,13 @@ class MultiSearchOverlay extends StatefulWidget {
   final Field fields;
   final Map<String, String> queries;
   final Function(Map<String, String>) multiQueryHandler;
+  final List<Part> parts;
   const MultiSearchOverlay({
     Key key,
     this.fields,
     this.queries,
-    this.multiQueryHandler
+    this.multiQueryHandler,
+    this.parts
   }) : super(key: key);
 
   @override
@@ -137,12 +142,39 @@ class _MultiSearchOverlayState extends State<MultiSearchOverlay> {
                                 TableCell(
                                   child: Padding(
                                     padding: const EdgeInsets.symmetric(vertical: 4.0),
-                                    child: TextFormField(
-                                      initialValue: queries[field],
-                                      decoration: formFieldDecoration.copyWith(hintText: 'Query'),
-                                      onChanged: (val) => setState(() {
-                                        queries[field] = val;
-                                      }),
+                                    // child: TextFormField(
+                                    //   initialValue: queries[field],
+                                    //   decoration: formFieldDecoration.copyWith(hintText: 'Query'),
+                                    //   onChanged: (val) => setState(() {
+                                    //     queries[field] = val;
+                                    //   }),
+                                    // ),
+                                    child: TypeAheadField(
+                                      debounceDuration: Duration(microseconds: 500),
+                                      textFieldConfiguration: TextFieldConfiguration(
+                                        onChanged: (val) => setState(() => queries[field] = val),
+                                        decoration: formFieldDecoration.copyWith(hintText: 'Query')
+                                      ),
+                                      suggestionsCallback: (String pattern) async {
+                                        return PartService.getPartSuggestions(pattern, widget.parts, field);
+                                        //TODO: implement searching
+                                      },
+                                      itemBuilder: (context, Part suggestion) {
+                                        return ListTile(
+                                          title: Text(suggestion.fields[field].toString()),
+                                        );
+                                      },
+                                      onSuggestionSelected: (Part suggestion) {
+                                        setState(() {
+                                          queries[field] = suggestion.fields[field].toString();
+                                        });
+                                      },
+                                      noItemsFoundBuilder: (context) => Container(
+                                        height: 50,
+                                        child: Center(
+                                          child: Text('No category value found.'),
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ),

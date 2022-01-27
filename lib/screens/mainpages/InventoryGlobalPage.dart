@@ -265,7 +265,12 @@ class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
               viewPart: viewPart,
             ),
           ] + (isOverlayOpen ? [
-            MultiSearchOverlay(fields: fields, queries: queries, multiQueryHandler: multiQueryHandler)
+            MultiSearchOverlay(
+                fields: fields,
+                queries: queries,
+                multiQueryHandler: multiQueryHandler,
+                parts: Provider.of<List<Part>>(context)
+            )
           ] : []),
         ),
       ),
