@@ -32,6 +32,7 @@ class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
   bool isSingleSearch = true;
   bool isOverlayOpen = false;
   Map<String, String> queries = {};
+  Map<String, TextEditingController> controllers = {};
 
   List<Part> filterHandler (List<Part> parts, List fieldKeys) {
     if(isSingleSearch) {
@@ -91,9 +92,10 @@ class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
       setState(() => catIndex1 = newCat);
     }
 
-    void multiQueryHandler(Map<String, String> queries) {
+    void multiQueryHandler(Map<String, String> queries, Map<String, TextEditingController> controllers) {
       setState(() {
         this.queries = queries;
+        this.controllers = controllers;
         isOverlayOpen = false;
       });
     }
@@ -156,13 +158,6 @@ class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
                   await DatabaseService.db.getPart(data[0]);
                   if (part != null) {
                     viewPart(part);
-                    // Navigator.push(context, MaterialPageRoute(
-                    //   builder: (context) =>
-                    //     PartViewer(
-                    //       part: part,
-                    //       isLocal: false,
-                    //       account: account,
-                    //       fields: fields)));
                   } else {
                     Navigator.push(context, MaterialPageRoute(
                         builder: (context) =>
@@ -234,11 +229,6 @@ class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
                 itemBuilder: (BuildContext context, int index) {
                   return GestureDetector(
                     onTap: () => viewPart(parts[index]),
-                        // Navigator.push(
-                        //   context,
-                        //   MaterialPageRoute(builder: (context) =>
-                        //       PartViewer(part: parts[index], isLocal: false, account: account, fields: fields,)),
-                        // ),
                     child: Card(
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10.0),
@@ -268,6 +258,7 @@ class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
             MultiSearchOverlay(
                 fields: fields,
                 queries: queries,
+                controllers: controllers,
                 multiQueryHandler: multiQueryHandler,
                 parts: Provider.of<List<Part>>(context)
             )

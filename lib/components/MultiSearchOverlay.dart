@@ -9,12 +9,14 @@ import 'package:mech_track/components/PartTableText.dart';
 class MultiSearchOverlay extends StatefulWidget {
   final Field fields;
   final Map<String, String> queries;
-  final Function(Map<String, String>) multiQueryHandler;
+  final Map<String, TextEditingController> controllers;
+  final Function(Map<String, String>, Map<String, TextEditingController>) multiQueryHandler;
   final List<Part> parts;
   const MultiSearchOverlay({
     Key key,
     this.fields,
     this.queries,
+    this.controllers,
     this.multiQueryHandler,
     this.parts
   }) : super(key: key);
@@ -27,6 +29,7 @@ class _MultiSearchOverlayState extends State<MultiSearchOverlay> {
   List<String> fieldKeys;
   List<String> remainingKeys;
   Map<String, String> queries = {};
+  Map<String, TextEditingController> controllers = {};
   String dropdownValue;
 
   void setRemainingKeys({String field, bool isAdd = false}) {
@@ -49,6 +52,7 @@ class _MultiSearchOverlayState extends State<MultiSearchOverlay> {
   void initState() {
     fieldKeys = widget.fields.fields.keys.toList();
     queries = widget.queries;
+    controllers = widget.controllers;
     remainingKeys = fieldKeys.where((key) => !widget.queries.keys.toList().contains(key)).toList();
     dropdownValue = remainingKeys[0];
     super.initState();
@@ -101,6 +105,7 @@ class _MultiSearchOverlayState extends State<MultiSearchOverlay> {
                       onPressed: remainingKeys.isNotEmpty ? () {
                         setState(() {
                           queries[dropdownValue] = '';
+                          controllers[dropdownValue] = new TextEditingController();
                           setRemainingKeys(field: dropdownValue, isAdd: false);
                         });
                       } : null,
@@ -116,7 +121,7 @@ class _MultiSearchOverlayState extends State<MultiSearchOverlay> {
                     ),
                     label: Text('SEARCH', style: theme.textTheme.button.copyWith(color: theme.primaryColor)),
                       onPressed: () {
-                        widget.multiQueryHandler(queries);
+                        widget.multiQueryHandler(queries, controllers);
                       },
                     ),
                   )
@@ -142,22 +147,17 @@ class _MultiSearchOverlayState extends State<MultiSearchOverlay> {
                                 TableCell(
                                   child: Padding(
                                     padding: const EdgeInsets.symmetric(vertical: 4.0),
-                                    // child: TextFormField(
-                                    //   initialValue: queries[field],
-                                    //   decoration: formFieldDecoration.copyWith(hintText: 'Query'),
-                                    //   onChanged: (val) => setState(() {
-                                    //     queries[field] = val;
-                                    //   }),
-                                    // ),
                                     child: TypeAheadField(
                                       debounceDuration: Duration(microseconds: 500),
                                       textFieldConfiguration: TextFieldConfiguration(
-                                        onChanged: (val) => setState(() => queries[field] = val),
-                                        decoration: formFieldDecoration.copyWith(hintText: 'Query')
+                                        onChanged: (val) => setState(() {
+                                          queries[field] = val;
+                                        }),
+                                        decoration: formFieldDecoration.copyWith(hintText: 'Query'),
+                                        controller: controllers[field]
                                       ),
                                       suggestionsCallback: (String pattern) async {
                                         return PartService.getPartSuggestions(pattern, widget.parts, field);
-                                        //TODO: implement searching
                                       },
                                       itemBuilder: (context, Part suggestion) {
                                         return ListTile(
@@ -166,6 +166,7 @@ class _MultiSearchOverlayState extends State<MultiSearchOverlay> {
                                       },
                                       onSuggestionSelected: (Part suggestion) {
                                         setState(() {
+                                          controllers[field].text = suggestion.fields[field].toString();
                                           queries[field] = suggestion.fields[field].toString();
                                         });
                                       },
@@ -183,6 +184,7 @@ class _MultiSearchOverlayState extends State<MultiSearchOverlay> {
                                     icon: Icon(Icons.remove_circle_rounded),
                                     onPressed: () => setState(() {
                                       queries.remove(field);
+                                      controllers.remove(field);
                                       setRemainingKeys(field: field, isAdd: true);
                                     }),
                                   ),

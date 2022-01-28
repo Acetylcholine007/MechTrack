@@ -47,7 +47,9 @@ class TabulatedPartList extends StatelessWidget {
 
     return Container(
       constraints: BoxConstraints.expand(),
-      child: SingleChildScrollView(
+      child: parts.length == 0 ? Center(
+        child: Text('No Parts', style: theme.textTheme.headline4, textAlign: TextAlign.center,),
+      ) : SingleChildScrollView(
         child: Column(
           children: [
             PaginatedDataTable(

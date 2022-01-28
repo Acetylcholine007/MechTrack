@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:path/path.dart';
 
 import 'package:crypto/crypto.dart';
@@ -17,6 +18,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'DatabaseService.dart';
 import 'LocalDatabaseService.dart';
+import 'package:flutter_charset_detector/flutter_charset_detector.dart';
+
 
 class DataService {
   DataService._();
@@ -44,29 +47,33 @@ class DataService {
       allowedExtensions: ['csv'],
     );
     if (result != null) {
-      PlatformFile file = result.files.first;
+      try {
+        PlatformFile file = result.files.first;
 
-      final input = new File(file.path).openRead();
-      var fields = await input
-          .transform(utf8.decoder)
-          .transform(new CsvToListConverter())
-          .toList();
+        Uint8List bytes = await (new File(file.path)).readAsBytes();
+        DecodingResult decodingResult = await CharsetDetector.autoDecode(bytes);
 
-      Map<String, String> headers = {};
-      fields.removeAt(0).forEach((header) =>
-        headers[header.toString()
-            .replaceAll(new RegExp('[\\W_., ]+'), "")
-            .toLowerCase()
-        ] = header
-      );
+        var fields =  const CsvToListConverter(allowInvalid: false).convert(decodingResult.string);
 
-      List headerKeys = headers.keys.toList();
+        Map<String, String> headers = {};
+        fields.removeAt(0).forEach((header) =>
+          headers[header.toString()
+              .replaceAll(new RegExp('[\\W_., ]+'), "")
+              .toLowerCase()
+          ] = header
+        );
 
-      newFields = fields.map((row) {
-        Part part = Part.withHash({ for (String header in headerKeys) header: row[headerKeys.indexOf(header)] });
-        return part;
-      }).toList();
-      return CSVReadResult(parts: newFields, headers: headers, result: 'SUCCESS');
+        List headerKeys = headers.keys.toList();
+
+        newFields = fields.map((row) {
+          Part part = Part.withHash({ for (String header in headerKeys) header: row[headerKeys.indexOf(header)] });
+          return part;
+        }).toList();
+        return CSVReadResult(parts: newFields, headers: headers, result: 'SUCCESS');
+      } catch (e) {
+        print(e);
+        throw "FormatException";
+      }
     } else {
       return CSVReadResult(parts: [], headers: {}, result: 'EMPTY');
     }
@@ -174,6 +181,7 @@ class DataService {
         'Importing CSV requires allowing the app to access phone\'s storage'
     );
     if(permissionResult) {
+      loadingHandler(true);
       try {
         readResult = await csvReader();
         parts = readResult.parts;
@@ -186,7 +194,6 @@ class DataService {
     }
 
     if(result.result == 'VALID') {
-      loadingHandler(true);
       result = await LocalDatabaseService.db.importParts(parts, readResult.headers);
     }
 
@@ -293,7 +300,10 @@ class DataService {
           context: context,
           builder: (context) => AlertDialog(
             title: Text('Local CSV Import'),
-            content: Text(result.result),
+            content: Text(
+                result.result.contains('FormatException') ?
+                'Cannot parse CSV. Recheck CSV file structure and make sure CSV file is encoded as (standard, UTF-8, or MS-DOS)' :
+                result.result),
             actions: [
               TextButton(
                   onPressed: () {
@@ -326,6 +336,7 @@ class DataService {
     );
 
     if(permissionResult) {
+      loadingHandler(true);
       try {
         readResult = await csvReader();
         parts = readResult.parts;
@@ -338,7 +349,6 @@ class DataService {
     }
 
     if(result.result == 'VALID') {
-      loadingHandler(true);
       result = await DatabaseService.db.importParts(oldParts, parts, readResult.headers, initializeTaskList, incrementLoading);
     }
 
@@ -444,7 +454,10 @@ class DataService {
           context: context,
           builder: (context) => AlertDialog(
             title: Text('Global CSV Import'),
-            content: Text(result.result),
+            content: Text(
+                result.result.contains('FormatException') ?
+                'Cannot parse CSV. Recheck CSV file structure and make sure CSV file is encoded as (standard, UTF-8, or MS-DOS)' :
+                result.result),
             actions: [
               TextButton(
                   onPressed: () {

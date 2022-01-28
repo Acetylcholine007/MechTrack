@@ -30,6 +30,7 @@ class _InventoryLocalPageState extends State<InventoryLocalPage> {
   bool isSingleSearch = true;
   bool isOverlayOpen = false;
   Map<String, String> queries = {};
+  Map<String, TextEditingController> controllers = {};
 
   List<Part> filterHandler (List<Part> parts, List fieldKeys) {
     if(isSingleSearch) {
@@ -83,9 +84,10 @@ class _InventoryLocalPageState extends State<InventoryLocalPage> {
       setState(() => catIndex1 = newCat);
     }
 
-    void multiQueryHandler(Map<String, String> queries) {
+    void multiQueryHandler(Map<String, String> queries, Map<String, TextEditingController> controllers) {
       setState(() {
         this.queries = queries;
+        this.controllers = controllers;
         isOverlayOpen = false;
       });
     }
@@ -265,6 +267,7 @@ class _InventoryLocalPageState extends State<InventoryLocalPage> {
                   MultiSearchOverlay(
                       fields: snapshot.data.fields,
                       queries: queries,
+                      controllers: controllers,
                       multiQueryHandler: multiQueryHandler,
                       parts: snapshot.data.parts
                   )
