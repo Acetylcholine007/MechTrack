@@ -302,7 +302,7 @@ class DataService {
             title: Text('Local CSV Import'),
             content: Text(
                 result.result.contains('FormatException') ?
-                'Cannot parse CSV. Recheck CSV file structure and make sure CSV file is encoded as (standard, UTF-8, or MS-DOS)' :
+                'Cannot parse CSV. Recheck CSV file structure and make sure CSV file is encoded as (Comma-Delimited, UTF-8, or MS-DOS)' :
                 result.result),
             actions: [
               TextButton(
@@ -456,7 +456,7 @@ class DataService {
             title: Text('Global CSV Import'),
             content: Text(
                 result.result.contains('FormatException') ?
-                'Cannot parse CSV. Recheck CSV file structure and make sure CSV file is encoded as (standard, UTF-8, or MS-DOS)' :
+                'Cannot parse CSV. Recheck CSV file structure and make sure CSV file is encoded as (Comma-Delimited, UTF-8, or MS-DOS)' :
                 result.result),
             actions: [
               TextButton(
