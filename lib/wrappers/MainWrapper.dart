@@ -4,6 +4,7 @@ import 'package:mech_track/components/AccountSuspended.dart';
 import 'package:mech_track/components/Loading.dart';
 import 'package:mech_track/models/Account.dart';
 import 'package:mech_track/models/AccountData.dart';
+import 'package:mech_track/models/AppTask.dart';
 
 import 'package:mech_track/screens/mainpages/AccountPage.dart';
 import 'package:mech_track/screens/mainpages/DataPage.dart';
@@ -27,6 +28,65 @@ class MainWrapper extends StatefulWidget {
 class _MainWrapperState extends State<MainWrapper> {
   int _currentIndex = 0;
   List<Page> pages;
+  bool isGlobalImporting = false;
+  int taskLength = 0;
+  int taskIndex = 0;
+  List<AppTask> tasks = [AppTask(heading: 'Initializing', content: '')];
+
+  void globalImportLoadingHandler(bool status) {
+    setState(() {
+      if(!status) {
+        taskIndex = 0;
+        tasks = [AppTask(heading: 'Initializing', content: '')];
+      }
+      isGlobalImporting = status;
+
+      pages[0] = Page(
+          DataPage(
+            globalImportLoadingHandler: globalImportLoadingHandler,
+            initializeTaskList: initializeTaskList,
+            incrementLoading: incrementLoading,
+            isGlobalImporting: isGlobalImporting,
+            taskLength: taskLength,
+            taskIndex: taskIndex,
+            tasks: tasks,
+          ),
+          BottomNavigationBarItem(
+            label: 'Data',
+            icon: Icon(Icons.archive_rounded),
+          ),
+          1
+      );
+    });
+  }
+
+  void initializeTaskList(List<AppTask> tasks) {
+    setState(() {
+      this.tasks = tasks;
+    });
+  }
+
+  void incrementLoading() {
+    setState(() {
+      taskIndex++;
+      pages[0] = Page(
+          DataPage(
+            globalImportLoadingHandler: globalImportLoadingHandler,
+            initializeTaskList: initializeTaskList,
+            incrementLoading: incrementLoading,
+            isGlobalImporting: isGlobalImporting,
+            taskLength: taskLength,
+            taskIndex: taskIndex,
+            tasks: tasks,
+          ),
+          BottomNavigationBarItem(
+            label: 'Data',
+            icon: Icon(Icons.archive_rounded),
+          ),
+          1
+      );
+    });
+  }
 
   Future<String> scanCode() async {
     var result = await BarcodeScanner.scan();
@@ -85,7 +145,15 @@ class _MainWrapperState extends State<MainWrapper> {
   void initState() {
     pages = [
       Page(
-          DataPage(),
+          DataPage(
+            globalImportLoadingHandler: globalImportLoadingHandler,
+            initializeTaskList: initializeTaskList,
+            incrementLoading: incrementLoading,
+            isGlobalImporting: isGlobalImporting,
+            taskLength: taskLength,
+            taskIndex: taskIndex,
+            tasks: tasks,
+          ),
           BottomNavigationBarItem(
             label: 'Data',
             icon: Icon(Icons.archive_rounded),

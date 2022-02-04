@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mech_track/components/Loading.dart';
 import 'package:mech_track/components/LoadingDeterminate.dart';
 import 'package:mech_track/models/Account.dart';
 import 'package:mech_track/models/AccountData.dart';
@@ -12,19 +13,34 @@ import 'package:mech_track/shared/decorations.dart';
 import 'package:mech_track/services/LocalDatabaseService.dart';
 
 class DataPage extends StatefulWidget {
+  final Function(bool) globalImportLoadingHandler;
+  final Function(List<AppTask>) initializeTaskList;
+  final Function() incrementLoading;
+  final bool isGlobalImporting;
+  final int taskLength;
+  final int taskIndex;
+  final List<AppTask> tasks;
+
+
+  DataPage({
+    this.globalImportLoadingHandler,
+    this.initializeTaskList,
+    this.incrementLoading,
+    this.isGlobalImporting,
+    this.taskLength,
+    this.taskIndex,
+    this.tasks
+  });
+
   @override
   _DataPageState createState() => _DataPageState();
 }
 
 class _DataPageState extends State<DataPage> {
   bool isSyncing = false;
-  bool isGlobalImporting = false;
   bool isLocalImporting = false;
   bool isGlobalExporting = false;
   bool isLocalExporting = false;
-  int taskLength = 0;
-  int taskIndex = 0;
-  List<AppTask> tasks = [AppTask(heading: 'Initializing', content: '')];
 
   void syncLoadingHandler(bool status) {
     setState(() => isSyncing = status);
@@ -34,34 +50,12 @@ class _DataPageState extends State<DataPage> {
     setState(() => isLocalImporting = status);
   }
 
-  void globalImportLoadingHandler(bool status) {
-    setState(() {
-      if(!status) {
-        taskIndex = 0;
-        tasks = [AppTask(heading: 'Initializing', content: '')];
-      }
-      isGlobalImporting = status;
-    });
-  }
-
   void localExportLoadingHandler(bool status) {
     setState(() => isLocalExporting = status);
   }
 
   void globalExportLoadingHandler(bool status) {
     setState(() => isGlobalExporting = status);
-  }
-
-  void initializeTaskList(List<AppTask> tasks) {
-    setState(() {
-      this.tasks = tasks;
-    });
-  }
-
-  void incrementLoading() {
-    setState(() {
-      taskIndex++;
-    });
   }
 
   @override
@@ -82,7 +76,13 @@ class _DataPageState extends State<DataPage> {
       ),
       OperatorWidget(
           ElevatedButton(
-            onPressed: () => DataService.ds.globalCSVImport(context, parts, globalImportLoadingHandler, initializeTaskList, incrementLoading),
+            onPressed: () => DataService.ds.globalCSVImport(
+                context,
+                parts,
+                widget.globalImportLoadingHandler,
+                widget.initializeTaskList,
+                widget.incrementLoading
+            ),
             child: Text('Import CSV for Global'),
             style: buttonDecoration,
           ), 3
@@ -144,7 +144,11 @@ class _DataPageState extends State<DataPage> {
             child: LinearProgressIndicator(backgroundColor: Colors.white)
         ) : null,
       ),
-      body: isGlobalImporting ? LoadingDeterminate(task: tasks[taskIndex], index: taskIndex, total: tasks.length) : Container(
+      body: widget.isGlobalImporting ? LoadingDeterminate(
+          task: widget.tasks[widget.taskIndex],
+          index: widget.taskIndex,
+          total: widget.tasks.length
+      ) : fields == null ? Loading('Getting Global Data structure') : Container(
           decoration: BoxDecoration(
             image: DecorationImage(image: new AssetImage("assets/images/background.jpg"), fit: BoxFit.cover,),
           ),

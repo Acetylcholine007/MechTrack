@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:mech_track/models/AccountData.dart';
 import 'package:mech_track/models/AppTask.dart';
 import 'package:mech_track/models/Field.dart';
+import 'package:mech_track/models/GlobalGetPartResponse.dart';
 import 'package:mech_track/models/ImportResponse.dart';
 import 'package:mech_track/models/Part.dart';
 
@@ -8,6 +11,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class DatabaseService {
   DatabaseService._();
+  Duration _timeoutDuration = Duration(seconds: 10);
 
   static final DatabaseService db = DatabaseService._();
 
@@ -71,98 +75,142 @@ class DatabaseService {
 
   // OPERATOR FUNCTIONS SECTION
   Future removePart(String pid) async {
-    String result = '';
-    await partCollection
-      .doc(pid).delete()
-      .then((value) => result = 'SUCCESS')
-      .catchError((error) => result = error.toString());
-    return result;
+    String result = 'Operation Timeout: Quota was probably reached. Try again the following day.';
+    try {
+      await partCollection
+        .doc(pid).delete()
+        .then((value) => result = 'SUCCESS')
+        .catchError((error) => result = error.toString())
+        .timeout(_timeoutDuration, onTimeout: () => throw 'TIMEOUT');
+      return result;
+    } catch (e) {
+      return result;
+    }
   }
 
   Future<String> addPart(Part part, String action) async {
-    var doc = await partCollection.doc(part.partId.toString()).get();
-    String docId = part.partId;
-    String result = '';
+    String result = 'Operation Timeout: Quota was probably reached. Try again the following day.';
 
-    if(doc.exists && action == 'SAFE')
-      return 'EXIST';
+    try {
+      var doc = await partCollection.doc(part.partId.toString()).get()
+          .timeout(_timeoutDuration, onTimeout: () => throw 'TIMEOUT');
+      String docId = part.partId;
 
-    int lastPartIndex = (await partCollection.orderBy('_sortingIndex').get()).docs.last.get('_sortingIndex');
+      if(doc.exists && action == 'SAFE')
+        return 'EXIST';
 
-    await partCollection
-      .doc(docId).set({...part.fields, '_sortingIndex': lastPartIndex + 1})
-        .then((value) => result = 'SUCCESS')
-        .catchError((error) => result = error.toString());
-    return result;
+      int lastPartIndex = (await partCollection.orderBy('_sortingIndex').get()
+          .timeout(_timeoutDuration, onTimeout: () => throw 'TIMEOUT')).docs.last.get('_sortingIndex');
+
+      await partCollection
+        .doc(docId).set({...part.fields, '_sortingIndex': lastPartIndex + 1})
+          .then((value) => result = 'SUCCESS')
+          .catchError((error) => result = error.toString())
+          .timeout(_timeoutDuration, onTimeout: () => throw 'TIMEOUT');
+
+      return result;
+    } catch (e) {
+      return result;
+    }
   }
 
   Future<String> editPart(Part part) async {
-    String result = '';
-    await partCollection.doc(part.partId)
-    .update(part.fields)
-    .then((value) => result = 'SUCCESS')
-    .catchError((error) => result = error.toString());
-    return result;
+    String result = 'Operation Timeout: Quota was probably reached. Try again the following day.';
+    try {
+      await partCollection.doc(part.partId)
+      .update(part.fields)
+      .then((value) => result = 'SUCCESS')
+      .catchError((error) => result = error.toString())
+      .timeout(_timeoutDuration, onTimeout: () => throw 'TIMEOUT');
+      return result;
+    } catch (e) {
+      return result;
+    }
   }
 
-  Future<Part> getPart(String pid) async {
-    Part part;
-    await partCollection.doc(pid).get()
-      .then((DocumentSnapshot snapshot) => part = _partFromSnapshot(snapshot))
-      .catchError((error) {print('Failed to get part');});
-    return part;
+  Future<GlobalGetPartResponse> getPart(String pid) async {
+    GlobalGetPartResponse result = GlobalGetPartResponse(null, 'Operation Timeout: Quota was probably reached. Try again the following day.');
+    try {
+      await partCollection.doc(pid).get()
+        .then((DocumentSnapshot snapshot) => result = GlobalGetPartResponse(_partFromSnapshot(snapshot), 'SUCCESS'))
+        .catchError((error) => GlobalGetPartResponse(null, 'FAILED'))
+        .timeout(_timeoutDuration, onTimeout: () => throw 'TIMEOUT');
+      return result;
+    }catch (e) {
+      return result;
+    }
   }
 
   Future createAccount(AccountData person, String email, String uid) async {
-    String result = '';
-    await userCollection.doc(uid).set({
-      'fullName': person.fullName,
-      'username': person.username,
-      'accountType': 'EMPLOYEE',
-      'isVerified': false,
-      'email': email
-    })
-      .then((value) => result = 'SUCCESS')
-      .catchError((error) => result = error.toString());
-    return result;
+    String result = 'Operation Timeout: Quota was probably reached. Try again the following day.';
+    try {
+      await userCollection.doc(uid).set({
+        'fullName': person.fullName,
+        'username': person.username,
+        'accountType': 'EMPLOYEE',
+        'isVerified': false,
+        'email': email
+      })
+        .then((value) => result = 'SUCCESS')
+        .catchError((error) => result = error.toString())
+        .timeout(_timeoutDuration, onTimeout: () => throw 'TIMEOUT');
+      return result;
+    } catch (e) {
+      return result;
+    }
   }
 
   Future<String> editAccount(String fullName, String username, String uid) async {
-    String result = '';
-    await userCollection.doc(uid).update({
-      'fullName': fullName,
-      'username': username
-    })
-      .then((value) => result = 'SUCCESS')
-      .catchError((error) => result = error.toString());
-    return result;
+    String result = 'Operation Timeout: Quota was probably reached. Try again the following day.';
+    try {
+      await userCollection.doc(uid).update({
+        'fullName': fullName,
+        'username': username
+      })
+        .then((value) => result = 'SUCCESS')
+        .catchError((error) => result = error.toString())
+        .timeout(_timeoutDuration, onTimeout: () => throw 'TIMEOUT');
+      return result;
+    } catch (e) {
+      return result;
+    }
   }
 
   Future<String> promoteAccount(String uid, String accountType) async {
-    String result = '';
-    await userCollection.doc(uid).update({
-      'accountType': accountType,
-    })
-      .then((value) => result = 'SUCCESS')
-      .catchError((error) => result = error.toString());
-    return result;
+    String result = 'Operation Timeout: Quota was probably reached. Try again the following day.';
+    try {
+      await userCollection.doc(uid).update({
+        'accountType': accountType,
+      })
+          .then((value) => result = 'SUCCESS')
+          .catchError((error) => result = error.toString())
+          .timeout(_timeoutDuration, onTimeout: () => throw 'TIMEOUT');
+      return result;
+    } catch(e) {
+      return result;
+    }
   }
 
   Future<String> verifyAccount(String uid, bool isVerified) async {
-    String result = '';
-    await userCollection.doc(uid).update({
-      'isVerified': isVerified
-    })
-      .then((value) => result = 'SUCCESS')
-      .catchError((error) => result = error.toString());
-    return result;
+    String result = 'Operation Timeout: Quota was probably reached. Try again the following day.';
+    try {
+      await userCollection.doc(uid).update({
+        'isVerified': isVerified
+      })
+        .then((value) => result = 'SUCCESS')
+        .catchError((error) => result = error.toString())
+        .timeout(_timeoutDuration, onTimeout: () => throw 'TIMEOUT');
+      return result;
+    } catch (e) {
+      return result;
+    }
   }
   
   Future<ImportResponse> importParts(List<Part> oldParts, List<Part> newParts, Map<String, String> headers, Function initializeTaskList, Function incrementLoading) async {
     final auxBatch = FirebaseFirestore.instance.batch();
     final fields = await fieldCollection.get();
     final List<MapEntry<int, Part>> indexedParts = newParts.asMap().entries.toList();
-    final int chunkSize = 100;
+    final int chunkSize = 200;
 
     final int partsLength = oldParts.length;
     final int newPartsLength = indexedParts.length;
@@ -184,10 +232,12 @@ class DatabaseService {
         for(int chunkIndex = 0; chunkIndex <= deleteOpChunkCount; chunkIndex++) {
           final batch = FirebaseFirestore.instance.batch();
           for(int partIndex = 0; partIndex < chunkSize && partIndex + chunkIndex * chunkSize < partsLength; partIndex++) {
-            // print(partIndex + chunkIndex * chunkSize);
             batch.delete(partCollection.doc(oldParts[partIndex + chunkIndex * chunkSize].partId));
           }
-          await batch.commit().then((value) => print('>>>>>>>>>>>>>>CHUNK $chunkIndex DELETED'));
+          await batch.commit().then((value) => print('>>>>>>>>>>>>>>CHUNK $chunkIndex DELETED'))
+            .timeout(_timeoutDuration, onTimeout: () {
+              throw 'Operation Timeout: Quota was probably reached. Try again the following day.';
+          });
           incrementLoading();
         }
       }
@@ -198,19 +248,24 @@ class DatabaseService {
       headers.keys.toList().asMap().forEach((index, field) {
         auxBatch.set(fieldCollection.doc(field), {'index': index, 'fieldKey': field, 'fieldValue': headers[field]});
       });
-      await auxBatch.commit().then((value) => print(">>>>>>>>>>>>>>AUX SUCCESS")).catchError((e) => print(e));
+      await auxBatch.commit().then((value) => print(">>>>>>>>>>>>>>AUX SUCCESS")).catchError((e) => print(e))
+          .timeout(_timeoutDuration, onTimeout: () {
+        throw 'Operation Timeout: Quota was probably reached. Try again the following day.';
+      });
       incrementLoading();
 
       for(int chunkIndex = 0; chunkIndex <= (newPartsLength / chunkSize).ceil(); chunkIndex++) {
         final batch = FirebaseFirestore.instance.batch();
         for(int partIndex = 0; partIndex < chunkSize && partIndex + chunkIndex * chunkSize < newPartsLength; partIndex++) {
-          // print(partIndex + chunkIndex * chunkSize);
           batch.set(partCollection.doc(
               indexedParts[partIndex + chunkIndex * chunkSize].value.partId),
               {...indexedParts[partIndex + chunkIndex * chunkSize].value.toMap(),
                 '_sortingIndex': indexedParts[partIndex + chunkIndex * chunkSize].key});
         }
-        await batch.commit().then((value) => print('>>>>>>>>>>>>>>CHUNK $chunkIndex ADDED'));
+        await batch.commit().then((value) => print('>>>>>>>>>>>>>>CHUNK $chunkIndex ADDED'))
+            .timeout(_timeoutDuration, onTimeout: () {
+          throw 'Operation Timeout: Quota was probably reached. Try again the following day.';
+        });
         incrementLoading();
       }
 
@@ -220,35 +275,25 @@ class DatabaseService {
     }
   }
 
-  // //GETTER FUNCTIONS
-
-  Future<AccountData> getAccount(String uid) async {
-    return userCollection.doc(uid).get().then(_accountFromSnapshot);
-  }
-
-  Future<List<AccountData>> getAccounts(List<String> userIds) {
-    if(userIds.isNotEmpty) {
-      return userCollection.where('__name__', whereIn: userIds).get().then(_accountListFromSnapshot);
-    } else {
-      return Future(() => <AccountData>[]);
-    }
-  }
-
   // //STREAM SECTION
 
   Stream<AccountData> getUser(String uid) {
-    return userCollection.doc(uid).snapshots().map(_accountFromSnapshot);
+    return userCollection.doc(uid).snapshots().map(_accountFromSnapshot)
+      .timeout(_timeoutDuration, onTimeout: (eventSink) => eventSink.add(null));
   }
 
   Stream<List<AccountData>> get users {
-    return userCollection.orderBy("fullName").snapshots().map(_accountListFromSnapshot);
+    return userCollection.orderBy("fullName").snapshots().map(_accountListFromSnapshot)
+      .timeout(_timeoutDuration, onTimeout: (eventSink) => eventSink.add([]));
   }
 
   Stream<List<Part>> get parts {
-    return partCollection.orderBy("_sortingIndex").snapshots().map(_partListFromSnapshot);
+    return partCollection.orderBy("_sortingIndex").snapshots().map(_partListFromSnapshot)
+      .timeout(_timeoutDuration, onTimeout: (eventSink) => eventSink.add([]));
   }
 
   Stream<Field> get fields {
-    return fieldCollection.orderBy("index").snapshots().map(_fieldFromSnapshot);
+    return fieldCollection.orderBy("index").snapshots().map(_fieldFromSnapshot)
+      .timeout(_timeoutDuration, onTimeout: (eventSink) => eventSink.add(null));
   }
 }

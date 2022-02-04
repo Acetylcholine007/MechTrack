@@ -318,7 +318,13 @@ class DataService {
     loadingHandler(false);
   }
 
-  void globalCSVImport(BuildContext context, List<Part> oldParts, Function loadingHandler, Function initializeTaskList, Function incrementLoading) async {
+  void globalCSVImport(
+      BuildContext context,
+      List<Part> oldParts,
+      Function loadingHandler,
+      Function initializeTaskList,
+      Function incrementLoading
+    ) async {
     ImportResponse result = ImportResponse();
     CSVReadResult readResult;
     List<Part> parts;

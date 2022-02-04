@@ -28,9 +28,11 @@ List<FAQ> faqs = [
   ]),
   FAQ('What are the system requirements of the application?', [' ']),
   FAQ('What are the data limits of the application?', [
+    'Global Database currently use Firebase Free Plan only. This imposes limitations to read, write, update and delete operations in Global Database.',
     '%Stored data: 1G',
-    '%Document writes: 20k input',
-    '%Document deletes: 20k'
+    '%Document reads: 50k per day',
+    '%Document writes: 20k per day',
+    '%Document deletes: 20k per day'
   ]),
   FAQ('What to do if I encounter a bug?', [
     'Visit our facebook page to report some bugs. You can also message us if there are bugs to be encountered.'
@@ -43,5 +45,11 @@ List<FAQ> faqs = [
     'Proceed to settings > privacy > permission manager > camera > find the app > allow',
     '%For storage:',
     'Proceed to settings > privacy > permission manager > storage > find the app > allow'
+  ]),
+  FAQ('What to do if importing, adding, editing or deleting a document on Global database suddenly stops?', [
+    'The first thing to do is to record or take note the event and inform the admin about encounter. '
+        'It is most likely that the Global database quota has been reached leading to stoppage. You can resume your global operations the following day as quota resets everyday.',
+    '\nUnfortunately, Google Firestore does not provide API method to inform the app users that the quota has been reached and only through the Firebase console the quota can be checked by the admin.\n',
+    'If the admin determines that the quota is not the cause of stoppage, file a bug report to help fix the app.'
   ]),
 ];

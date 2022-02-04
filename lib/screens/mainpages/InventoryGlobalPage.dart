@@ -11,6 +11,7 @@ import 'package:mech_track/components/TabulatedPartList.dart';
 import 'package:mech_track/models/Account.dart';
 import 'package:mech_track/models/AccountData.dart';
 import 'package:mech_track/models/Field.dart';
+import 'package:mech_track/models/GlobalGetPartResponse.dart';
 import 'package:mech_track/models/Part.dart';
 import 'package:mech_track/screens/subpages/PartCreator.dart';
 import 'package:mech_track/screens/subpages/PartViewer.dart';
@@ -78,7 +79,7 @@ class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
     List<String> fieldKeys = [];
     String titleKey = '';
     String captionKey = '';
-    if(fields.fields.isNotEmpty) {
+    if(fields != null && fields.fields.isNotEmpty) {
       fieldKeys = fields.fields.keys.toList();
       titleKey = fieldKeys[fieldKeys.length >= 1 ? 1 : 0];
       captionKey = fieldKeys[0];
@@ -108,10 +109,14 @@ class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
       );
     }
 
-    parts = isSingleSearch ? filterHandler(parts, fields.fields.keys.toList()) :
-    multiFilterHandler(parts, queries);
+    if(fields != null) {
+      parts = isSingleSearch ? filterHandler(parts, fields.fields.keys.toList()) :
+      multiFilterHandler(parts, queries);
+    } else {
+      parts = parts;
+    }
 
-    return parts != null ? Scaffold(
+    return parts != null && fields != null ? Scaffold(
       appBar: AppBar(
         title: Text('Global Database'),
         actions: [
@@ -154,14 +159,32 @@ class _InventoryGlobalPageState extends State<InventoryGlobalPage> {
                     ? result.rawContent.split('<=MechTrack=>')
                     : null;
                 if (data != null && data[0] == data[1]) {
-                  Part part =
+                  GlobalGetPartResponse response =
                   await DatabaseService.db.getPart(data[0]);
-                  if (part != null) {
-                    viewPart(part);
+                  if (response.part != null) {
+                    viewPart(response.part);
                   } else {
-                    Navigator.push(context, MaterialPageRoute(
-                        builder: (context) =>
-                            NoPart(isValid: true)));
+                    if(response.result == 'FAILED') {
+                      Navigator.push(context, MaterialPageRoute(
+                          builder: (context) =>
+                              NoPart(isValid: true)));
+                    } else {
+                      showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: Text('Global QR Search'),
+                            content: Text(response.result),
+                            actions: [
+                              TextButton(
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                  },
+                                  child: Text('OK')
+                              )
+                            ],
+                          )
+                      );
+                    }
                   }
                 } else {
                   Navigator.push(context, MaterialPageRoute(
