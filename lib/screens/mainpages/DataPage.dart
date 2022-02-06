@@ -148,7 +148,7 @@ class _DataPageState extends State<DataPage> {
           task: widget.tasks[widget.taskIndex],
           index: widget.taskIndex,
           total: widget.tasks.length
-      ) : fields == null ? Loading('Getting Global Data structure') : Container(
+      ) : !authUser.isAnon && fields == null ? Loading('Getting Global Data structure') : Container(
           decoration: BoxDecoration(
             image: DecorationImage(image: new AssetImage("assets/images/background.jpg"), fit: BoxFit.cover,),
           ),

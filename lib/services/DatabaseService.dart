@@ -278,22 +278,18 @@ class DatabaseService {
   // //STREAM SECTION
 
   Stream<AccountData> getUser(String uid) {
-    return userCollection.doc(uid).snapshots().map(_accountFromSnapshot)
-      .timeout(_timeoutDuration, onTimeout: (eventSink) => eventSink.add(null));
+    return userCollection.doc(uid).snapshots().map(_accountFromSnapshot);
   }
 
   Stream<List<AccountData>> get users {
-    return userCollection.orderBy("fullName").snapshots().map(_accountListFromSnapshot)
-      .timeout(_timeoutDuration, onTimeout: (eventSink) => eventSink.add([]));
+    return userCollection.orderBy("fullName").snapshots().map(_accountListFromSnapshot);
   }
 
   Stream<List<Part>> get parts {
-    return partCollection.orderBy("_sortingIndex").snapshots().map(_partListFromSnapshot)
-      .timeout(_timeoutDuration, onTimeout: (eventSink) => eventSink.add([]));
+    return partCollection.orderBy("_sortingIndex").snapshots().map(_partListFromSnapshot);
   }
 
   Stream<Field> get fields {
-    return fieldCollection.orderBy("index").snapshots().map(_fieldFromSnapshot)
-      .timeout(_timeoutDuration, onTimeout: (eventSink) => eventSink.add(null));
+    return fieldCollection.orderBy("index").snapshots().map(_fieldFromSnapshot);
   }
 }
