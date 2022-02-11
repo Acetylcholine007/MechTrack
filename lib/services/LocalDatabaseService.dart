@@ -93,11 +93,12 @@ class LocalDatabaseService {
     if(maps == null || maps.isEmpty)
       return null;
 
-    String partId = maps[0]['partId'];
-    maps[0].remove('partId');
+    Map<String, Object> part = {...maps[0]};
+    String partId = part['partId'];
+    part.remove('partId');
     return Part(
       partId: partId,
-      fields: maps[0],
+      fields: part,
     );
   }
 

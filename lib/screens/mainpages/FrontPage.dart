@@ -40,7 +40,7 @@ class _FrontPageState extends State<FrontPage> {
                       image: AssetImage('assets/images/logoHalf.gif'),
                       width: 200,
                       fit: BoxFit.cover),
-                    Text('Mechanical Equipment Inventory',
+                    Text('Equipment Inventory',
                       style: theme.textTheme.headline4,
                       textAlign: TextAlign.center)
                   ],
