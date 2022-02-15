@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
+import 'package:mech_track/repository/PlatformRepository.dart';
 import 'package:path/path.dart';
 
 import 'package:crypto/crypto.dart';
@@ -94,9 +95,10 @@ class DataService {
   }
 
   Future<bool> permissionChecker(BuildContext context, String title, String content) async {
-    var status = await Permission.storage.status;
+    var status1 = await Permission.storage.status;
+    var status2 = await Permission.manageExternalStorage.status;
 
-    if (status.isDenied) {
+    if (status1.isDenied) {
       await showDialog(
         context: context,
         builder: (context) =>
@@ -114,10 +116,30 @@ class DataService {
           )
       );
       await Permission.storage.request();
-      status = await Permission.storage.status;
+      status1 = await Permission.storage.status;
+    }
+    if (status2.isDenied) {
+      await showDialog(
+          context: context,
+          builder: (context) =>
+              AlertDialog(
+                title: Text(title),
+                content: Text("Elevated storage permissions are needed."),
+                actions: [
+                  TextButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      child: Text('OK')
+                  )
+                ],
+              )
+      );
+      await Permission.manageExternalStorage.request();
+      status2 = await Permission.manageExternalStorage.status;
     }
 
-    if(status.isGranted) {
+    if(status1.isGranted && status2.isGranted) {
       return true;
     } else {
       return false;
@@ -527,9 +549,11 @@ class DataService {
         print(csvFile.path);
         print('********');
         print(params.sourceFilePath);
-        File copiedFile = csvFile.copySync(join(exportPath, basename(csvFile.path)));
-        print(copiedFile.path);
-        if(copiedFile != null)
+
+        final filePath = await PlatformRepository.repo.saveFile(csvFile.path, exportPath, isLocal ? 'Local' : 'Global');
+        print(filePath);
+
+        if(filePath != null)
           ScaffoldMessenger.of(context).showSnackBar(snackBar);
         else {
           ScaffoldMessenger.of(context).showSnackBar(snackBar2);
