@@ -537,7 +537,7 @@ class DataService {
         String exportPath = prefs.getString('exportLocation') ?? '';
 
         if(exportPath == '') {
-          bool result = await prefs.setString('exportLocation', path);
+          bool result = await prefs.setString('exportLocation', await FilePicker.platform.getDirectoryPath());
           if(!result) throw "Failed to set export location";
           exportPath = prefs.getString('exportLocation') ?? '';
         }

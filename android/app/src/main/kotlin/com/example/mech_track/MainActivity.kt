@@ -26,6 +26,7 @@ class MainActivity: FlutterActivity() {
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler{
             call, result ->
             if(call.method == "saveFile") {
+                print("REACHED>>>>>>>>")
                 var sourcePath: String? = call.argument("source")
                 var destinationPath: String? = call.argument("destination")
                 var dbType: String? = call.argument("dbType")
@@ -45,7 +46,7 @@ class MainActivity: FlutterActivity() {
     ): String {
         Log.d(LOG_TAG, "Saving file '${source}' to '${destination}'")
         File(source).let { sourceFile ->
-            sourceFile.copyTo(File(destination + "/'${dbType}'_DB_Data.csv"))
+            sourceFile.copyTo(File(destination + "/${dbType}_DB_Data.csv"))
         }
         Log.d(LOG_TAG, "Saved file to '${destination}'")
         return destination!!
