@@ -52,4 +52,10 @@ List<FAQ> faqs = [
     '\nUnfortunately, Google Firestore does not provide API method to inform the app users that the quota has been reached and only through the Firebase console the quota can be checked by the admin.\n',
     'If the admin determines that the quota is not the cause of stoppage, file a bug report to help fix the app.'
   ]),
+  FAQ('What are the support CSV encoding types for Import?', [
+    'Supported CSV encodings for import are:\n',
+    '%CSV UTF-8',
+    '%CSV MS-DOS',
+    '%CSV Comma-Delimited'
+  ]),
 ];

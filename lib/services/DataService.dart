@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:mech_track/repository/PlatformRepository.dart';
-import 'package:path/path.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 
 import 'package:crypto/crypto.dart';
 import 'package:csv/csv.dart';
@@ -95,54 +95,99 @@ class DataService {
   }
 
   Future<bool> permissionChecker(BuildContext context, String title, String content) async {
-    var status1 = await Permission.storage.status;
-    var status2 = await Permission.manageExternalStorage.status;
+    int sdkInt = 0;
 
-    if (status1.isDenied) {
-      await showDialog(
-        context: context,
-        builder: (context) =>
-          AlertDialog(
-            title: Text(title),
-            content: Text(content),
-            actions: [
-              TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: Text('OK')
-              )
-            ],
-          )
-      );
-      await Permission.storage.request();
-      status1 = await Permission.storage.status;
-    }
-    if (status2.isDenied) {
-      await showDialog(
-          context: context,
-          builder: (context) =>
-              AlertDialog(
-                title: Text(title),
-                content: Text("Elevated storage permissions are needed."),
-                actions: [
-                  TextButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      child: Text('OK')
-                  )
-                ],
-              )
-      );
-      await Permission.manageExternalStorage.request();
-      status2 = await Permission.manageExternalStorage.status;
+    if (Platform.isAndroid) {
+      var androidInfo = await DeviceInfoPlugin().androidInfo;
+      // var release = androidInfo.version.release;
+      // var sdkInt = androidInfo.version.sdkInt;
+      // var manufacturer = androidInfo.manufacturer;
+      // var model = androidInfo.model;
+      // print('Android $release (SDK $sdkInt), $manufacturer $model');
+      // // Android 9 (SDK 28), Xiaomi Redmi Note 7
+
+      sdkInt = androidInfo.version.sdkInt;
     }
 
-    if(status1.isGranted && status2.isGranted) {
-      return true;
+    if(sdkInt <= 29) {
+      var status1 = await Permission.storage.status;
+
+      if (status1.isDenied) {
+        await showDialog(
+            context: context,
+            builder: (context) =>
+                AlertDialog(
+                  title: Text(title),
+                  content: Text(content),
+                  actions: [
+                    TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        child: Text('OK')
+                    )
+                  ],
+                )
+        );
+        await Permission.storage.request();
+        status1 = await Permission.storage.status;
+      }
+
+      if(status1.isGranted) {
+        return true;
+      } else {
+        return false;
+      }
     } else {
-      return false;
+      var status1 = await Permission.storage.status;
+      var status2 = await Permission.manageExternalStorage.status;
+
+      if (status1.isDenied) {
+        await showDialog(
+            context: context,
+            builder: (context) =>
+                AlertDialog(
+                  title: Text(title),
+                  content: Text(content),
+                  actions: [
+                    TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        child: Text('OK')
+                    )
+                  ],
+                )
+        );
+        await Permission.storage.request();
+        status1 = await Permission.storage.status;
+      }
+      if (status2.isDenied) {
+        await showDialog(
+            context: context,
+            builder: (context) =>
+                AlertDialog(
+                  title: Text(title),
+                  content: Text("Elevated storage permissions are needed."),
+                  actions: [
+                    TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        child: Text('OK')
+                    )
+                  ],
+                )
+        );
+        await Permission.manageExternalStorage.request();
+        status2 = await Permission.manageExternalStorage.status;
+      }
+
+      if(status1.isGranted && status2.isGranted) {
+        return true;
+      } else {
+        return false;
+      }
     }
   }
 
@@ -515,7 +560,7 @@ class DataService {
       action: SnackBarAction(label: 'OK', onPressed: () => ScaffoldMessenger.of(context).hideCurrentSnackBar()),
     );
 
-    try {
+    // try {
       bool permissionResult = await permissionChecker(
           context,
           '${isLocal ? 'Local' : 'Global'} CSV Export',
@@ -561,24 +606,24 @@ class DataService {
       } else {
         throw ("Failed to write data");
       }
-    } catch (e) {
-      showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: Text('${isLocal ? 'Local' : 'Global'} CSV Export'),
-            content: Text(e.toString()),
-            actions: [
-              TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: Text('OK')
-              )
-            ],
-          )
-      );
-    } finally {
+    // } catch (e) {
+    //   showDialog(
+    //       context: context,
+    //       builder: (context) => AlertDialog(
+    //         title: Text('${isLocal ? 'Local' : 'Global'} CSV Export'),
+    //         content: Text(e.toString()),
+    //         actions: [
+    //           TextButton(
+    //               onPressed: () {
+    //                 Navigator.pop(context);
+    //               },
+    //               child: Text('OK')
+    //           )
+    //         ],
+    //       )
+    //   );
+    // } finally {
       loadingHandler(false);
-    }
+    // }
   }
 }

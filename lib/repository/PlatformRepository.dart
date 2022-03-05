@@ -7,6 +7,7 @@ class PlatformRepository {
   static final PlatformRepository repo = PlatformRepository._();
 
   Future<String> saveFile(String source, String destination, String dbType) async {
+    print('OOOOOOOOOOOO');
     try {
       final String result = await platform.invokeMethod(
           "saveFile",
@@ -17,6 +18,7 @@ class PlatformRepository {
           });
       print(result);
     } on PlatformException catch (e) {
+      print('EEEEEEEEEEE');
       print(e);
     }
     return Future(() => 'GOOD');

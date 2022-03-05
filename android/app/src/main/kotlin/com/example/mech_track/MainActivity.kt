@@ -44,11 +44,17 @@ class MainActivity: FlutterActivity() {
         destination: String?,
         dbType: String?,
     ): String {
-        Log.d(LOG_TAG, "Saving file '${source}' to '${destination}'")
-        File(source).let { sourceFile ->
-            sourceFile.copyTo(File(destination + "/${dbType}_DB_Data.csv"))
+        try {
+            Log.d(LOG_TAG, "Saving file '${source}' to '${destination}'")
+            File(source).let { sourceFile ->
+                sourceFile.copyTo(File(destination + "/${dbType}_DB_Data.csv"))
+            }
+            Log.d(LOG_TAG, "Saved file to '${destination}'")
+            return destination!!
+        } catch(e: FileAlreadyExistsException) {
+            return "File already exists"
+        } catch(err: Exception) {
+            return err.toString()
         }
-        Log.d(LOG_TAG, "Saved file to '${destination}'")
-        return destination!!
     }
 }
